@@ -11,12 +11,25 @@ import SideMenu from '../../components/layout/SideMenu';
 export default function TabLayout() {
     const colorScheme = useColorScheme();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [menuInitialTab, setMenuInitialTab] = useState('Menu');
+
+    const openMenu = (tab = 'Menu') => {
+        setMenuInitialTab(tab);
+        setIsMenuOpen(true);
+    };
 
     return (
         <>
-            <Header onMenuPress={() => setIsMenuOpen(true)} />
+            <Header
+                onMenuPress={() => openMenu('Menu')}
+                onNotificationPress={() => openMenu('Notifications')}
+            />
 
-            <SideMenu visible={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+            <SideMenu
+                visible={isMenuOpen}
+                onClose={() => setIsMenuOpen(false)}
+                initialTab={menuInitialTab}
+            />
 
             <Tabs
                 screenOptions={{

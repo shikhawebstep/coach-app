@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Animated,
     Dimensions,
@@ -13,6 +13,7 @@ import {
     TouchableWithoutFeedback,
     View
 } from 'react-native';
+import NotificationsList from '../classes/common/NotificationsList';
 
 const { width, height } = Dimensions.get('window');
 
@@ -26,7 +27,13 @@ const MENU_ITEMS = [
         icon: 'radio-button-on-outline',
         hasSubmenu: true,
         isOpen: false, // Initial state
-        submenu: [],
+        submenu: [
+            { id: 'classes/weekly', title: 'Weekly Classes' },
+            { id: 'classes/private', title: 'Private Classes' },
+            { id: 'classes/holiday', title: 'Holiday Camps' },
+            { id: 'classes/birthday', title: 'Birthday Parties' },
+            { id: 'classes/club', title: 'Club' },
+        ],
     },
     { id: 'training', title: 'Training', icon: 'play-circle-outline' },
     { id: 'assessments', title: 'My Assessments', icon: 'stats-chart-outline' },
@@ -55,9 +62,17 @@ const MENU_ITEMS = [
     },
 ];
 
-export default function SideMenu({ visible, onClose }) {
+export default function SideMenu({ visible, onClose, initialTab = 'Menu' }) {
     const router = useRouter();
     const [items, setItems] = useState(MENU_ITEMS);
+    const [activeTab, setActiveTab] = useState(initialTab); // 'Menu', 'Profile', 'Notifications'
+
+    // Reset active tab when menu becomes visible if initialTab is provided
+    useEffect(() => {
+        if (visible) {
+            setActiveTab(initialTab || 'Menu');
+        }
+    }, [visible, initialTab]);
     // Animation for sliding in
     const [slideAnim] = useState(new Animated.Value(-width * 0.8));
 
@@ -92,8 +107,12 @@ export default function SideMenu({ visible, onClose }) {
 
     const handleNavigation = (route) => {
         onClose();
-        // Add navigation logic here if routes differ from items
-        console.log('Navigate to:', route);
+        if (route.startsWith('classes/')) {
+            const view = route.split('/')[1];
+            router.push({ pathname: '/classes', params: { view } });
+        } else {
+            console.log('Navigate to:', route);
+        }
     };
 
     return (
@@ -127,8 +146,21 @@ export default function SideMenu({ visible, onClose }) {
 
                         <Text style={styles.menuTitle}>Main Menu</Text>
 
+                        {/* Tabs Switcher */}
+                        <View style={styles.tabsContainer}>
+                            {['Menu', 'Profile', 'Notifications'].map(tab => (
+                                <TouchableOpacity
+                                    key={tab}
+                                    style={[styles.tab, activeTab === tab && styles.activeTab]}
+                                    onPress={() => setActiveTab(tab)}
+                                >
+                                    <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
                         <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
-                            {items.map((item) => (
+                            {activeTab === 'Menu' && items.map((item) => (
                                 <View key={item.id}>
                                     <TouchableOpacity
                                         style={styles.menuItem}
@@ -172,6 +204,20 @@ export default function SideMenu({ visible, onClose }) {
                                     )}
                                 </View>
                             ))}
+
+                            {activeTab === 'Profile' && (
+                                <View style={styles.componentPlaceholder}>
+                                    <Ionicons name="person-circle-outline" size={80} color="#fdbb2d" />
+                                    <Text style={styles.placeholderText}>Profile Component</Text>
+                                    <Text style={styles.placeholderSubtext}>View and edit your account details here.</Text>
+                                </View>
+                            )}
+
+                            {activeTab === 'Notifications' && (
+                                <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+                                     <NotificationsList />
+                                </View>
+                            )}
                         </ScrollView>
 
                         {/* Footer / Logout */}
@@ -285,5 +331,46 @@ const styles = StyleSheet.create({
         paddingTop: 20,
         borderTopWidth: 1,
         borderTopColor: '#444',
+    },
+    tabsContainer: {
+        flexDirection: 'row',
+        marginBottom: 20,
+        gap: 15,
+    },
+    tab: {
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+    },
+    activeTab: {
+        backgroundColor: '#fdbb2d',
+    },
+    tabText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    activeTabText: {
+        color: '#1a1a1a',
+    },
+    componentPlaceholder: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 50,
+        paddingHorizontal: 20,
+    },
+    placeholderText: {
+        color: '#fff',
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginTop: 15,
+    },
+    placeholderSubtext: {
+        color: '#aaa',
+        fontSize: 14,
+        textAlign: 'center',
+        marginTop: 8,
     },
 });

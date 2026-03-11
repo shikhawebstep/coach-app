@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
 
     percent: {
         fontSize: 36,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#FFFFFF',
     },
 });

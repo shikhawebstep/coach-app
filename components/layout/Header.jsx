@@ -1,54 +1,64 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { Image, ImageBackground, StyleSheet, TouchableOpacity, View } from 'react-native';
+import ProfileModal from './ProfileModal';
 
-export default function Header({ title, showBack = false, onMenuPress }) {
+export default function Header({ title, showBack = false, onMenuPress, onNotificationPress }) {
     const router = useRouter();
+    const [isProfileVisible, setIsProfileVisible] = useState(false);
 
     return (
-        <ImageBackground
-            source={require('@/assets/images/Login.png')} // 👈 your image path
-            style={styles.bgImage}
-            resizeMode="cover"
-        >
-            <View style={styles.container}>
-                <View style={styles.leftContainer}>
-                    {showBack ? (
-                        <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
-                            <Ionicons name="arrow-back" size={28} color="#fff" />
-                        </TouchableOpacity>
-                    ) : (
-                        <TouchableOpacity style={styles.iconButton} onPress={onMenuPress}>
-                            <Ionicons name="menu" size={32} color="#fff" />
-                        </TouchableOpacity>
-                    )}
-                </View>
+        <>
+            <ImageBackground
+                source={require('@/assets/images/Login.png')} // 👈 your image path
+                style={styles.bgImage}
+                resizeMode="cover"
+            >
+                <View style={styles.container}>
+                    <View style={styles.leftContainer}>
+                        {showBack ? (
+                            <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
+                                <Ionicons name="arrow-back" size={28} color="#fff" />
+                            </TouchableOpacity>
+                        ) : (
+                            <TouchableOpacity style={styles.iconButton} onPress={onMenuPress}>
+                                <Ionicons name="menu" size={32} color="#fff" />
+                            </TouchableOpacity>
+                        )}
+                    </View>
 
-                <View style={styles.centerContainer}>
-                    <View style={styles.logoContainer}>
-                        <Image
-                            source={require('../../assets/images/coach-logo.png')}
-                            style={styles.logoImage}
-                        />
+                    <View style={styles.centerContainer}>
+                        <View style={styles.logoContainer}>
+                            <Image
+                                source={require('../../assets/images/coach-logo.png')}
+                                style={styles.logoImage}
+                            />
 
+                        </View>
+                    </View>
+
+                    <View style={styles.rightContainer}>
+                        <TouchableOpacity style={styles.iconButton} onPress={onNotificationPress}>
+                            <Ionicons name="notifications-outline" size={26} color="#fff" />
+                            <View style={styles.badge} />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.profileButton} onPress={() => setIsProfileVisible(true)}>
+
+                            <Image
+                                source={require('@/assets/images/Ellipse.png')}
+                                style={styles.profileImage}
+                            />
+                        </TouchableOpacity>
                     </View>
                 </View>
+            </ImageBackground>
 
-                <View style={styles.rightContainer}>
-                    <TouchableOpacity style={styles.iconButton}>
-                        <Ionicons name="notifications-outline" size={26} color="#fff" />
-                        <View style={styles.badge} />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.profileButton}>
-
-                        <Image
-                            source={require('@/assets/images/Ellipse.png')}
-                            style={styles.profileImage}
-                        />
-                    </TouchableOpacity>
-                </View>
-            </View>
-        </ImageBackground>
+            <ProfileModal
+                visible={isProfileVisible}
+                onClose={() => setIsProfileVisible(false)}
+            />
+        </>
     );
 }
 

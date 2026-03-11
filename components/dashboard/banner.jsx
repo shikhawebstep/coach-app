@@ -43,14 +43,13 @@ const Banner = () => {
 
 
                     <ImageBackground source={require('@/assets/images/baner.png')} imageStyle={styles.bgImage} style={styles.bannerImage}>
-
+                        <View style={styles.overlay} />
                         <View style={styles.banner}>
-
-                            <Text style={styles.bannerText}>22 HOURS</Text>
-                            <Text style={{ color: '#fff', fontSize: 18, marginTop: 10, marginBottom: 5 }}>Kings Cross</Text>
-                            <Text style={{ color: '#F7D02A', fontSize: 16, marginBottom: 12 }}>Sat 23rd April | 9am-10am</Text>
+                            <Text style={styles.bannerText}>24 HOURS</Text>
+                            <Text style={{ color: '#fff', fontSize: 18, marginTop: 10, marginBottom: 5, fontFamily: 'Urbanist_700Bold' }}>Kings Cross</Text>
+                            <Text style={{ color: '#F7D02A', fontSize: 16, marginBottom: 12, fontFamily: 'Urbanist_700Bold' }}>Sat 23rd April | 9am-10am</Text>
                             <TouchableOpacity style={{ backgroundColor: '#F7D02A', width: 70, textAlign: 'center', color: '#fff', borderRadius: 10, padding: 10 }}>
-                                <Text style={{ textAlign: 'center', fontSize: 16 }}>View</Text>
+                                <Text style={{ textAlign: 'center', fontSize: 16, fontFamily: 'Urbanist_600SemiBold' }}>View</Text>
                             </TouchableOpacity>
                         </View>
                         <View><Image source={require('@/assets/images/Pose.png')} style={styles.groupImage} /></View>
@@ -66,13 +65,12 @@ const Banner = () => {
                         <View key={index} style={{ width: "90%", }}>
                             <ImageBackground imageStyle={styles.bgImage}
                                 source={booking.image} style={{ padding: 20, paddingTop: 100 }}>
-
-
-                                <View style={{ alignItems: 'end', justifyContent: 'end', display: 'flex', gap: 5 }}>
-                                    <Text style={{ color: '#fff', fontSize: 24 }}>{booking.service}</Text>
+                                <View style={styles.overlay} />
+                                <View style={{ alignItems: 'flex-start', justifyContent: 'flex-end', display: 'flex', gap: 5 }}>
+                                    <Text style={{ color: '#fff', fontSize: 24, fontFamily: 'Urbanist_700Bold' }}>{booking.service}</Text>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                                        <Text style={{ color: '#fff', paddingRight: 10, fontSize: 14, borderRightWidth: 1, borderRightColor: '#fff' }}>{booking.date}</Text>
-                                        <Text style={{ color: '#fff', fontSize: 14 }}>{booking.time}</Text>
+                                        <Text style={{ color: '#fff', paddingRight: 10, fontSize: 14, borderRightWidth: 1, borderRightColor: '#fff', fontFamily: 'Urbanist_500Medium' }}>{booking.date}</Text>
+                                        <Text style={{ color: '#fff', fontSize: 14, fontFamily: 'Urbanist_400Regular' }}>{booking.time}</Text>
                                     </View>
                                 </View>
                             </ImageBackground>
@@ -89,10 +87,10 @@ const Banner = () => {
                             style={{ width: 35, height: 50 }}
                         />
                         <View>
-                            <Text style={{ color: '#fff', fontSize: 20, fontWeight: 'bold' }}>Refer a Coach</Text>
-                            <Text style={{ color: '#fff', fontSize: 14, }}>Refer a coach and enjoy £30 on us!</Text>
+                            <Text style={{ color: '#fff', fontSize: 20, fontFamily: 'Urbanist_700Bold' }}>Refer a Coach</Text>
+                            <Text style={{ color: '#fff', fontSize: 14, fontFamily: 'Urbanist_400Regular' }}>Refer a coach and enjoy £30 on us!</Text>
                             <TouchableOpacity style={{ backgroundColor: '#CCCCCC', padding: 6, borderRadius: 10, marginTop: 10, maxWidth: 80 }}>
-                                <Text style={{ textAlign: 'center' }}>Refer now</Text>
+                                <Text style={{ textAlign: 'center', fontFamily: 'Urbanist_600SemiBold' }}>Refer now</Text>
                             </TouchableOpacity>
                         </View>
 
@@ -106,7 +104,7 @@ const Banner = () => {
                 </View>
 
                 <View style={{ marginTop: 20, width: '100%' }}>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: textColor }}>Your results are in...</Text>
+                    <Text style={{ fontSize: 20, fontFamily: 'Urbanist_700Bold', color: textColor }}>Your results are in...</Text>
                     <View style={{ width: '100%', marginTop: 10 }}>
                         <ImageBackground source={require('@/assets/images/ThemeDark.png')} imageStyle={styles.bgImage} style={{ padding: 20 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 30 }}>
@@ -114,8 +112,8 @@ const Banner = () => {
                                     <PercentageBar percentage={75} />
                                 </View>
                                 <View>
-                                    <Text style={{ color: '#fff', fontSize: 20 }}>Good Job!</Text>
-                                    <Text style={{ color: '#fff', fontSize: 16, marginTop: 20 }}>Click to see full report.</Text>
+                                    <Text style={{ color: '#fff', fontSize: 20, fontFamily: 'Urbanist_600SemiBold' }}>Good Job!</Text>
+                                    <Text style={{ color: '#fff', fontSize: 16, marginTop: 20, fontFamily: 'Urbanist_400Regular' }}>Click to see full report.</Text>
                                 </View>
                             </View>
                         </ImageBackground>
@@ -148,7 +146,7 @@ const styles = StyleSheet.create({
     },
     greeting: {
         fontSize: 32,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
     bgImage: {
         borderRadius: 20,
@@ -165,11 +163,11 @@ const styles = StyleSheet.create({
     seeAll: {
         color: '#1BAC4B',
         fontSize: 20,
+        fontFamily: 'Urbanist_700Bold',
     },
     nextSession: {
         fontSize: 20,
-        fontWeight: 'bold'
-
+        fontFamily: 'Urbanist_700Bold',
     },
     bannerImage: {
         width: '100%',
@@ -183,12 +181,17 @@ const styles = StyleSheet.create({
     },
     bannerText: {
         fontSize: 30,
-        fontWeight: 'bold',
+        fontFamily: 'LuckiestGuy_400Regular',
         color: '#fff',
     },
     groupImage: {
         position: 'absolute',
         bottom: -40,
         right: -20,
+    },
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        borderRadius: 20,
     }
 })

@@ -1,14 +1,15 @@
+import { LuckiestGuy_400Regular } from '@expo-google-fonts/luckiest-guy';
+import {
+    Urbanist_400Regular,
+    Urbanist_500Medium,
+    Urbanist_600SemiBold,
+    Urbanist_700Bold,
+} from '@expo-google-fonts/urbanist';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-import { useFonts } from 'expo-font';
-import {
-  Urbanist_400Regular,
-  Urbanist_500Medium,
-  Urbanist_600SemiBold,
-  Urbanist_700Bold,
-} from '@expo-google-fonts/urbanist';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -18,14 +19,15 @@ export const unstable_settings = {
 
 export default function RootLayout() {
     const colorScheme = useColorScheme();
- const [loaded] = useFonts({
-    Urbanist_400Regular,
-    Urbanist_500Medium,
-    Urbanist_600SemiBold,
-    Urbanist_700Bold,
-  });
+    const [loaded] = useFonts({
+        Urbanist_400Regular,
+        Urbanist_500Medium,
+        Urbanist_600SemiBold,
+        Urbanist_700Bold,
+        LuckiestGuy_400Regular,
+    });
 
-  if (!loaded) return null;
+    if (!loaded) return null;
 
     return (
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
