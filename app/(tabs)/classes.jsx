@@ -1,17 +1,26 @@
-import AssessmentResults from '@/components/classes/assessments/AssessmentResults';
-import PracticalAssessments from '@/components/classes/assessments/PracticalAssessments';
-import SummarisePerformance from '@/components/classes/assessments/SummarisePerformance';
+import AssessmentCriteria from '@/components/assessments/AssessmentCriteria';
+import AssessmentResults from '@/components/assessments/AssessmentResults';
+import PracticalAssessments from '@/components/assessments/PracticalAssessments';
+import SummarisePerformance from '@/components/assessments/SummarisePerformance';
+import UploadVideo from '@/components/assessments/UploadVideo';
 import BirthdayParties from '@/components/classes/birthday_parties/BirthdayParties';
 import BirthdayPartyDetails from '@/components/classes/birthday_parties/BirthdayPartyDetails';
+import BirthdaySyllabus from '@/components/classes/birthday_parties/BirthdaySyllabus';
+import BirthdaySessionExercise from '@/components/classes/birthday_parties/BirthdaySessionExercise';
 import ClassDetails from '@/components/classes/club/ClassDetails';
 import SelectATeam from '@/components/classes/club/SelectATeam';
 import SessionDetails from '@/components/classes/club/SessionDetails';
 import SessionMatchDetails from '@/components/classes/club/SessionMatchDetails';
 import SessionTrainingDetails from '@/components/classes/club/SessionTrainingDetails';
+import ClubSearchSkill from '@/components/classes/club/ClubSearchSkill';
+import ClubSessionExercise from '@/components/classes/club/ClubSessionExercise';
+import ClubSyllabus from '@/components/classes/club/ClubSyllabus';
+import ClubStudentClassDetails from '@/components/classes/club/ClubStudentClassDetails';
+import ClubStudentInformation from '@/components/classes/club/ClubStudentInformation';
 import AddTrialist from '@/components/classes/common/AddTrialist';
 import AppHomeCategories from '@/components/classes/common/AppHomeCategories';
 import CoachResults from '@/components/classes/common/CoachResults';
-import CustomerFeedback from '@/components/classes/common/CustomerFeedback';
+import CustomerFeedback from '@/components/classes/venue_health/CustomerFeedback';
 import GameDetails from '@/components/classes/common/GameDetails';
 import GameDetailsSearch from '@/components/classes/common/GameDetailsSearch';
 import HomeDashboard from '@/components/classes/common/HomeDashboard';
@@ -19,30 +28,43 @@ import MusicPlayer from '@/components/classes/common/MusicPlayer';
 import Notes from '@/components/classes/common/Notes';
 import NotificationDetails from '@/components/classes/common/NotificationDetails';
 import NotificationsList from '@/components/classes/common/NotificationsList';
-import OtherAreas from '@/components/classes/common/OtherAreas';
-import Questionnaire from '@/components/classes/common/Questionnaire';
-import RecordComments from '@/components/classes/common/RecordComments';
+import OtherAreas from '@/components/classes/quality_control/OtherAreas';
+import Questionnaire from '@/components/classes/quality_control/Questionnaire';
+import RecordComments from '@/components/classes/quality_control/RecordComments';
 import SearchSkill from '@/components/classes/common/SearchSkill';
 import SessionExercise from '@/components/classes/common/SessionExercise';
 import SessionPlanList from '@/components/classes/common/SessionPlanList';
 import StudentClassDetails from '@/components/classes/common/StudentClassDetails';
 import StudentInformation from '@/components/classes/common/StudentInformation';
-import StudentNumbers from '@/components/classes/common/StudentNumbers';
+import StudentNumbers from '@/components/classes/venue_health/StudentNumbers';
 import SyllabusDayDetails from '@/components/classes/common/SyllabusDayDetails';
 import SyllabusSkill from '@/components/classes/common/SyllabusSkill';
-import UploadVideo from '@/components/classes/common/UploadVideo';
 import VenuesFilter from '@/components/classes/common/VenuesFilter';
 import HolidayCampDetails from '@/components/classes/holiday_camps/HolidayCampDetails';
 import HolidayCampsList from '@/components/classes/holiday_camps/HolidayCampsList';
+import HolidaySearchSkill from '@/components/classes/holiday_camps/HolidaySearchSkill';
+import HolidaySessionExercise from '@/components/classes/holiday_camps/HolidaySessionExercise';
+import HolidaySyllabus from '@/components/classes/holiday_camps/HolidaySyllabus';
+import HolidayStudentClassDetails from '@/components/classes/holiday_camps/HolidayStudentClassDetails';
+import HolidayStudentInformation from '@/components/classes/holiday_camps/HolidayStudentInformation';
 import PrivateClassesBookings from '@/components/classes/private_classes/PrivateClassesBookings';
 import PrivateStudentClassDetails from '@/components/classes/private_classes/PrivateStudentClassDetails';
-import CreateQcReport from '@/components/classes/reports/CreateQcReport';
-import IssueReport from '@/components/classes/reports/IssueReport';
-import ReportIssueForm from '@/components/classes/reports/ReportIssueForm';
-import ReportIssueList from '@/components/classes/reports/ReportIssueList';
-import ReportSummary from '@/components/classes/reports/ReportSummary';
+import CreateQcReport from '@/components/classes/quality_control/CreateQcReport';
+import IssueReport from '@/components/classes/report_issue/IssueReport';
+import ReportIssueForm from '@/components/classes/report_issue/ReportIssueForm';
+import ReportIssueList from '@/components/classes/report_issue/ReportIssueList';
+import ReportSummary from '@/components/classes/quality_control/ReportSummary';
+import MyReports from '@/components/classes/quality_control/MyReports';
 import SelectAVenue from '@/components/classes/weekly_classes/SelectAVenue';
 import SelectAVenueList from '@/components/classes/weekly_classes/SelectAVenueList';
+import WeeklyAddTrialist from '@/components/classes/weekly_classes/WeeklyAddTrialist';
+import WeeklySearchSkill from '@/components/classes/weekly_classes/WeeklySearchSkill';
+import WeeklySessionDetails from '@/components/classes/weekly_classes/WeeklySessionDetails';
+import WeeklySessionExercise from '@/components/classes/weekly_classes/WeeklySessionExercise';
+import WeeklySessionTrainingDetails from '@/components/classes/weekly_classes/WeeklySessionTrainingDetails';
+import WeeklyStudentClassDetails from '@/components/classes/weekly_classes/WeeklyStudentClassDetails';
+import WeeklyStudentInformation from '@/components/classes/weekly_classes/WeeklyStudentInformation';
+import WeeklySyllabusDayDetails from '@/components/classes/weekly_classes/WeeklySyllabusDayDetails';
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -67,9 +89,27 @@ export default function Classes() {
     if (currentView === 'campDetails') {
         return <HolidayCampDetails
             onBack={() => setCurrentView('camps')}
-            onSyllabusClick={() => setCurrentView('syllabus')}
-            onStudentSelect={(id) => setCurrentView('studentClass')}
+            onSyllabusClick={() => setCurrentView('holidaySyllabus')}
+            onStudentSelect={(id) => setCurrentView('holidayStudentClass')}
         />;
+    }
+
+    if (currentView === 'holidaySyllabus') {
+        return <HolidaySyllabus
+            onBack={() => setCurrentView('campDetails')}
+            onSessionSelect={() => setCurrentView('holidaySessionExercise')}
+        />;
+    }
+
+    if (currentView === 'holidaySessionExercise') {
+        return <HolidaySessionExercise
+            onBack={() => setCurrentView('holidaySyllabus')}
+            onSearchSkillClick={() => setCurrentView('holidaySearchSkill')}
+        />;
+    }
+
+    if (currentView === 'holidaySearchSkill') {
+        return <HolidaySearchSkill onBack={() => setCurrentView('holidaySessionExercise')} />;
     }
 
     if (currentView === 'private') {
@@ -90,23 +130,69 @@ export default function Classes() {
         return <SelectATeam
             onBack={() => setCurrentView('dashboard')}
             onSessionSelect={() => setCurrentView('session')}
+            onMatchSelect={() => setCurrentView('sessionMatchDetails')}
         />;
     }
 
     if (currentView === 'session') {
         return <SessionDetails
             onBack={() => setCurrentView('team')}
-            onSessionPlanClick={() => setCurrentView('syllabusDayDetails')}
+            onSessionPlanClick={() => setCurrentView('clubSyllabus')}
+            onStudentSelect={(id) => setCurrentView('clubStudentInformation')}
         />;
     }
 
+    if (currentView === 'weeklySession') {
+        return <WeeklySessionDetails
+            onBack={() => setCurrentView('sessionTrainingDetails')}
+            onSessionPlanClick={() => setCurrentView('syllabusDayDetails')}
+            onStudentSelect={(id) => setCurrentView('studentClass')}
+        />;
+    }
+
+    if (currentView === 'clubSyllabus') {
+        return <ClubSyllabus
+            onBack={() => setCurrentView('session')}
+            onSessionSelect={() => setCurrentView('clubSessionExercise')}
+        />;
+    }
+
+    if (currentView === 'clubSessionExercise') {
+        return <ClubSessionExercise
+            onBack={() => setCurrentView('clubSyllabus')}
+            onSearchSkillClick={() => setCurrentView('clubSearchSkill')}
+        />;
+    }
+
+    if (currentView === 'clubSearchSkill') {
+        return <ClubSearchSkill onBack={() => setCurrentView('clubSessionExercise')} />;
+    }
+
+    if (currentView === 'clubStudentInformation') {
+        return <ClubStudentInformation onBack={() => setCurrentView('session')} />;
+    }
+
+    if (currentView === 'clubStudentClass') {
+        return <ClubStudentClassDetails
+            onBack={() => setCurrentView('sessionMatchDetails')}
+            onNotesClick={() => setCurrentView('notes')}
+        />;
+    }
+
+    if (currentView === 'holidayStudentClass') {
+        return <HolidayStudentClassDetails
+            onBack={() => setCurrentView('campDetails')}
+            onNotesClick={() => setCurrentView('holidayStudentInformation')}
+        />;
+    }
+
+    if (currentView === 'holidayStudentInformation') {
+        return <HolidayStudentInformation onBack={() => setCurrentView('holidayStudentClass')} />;
+    }
+
     if (currentView === 'studentClass') {
-        return <StudentClassDetails
-            onBack={() => {
-                // Return to previous view - for now hardcoded to sessionTrainingDetails or campDetails?
-                // Let's keep it flexible or at least consistent with common paths
-                setCurrentView('sessionTrainingDetails');
-            }}
+        return <WeeklyStudentClassDetails
+            onBack={() => setCurrentView('sessionTrainingDetails')}
             onNotesClick={() => setCurrentView('notes')}
         />;
     }
@@ -121,7 +207,9 @@ export default function Classes() {
     if (currentView === 'venueList') {
         return <SelectAVenueList
             onBack={() => setCurrentView('venue')}
-            onSessionSelect={(id) => setCurrentView('sessionTrainingDetails')}
+            onSessionSelect={(id) => {
+                setCurrentView('sessionTrainingDetails');
+            }}
         />;
     }
 
@@ -135,7 +223,20 @@ export default function Classes() {
     if (currentView === 'birthdayDetails') {
         return <BirthdayPartyDetails
             onBack={() => setCurrentView('birthday')}
-            onSyllabusClick={() => setCurrentView('syllabus')}
+            onSyllabusClick={() => setCurrentView('birthdaySyllabus')}
+        />;
+    }
+
+    if (currentView === 'birthdaySyllabus') {
+        return <BirthdaySyllabus
+            onBack={() => setCurrentView('birthdayDetails')}
+            onSessionSelect={(id) => setCurrentView('birthdaySessionExercise')}
+        />;
+    }
+
+    if (currentView === 'birthdaySessionExercise') {
+        return <BirthdaySessionExercise
+            onBack={() => setCurrentView('birthdaySyllabus')}
         />;
     }
 
@@ -158,30 +259,31 @@ export default function Classes() {
     }
 
     if (currentView === 'sessionTrainingDetails') {
-        return <SessionTrainingDetails
+        return <WeeklySessionTrainingDetails
             onBack={() => setCurrentView('venueList')}
             onStudentSelect={(id) => setCurrentView('studentInformation')}
-            onSessionClick={() => setCurrentView('session')}
+            onSessionClick={(view) => setCurrentView(view)}
             onSessionPlanClick={() => setCurrentView('syllabusDayDetails')}
+            sessionTitle="Session 1"
         />;
     }
 
     if (currentView === 'syllabusDayDetails') {
-        return <SyllabusDayDetails
+        return <WeeklySyllabusDayDetails
             onBack={() => setCurrentView('sessionTrainingDetails')}
             onSessionItemSelect={(id) => setCurrentView('sessionExercise')}
         />;
     }
 
     if (currentView === 'sessionExercise') {
-        return <SessionExercise
+        return <WeeklySessionExercise
             onBack={() => setCurrentView('syllabusDayDetails')}
             onSearchSkillClick={() => setCurrentView('searchSkill')}
         />;
     }
 
     if (currentView === 'searchSkill') {
-        return <SearchSkill onBack={() => setCurrentView('sessionExercise')} />;
+        return <WeeklySearchSkill onBack={() => setCurrentView('sessionExercise')} />;
     }
 
     if (currentView === 'syllabusSkill') {
@@ -205,11 +307,38 @@ export default function Classes() {
     }
 
     if (currentView === 'practicalAssessments') {
-        return <PracticalAssessments onBack={() => setCurrentView('dashboard')} />;
+        return <PracticalAssessments
+            onBack={() => setCurrentView('dashboard')}
+            onStart={() => setCurrentView('assessmentCriteria')}
+        />;
+    }
+
+    if (currentView === 'assessmentCriteria') {
+        return <AssessmentCriteria
+            onBack={() => setCurrentView('practicalAssessments')}
+            onNext={() => setCurrentView('uploadVideo')}
+        />;
+    }
+
+    if (currentView === 'uploadVideo') {
+        return <UploadVideo
+            onBack={() => setCurrentView('assessmentCriteria')}
+            onNext={() => setCurrentView('summarisePerformance')}
+        />;
+    }
+
+    if (currentView === 'summarisePerformance') {
+        return <SummarisePerformance
+            onBack={() => setCurrentView('uploadVideo')}
+            onComplete={() => setCurrentView('dashboard')}
+        />;
     }
 
     if (currentView === 'reportIssueList') {
-        return <ReportIssueList onNewReport={() => setCurrentView('reportIssueForm')} />;
+        return <ReportIssueList 
+            onNewReport={() => setCurrentView('reportIssueForm')} 
+            onReportSelect={() => setCurrentView('issueReport')} 
+        />;
     }
 
     if (currentView === 'reportIssueForm') {
@@ -220,9 +349,9 @@ export default function Classes() {
         return <CoachResults onBack={() => setCurrentView('dashboard')} title="My results" />;
     }
 
-    // if (currentView === 'myReports') {
-    //     return <CoachResults onBack={() => setCurrentView('dashboard')} title="My reports" />;
-    // }
+    if (currentView === 'myReports') {
+        return <MyReports onBack={() => setCurrentView('dashboard')} />;
+    }
 
     if (currentView === 'musicPlayer') {
         return <MusicPlayer onBack={() => setCurrentView('dashboard')} />;
@@ -248,7 +377,7 @@ export default function Classes() {
 
 
     if (currentView === 'studentInformation') {
-        return <StudentInformation onBack={() => setCurrentView('sessionTrainingDetails')} />;
+        return <WeeklyStudentInformation onBack={() => setCurrentView('sessionTrainingDetails')} />;
     }
 
     if (currentView === 'createQcReport') {
@@ -263,14 +392,14 @@ export default function Classes() {
         return <GameDetails onBack={() => setCurrentView('class')} />;
     }
 
-    if (currentView === 'uploadVideo') {
+    if (currentView === 'uploadVideoOld') {
         return <UploadVideo onBack={() => setCurrentView('dashboard')} />;
     }
 
     if (currentView === 'sessionMatchDetails') {
         return <SessionMatchDetails
-            onBack={() => setCurrentView('dashboard')}
-            onStudentSelect={(id) => setCurrentView('studentClass')}
+            onBack={() => setCurrentView('team')}
+            onStudentSelect={(id) => setCurrentView('clubStudentClass')}
         />;
     }
 

@@ -56,13 +56,14 @@ export default function ClassDetails({ onBack, onGameClick, classTitle = "Class 
                     {/* Map Placeholder */}
                     <View style={styles.mapContainer}>
                         {/* Could replace with an actual MapView or Image */}
-                        <Image source={{ uri: 'https://via.placeholder.com/400x150/EEEEEE/999999?text=Map+Image' }} style={styles.mapImage} resizeMode="cover" />
+                        <Image   source={require('../../../assets/images/map.png')}
+ style={styles.mapImage} resizeMode="cover" />
                     </View>
                 </View>
 
                 {/* Tabs */}
                 <View style={styles.tabsContainer}>
-                    {['Members', 'Trials', 'Coaches'].map(tab => (
+                    {['Members', 'Coaches'].map(tab => (
                         <TouchableOpacity
                             key={tab}
                             style={[styles.tab, activeTab === tab ? styles.activeTab : styles.inactiveTab]}
@@ -289,13 +290,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     memberName: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: 'bold',
         color: '#1a1a1a',
-        width: 110,
+        width: 90,
     },
     memberAge: {
-        fontSize: 13,
+        fontSize: 12,
         color: '#666',
         marginLeft: 8,
     },

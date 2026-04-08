@@ -49,7 +49,8 @@ export default function SessionMatchDetails({ onBack, onStudentSelect }) {
                 {/* Map Area */}
                 <View style={styles.mapContainer}>
                     <Image
-                        source={{ uri: 'https://via.placeholder.com/600x300/FCE7F3/000000?text=Map+Placeholder' }}
+                          source={require('../../../assets/images/map.png')}
+
                         style={styles.mapImage}
                         resizeMode="cover"
                     />

@@ -4,7 +4,7 @@ import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 const SESSION_ITEMS = [
     {
         id: 1,
-        title: 'Small-side games',
+        title: 'Small-sided games',
         desc: 'This skills tutorial will help you understand how to perform the Penguin.',
         time: '10 mins',
         image: require('../../../assets/images/skill.png')
@@ -32,9 +32,9 @@ const SESSION_ITEMS = [
     },
 ];
 
-export default function Syllabus({ onBack, onSessionSelect }) {
-    const [activePackage, setActivePackage] = useState('Silver package');
-    const [activeAgeGroup, setActiveAgeGroup] = useState('4-6 years');
+export default function HolidaySyllabus({ onBack, onSessionSelect }) {
+    const [activeAgeGroup, setActiveAgeGroup] = useState('Beginners (4-5)');
+    const [activeDay, setActiveDay] = useState('Day 1');
 
     return (
         <View style={styles.container}>
@@ -45,34 +45,14 @@ export default function Syllabus({ onBack, onSessionSelect }) {
                         <Ionicons name="arrow-back" size={24} color="#fff" />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Syllabus</Text>
-                    <View style={{ width: 24 }} /> {/* Spacer to center title */}
+                    <View style={{ width: 24 }} />
                 </View>
             </View>
 
-            {/* Package Tabs */}
-            <View style={styles.packageTabs}>
-                <TouchableOpacity
-                    style={[styles.packageTab, activePackage === 'Gold package' ? styles.activePackage : styles.inactivePackage]}
-                    onPress={() => setActivePackage('Gold package')}
-                >
-                    <Text style={[styles.packageTabText, activePackage === 'Gold package' ? styles.activePackageText : styles.inactivePackageText]}>Gold package</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.packageTab, activePackage === 'Silver package' ? styles.activePackage : styles.inactivePackage]}
-                    onPress={() => setActivePackage('Silver package')}
-                >
-                    <Text style={[styles.packageTabText, activePackage === 'Silver package' ? styles.activePackageText : styles.inactivePackageText]}>Silver package</Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* Age Group Pills */}
+            {/* Age Group Pils */}
             <View style={styles.ageGroupsWrapper}>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.ageGroups}
-                >
-                    {['4-6 years', '7-9 years', '10-12 years'].map(age => (
+                <View style={styles.ageGroups}>
+                    {['Beginners (4-5)', 'Intermediate (6-7)'].map(age => (
                         <TouchableOpacity
                             key={age}
                             style={[styles.agePill, activeAgeGroup === age ? styles.activeAgePill : styles.inactiveAgePill]}
@@ -81,20 +61,51 @@ export default function Syllabus({ onBack, onSessionSelect }) {
                             <Text style={[styles.agePillText, activeAgeGroup === age ? styles.activeAgePillText : styles.inactiveAgePillText]}>{age}</Text>
                         </TouchableOpacity>
                     ))}
-                </ScrollView>
+                </View>
+            </View>
+
+            {/* Day Tabs */}
+            <View style={styles.tabsContainer}>
+                {['Day 1', 'Day 2', 'Day 3'].map(tab => (
+                    <TouchableOpacity
+                        key={tab}
+                        style={[styles.tab, activeDay === tab && styles.activeTab]}
+                        onPress={() => setActiveDay(tab)}
+                    >
+                        <Text style={[styles.tabText, activeDay === tab && styles.activeTabText]}>{tab}</Text>
+                    </TouchableOpacity>
+                ))}
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-                {/* Session Plan Header */}
-                <View style={styles.sessionHeaderRow}>
-                    <View style={styles.sessionHeaderLeft}>
-                        <Text style={styles.sessionTitle}>Session Plan</Text>
-                        <Ionicons name="time-outline" size={16} color="#9CA3AF" style={styles.timeIcon} />
-                        <Text style={styles.totalTime}>4 Hours</Text>
+                {/* Banner Section */}
+                <View style={styles.bannerContainer}>
+                    <Image
+                        source={require('../../../assets/images/pele.png')}
+                        style={styles.bannerImage}
+                    />                </View>
+
+                {/* Skill of the Day */}
+                <View style={styles.skillSection}>
+                    <Text style={styles.skillTitle}>Skill Of The Day</Text>
+                    <View style={styles.skillHeader}>
+                        <Text style={styles.skillName}>The Penguin</Text>
+                        <TouchableOpacity>
+                            <Ionicons name="volume-medium-outline" size={20} color="#3B82F6" />
+                        </TouchableOpacity>
                     </View>
-                    <TouchableOpacity>
-                        <Ionicons name="download-outline" size={24} color="#3B82F6" />
-                    </TouchableOpacity>
+                    <Text style={styles.skillDesc}>In todays lesson, students will learn to perform the Penguin.</Text>
+                </View>
+
+                {/* Video Placeholder */}
+                <View style={styles.videoPlaceholder}>
+                    <Image
+                        source={require('../../../assets/images/session.png')}
+                        style={styles.videoImage}
+                    />                   
+                     <View style={styles.playOverlay}>
+                        <Ionicons name="play" size={40} color="#fff" />
+                    </View>
                 </View>
 
                 {/* Session List */}
@@ -105,8 +116,7 @@ export default function Syllabus({ onBack, onSessionSelect }) {
                         onPress={() => onSessionSelect && onSessionSelect(item.id)}
                     >
                         <View style={styles.imagePlaceholder}>
-                            <Image source={item.image} style={styles.cardImage} resizeMode="cover" />
-                        </View>
+                            <Image source={item.image} style={styles.cardImage} resizeMode="cover" />                        </View>
                         <View style={styles.cardContent}>
                             <Text style={styles.cardTitle}>{item.title}</Text>
                             <Text style={styles.cardDesc} numberOfLines={3}>{item.desc}</Text>
@@ -127,17 +137,16 @@ const styles = StyleSheet.create({
     greenHeaderContainer: {
         paddingHorizontal: 16,
         paddingTop: 16,
-        marginBottom: 16,
+        marginBottom: 8,
     },
     greenHeader: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#1CAB4B', // Green color from screenshot
+        backgroundColor: '#1CAB4B',
         borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 16,
-        // Assuming a pattern might be an image, but solid color for now
     },
     backButton: {
         padding: 4,
@@ -147,56 +156,28 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#fff',
     },
-    packageTabs: {
-        flexDirection: 'row',
-        marginHorizontal: 16,
-        backgroundColor: '#F3F4F6', // Light gray 
-        borderRadius: 8,
-        padding: 4,
-        marginBottom: 16,
-    },
-    packageTab: {
-        flex: 1,
-        paddingVertical: 12,
-        alignItems: 'center',
-        borderRadius: 6,
-    },
-    activePackage: {
-        backgroundColor: '#3B82F6', // Blue
-    },
-    inactivePackage: {
-        backgroundColor: 'transparent',
-    },
-    packageTabText: {
-        fontSize: 14,
-        fontWeight: 'bold',
-    },
-    activePackageText: {
-        color: '#fff',
-    },
-    inactivePackageText: {
-        color: '#1a1a1a',
-    },
     ageGroupsWrapper: {
-        marginBottom: 24,
+        marginBottom: 16,
+        paddingHorizontal: 16,
     },
     ageGroups: {
-        paddingHorizontal: 16,
-        gap: 12, // Spacing between pills
+        flexDirection: 'row',
+        gap: 12,
     },
     agePill: {
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 30, // Fully rounded
+        flex: 1,
+        paddingVertical: 8,
+        borderRadius: 20,
+        alignItems: 'center',
         borderWidth: 1.5,
     },
     activeAgePill: {
-        backgroundColor: '#3B82F6', // Blue background
+        backgroundColor: '#3B82F6',
         borderColor: '#3B82F6',
     },
     inactiveAgePill: {
         backgroundColor: '#fff',
-        borderColor: '#3B82F6', // Blue border
+        borderColor: '#F3F4F6',
     },
     agePillText: {
         fontSize: 14,
@@ -206,36 +187,89 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     inactiveAgePillText: {
+        color: '#666',
+    },
+    tabsContainer: {
+        flexDirection: 'row',
+        backgroundColor: '#F3F4F6',
+        borderRadius: 12,
+        padding: 4,
+        marginHorizontal: 16,
+        marginBottom: 16,
+    },
+    tab: {
+        flex: 1,
+        paddingVertical: 12,
+        alignItems: 'center',
+        borderRadius: 8,
+    },
+    activeTab: {
+        backgroundColor: '#fff',
+    },
+    tabText: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: '#4B5563',
+    },
+    activeTabText: {
         color: '#3B82F6',
     },
     content: {
         paddingHorizontal: 16,
         paddingBottom: 40,
     },
-    sessionHeaderRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
+    bannerContainer: {
+        height: 120,
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 20,
     },
-    sessionHeaderLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
+    bannerImage: {
+        width: '100%',
+        height: '100%',
     },
-    sessionTitle: {
-        fontSize: 22,
+    skillSection: {
+        marginBottom: 20,
+    },
+    skillTitle: {
+        fontSize: 18,
         fontWeight: 'bold',
         color: '#1a1a1a',
-        marginRight: 12,
+        marginBottom: 8,
     },
-    timeIcon: {
-        marginRight: 4,
-        marginTop: 2,
+    skillHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 4,
     },
-    totalTime: {
+    skillName: {
+        fontSize: 16,
+        color: '#666',
+        marginRight: 8,
+    },
+    skillDesc: {
         fontSize: 14,
-        color: '#9CA3AF',
-        fontWeight: '600',
+        color: '#666',
+        lineHeight: 20,
+    },
+    videoPlaceholder: {
+        height: 200,
+        borderRadius: 12,
+        overflow: 'hidden',
+        backgroundColor: '#000',
+        position: 'relative',
+        marginBottom:30,
+    },
+    videoImage: {
+        width: '100%',
+        height: '100%',
+        opacity: 0.8,
+    },
+    playOverlay: {
+        position: 'absolute',
+        top: 0, bottom: 0, left: 0, right: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     sessionCard: {
         flexDirection: 'row',
@@ -246,7 +280,7 @@ const styles = StyleSheet.create({
         height: 90,
         borderRadius: 8,
         overflow: 'hidden',
-        backgroundColor: '#F3F4F6', // Placeholder color
+        backgroundColor: '#F3F4F6',
         marginRight: 16,
     },
     cardImage: {

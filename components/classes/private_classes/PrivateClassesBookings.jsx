@@ -86,7 +86,7 @@ export default function PrivateClassesBookings({ onBack, onStudentSelect }) {
                 ) : (
                     <View style={styles.emptyContainer}>
                         <Image
-                            source={require('../../../assets/images/private.png')}
+                            source={require('../../../assets/images/noBooking.png')}
                             style={styles.emptyImage}
                             resizeMode="contain"
                         />

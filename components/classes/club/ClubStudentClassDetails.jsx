@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-export default function BirthdayPartyDetails({ onBack, onSyllabusClick, studentName = "John Smith" }) {
+export default function ClubStudentClassDetails({ onBack, onNotesClick, studentName = "John Smith" }) {
     return (
         <View style={styles.container}>
             {/* Header */}
@@ -10,11 +10,16 @@ export default function BirthdayPartyDetails({ onBack, onSyllabusClick, studentN
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#000" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>{studentName} birthday</Text>
+                    <Text style={styles.headerTitle}>{studentName} class</Text>
                 </View>
-                <TouchableOpacity style={styles.syllabusButton} onPress={onSyllabusClick}>
-                    <Text style={styles.syllabusText}>Syllabus</Text>
-                </TouchableOpacity>
+                <View style={styles.headerRight}>
+                    <View style={styles.progressBadge}>
+                        <Text style={styles.progressText}>1/5</Text>
+                    </View>
+                    <View style={styles.statusBadgeCompleted}>
+                        <Text style={styles.statusTextWhite}>Completed</Text>
+                    </View>
+                </View>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -40,29 +45,24 @@ export default function BirthdayPartyDetails({ onBack, onSyllabusClick, studentN
                                 <Ionicons name="person-outline" size={16} color="#666" style={styles.infoIcon} />
                                 <Text style={styles.infoLabel}>Students</Text>
                             </View>
-                            <Text style={styles.infoValue}>20</Text>
+                            <Text style={styles.infoValue}>3-to-1</Text>
                         </View>
-                        <View style={styles.infoItemSmall}>
-                            <Text style={styles.statusLabel}>Status</Text>
-                            <View style={styles.statusBadge}>
-                                <Text style={styles.statusText}>Pending</Text>
-                            </View>
-                        </View>
+                        <TouchableOpacity style={styles.changeDateBtn}>
+                            <Text style={styles.changeDateText}>Change date</Text>
+                        </TouchableOpacity>
                     </View>
-   </View>
+
                     {/* Map Placeholder */}
                     <View style={styles.mapContainer}>
-                        {/* Could replace with an actual MapView or Image */}
-                        <Image source={require('../../../assets/images/map.png')}
-                            resizeMode="contain" style={styles.mapImage}  />
+                        <Image source={{ uri: 'https://via.placeholder.com/400x150/EEEEEE/999999?text=Map+Image' }} style={styles.mapImage} resizeMode="cover" />
                     </View>
 
                     {/* Location */}
                     <View style={styles.locationContainer}>
-                        <Ionicons name="location-outline" size={18} color="#666" style={styles.locationIcon} />
+                        <Ionicons name="location-outline" size={18} color="#666" />
                         <Text style={styles.locationText}>Kings Cross, Grays Inn Road, London WC2H 9HE [Outdoor Park]</Text>
                     </View>
-             
+                </View>
 
                 {/* Student Information Section */}
                 <Text style={styles.sectionTitle}>Student Information</Text>
@@ -90,33 +90,46 @@ export default function BirthdayPartyDetails({ onBack, onSyllabusClick, studentN
                     </View>
                 </View>
 
-                {/* Parent Information Section */}
-                <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Parent Information</Text>
-
-                <View style={styles.formRow}>
-                    <View style={[styles.formGroup, { flex: 1, marginRight: 16 }]}>
-                        <Text style={styles.inputLabel}>Full Name</Text>
-                        <View style={styles.inputContainer}>
-                            <TextInput
-                                style={styles.input}
-                                value="Bradley Smith"
-                                editable={false}
-                            />
-                        </View>
-                    </View>
-                    <View style={[styles.formGroup, { flex: 1 }]}>
-                        <Text style={styles.inputLabel}>Telephone</Text>
-                        <View style={styles.inputContainer}>
-                            <TextInput
-                                style={[styles.input, styles.inputLink]}
-                                value="0791042 3334"
-                                editable={false}
-                            />
-                        </View>
+                <View style={styles.formGroup}>
+                    <Text style={styles.inputLabel}>Medical information</Text>
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={styles.input}
+                            value="Mild asthma"
+                            editable={false}
+                        />
                     </View>
                 </View>
 
-                <View style={{ height: 40 }} />
+                <View style={styles.formGroup}>
+                    <Text style={styles.inputLabel}>Ability level</Text>
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={styles.input}
+                            value="Beginner"
+                            editable={false}
+                        />
+                    </View>
+                </View>
+
+                <View style={styles.formGroup}>
+                    <Text style={styles.inputLabel}>Areas to work on</Text>
+                    <View style={[styles.inputContainer, styles.textAreaContainer]}>
+                        <TextInput
+                            style={[styles.input, styles.textArea]}
+                            value="Beginner students, needs help on dribbling technique and basics of the game."
+                            multiline={true}
+                            editable={false}
+                        />
+                    </View>
+                </View>
+
+                {/* View Notes Button */}
+                <TouchableOpacity style={styles.viewNotesBtn} onPress={onNotesClick}>
+                    <Text style={styles.viewNotesBtnText}>View Notes</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#fff" />
+                </TouchableOpacity>
+
             </ScrollView>
         </View>
     );
@@ -148,16 +161,32 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#1a1a1a',
     },
-    syllabusButton: {
-        backgroundColor: '#1CAB4B', // Green
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 8,
+    headerRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
     },
-    syllabusText: {
+    progressBadge: {
+        backgroundColor: '#3B82F6',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 6,
+    },
+    progressText: {
         color: '#fff',
         fontWeight: 'bold',
-        fontSize: 14,
+        fontSize: 12,
+    },
+    statusBadgeCompleted: {
+        backgroundColor: '#1CAB4B',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 6,
+    },
+    statusTextWhite: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 12,
     },
     scrollContent: {
         paddingHorizontal: 16,
@@ -185,10 +214,6 @@ const styles = StyleSheet.create({
     infoItem: {
         flex: 1,
     },
-    infoItemSmall: {
-        marginLeft: 8,
-        alignItems: 'flex-end',
-    },
     infoLabelContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -199,32 +224,24 @@ const styles = StyleSheet.create({
     },
     infoLabel: {
         fontSize: 13,
-        color: '#9CA3AF',
-        fontWeight: '600',
+        color: '#666',
         marginBottom: 4,
-    },
-    statusLabel: {
-        fontSize: 13,
-        color: '#9CA3AF',
-        fontWeight: '600',
-        marginBottom: 8,
-        marginRight: 4, // Align slightly right to match badge
     },
     infoValue: {
         fontSize: 14,
         fontWeight: 'bold',
         color: '#1a1a1a',
     },
-    statusBadge: {
-        backgroundColor: '#FFD700',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 6,
+    changeDateBtn: {
+        backgroundColor: '#FF4C4C',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 8,
     },
-    statusText: {
-        fontSize: 12,
+    changeDateText: {
+        color: '#fff',
         fontWeight: 'bold',
-        color: '#1a1a1a',
+        fontSize: 13,
     },
     mapContainer: {
         height: 140,
@@ -239,12 +256,8 @@ const styles = StyleSheet.create({
     },
     locationContainer: {
         flexDirection: 'row',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         paddingRight: 16,
-        marginBottom:20,
-    },
-    locationIcon: {
-        marginTop: 2,
     },
     locationText: {
         marginLeft: 8,
@@ -273,7 +286,7 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         borderWidth: 1,
-        borderColor: '#9CA3AF', // Gray border matching the screenshot
+        borderColor: '#9CA3AF',
         borderRadius: 8,
         backgroundColor: '#FAFAFA',
     },
@@ -283,7 +296,26 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#1a1a1a',
     },
-    inputLink: {
-        color: '#3B82F6', // Blue link color 
+    textAreaContainer: {
+        height: 100,
+    },
+    textArea: {
+        textAlignVertical: 'top',
+        paddingTop: 12,
+    },
+    viewNotesBtn: {
+        backgroundColor: '#3B82F6',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 16,
+        borderRadius: 12,
+        marginTop: 16,
+    },
+    viewNotesBtnText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 16,
+        marginRight: 8,
     },
 });

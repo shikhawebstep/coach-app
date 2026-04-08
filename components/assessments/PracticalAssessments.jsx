@@ -20,17 +20,24 @@ const ASSESSMENTS_DATA = [
     }
 ];
 
-export default function PracticalAssessments({ onBack }) {
+export default function PracticalAssessments({ onBack, onStart }) {
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
+                <TouchableOpacity onPress={onBack} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="#000" />
+                </TouchableOpacity>
                 <Text style={styles.headerTitle}>My Practical Assessments</Text>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
                 {ASSESSMENTS_DATA.map(assessment => (
-                    <TouchableOpacity key={assessment.id} style={styles.card}>
+                    <TouchableOpacity 
+                        key={assessment.id} 
+                        style={styles.card}
+                        onPress={assessment.status === 'Start' ? onStart : undefined}
+                    >
 
                         <View style={styles.infoCol}>
                             <Text style={styles.name}>{assessment.name}</Text>
@@ -69,9 +76,14 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     header: {
+        flexDirection: 'row',
+        alignItems: 'center',
         paddingHorizontal: 16,
         paddingTop: 16,
         paddingBottom: 24,
+    },
+    backButton: {
+        marginRight: 12,
     },
     headerTitle: {
         fontSize: 24,

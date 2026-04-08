@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 const SESSION_ITEMS = [
     {
         id: 1,
@@ -32,7 +33,7 @@ const SESSION_ITEMS = [
     },
 ];
 
-export default function Syllabus({ onBack, onSessionSelect }) {
+export default function BirthdaySyllabus({ onBack, onSessionSelect }) {
     const [activePackage, setActivePackage] = useState('Silver package');
     const [activeAgeGroup, setActiveAgeGroup] = useState('4-6 years');
 
@@ -45,33 +46,27 @@ export default function Syllabus({ onBack, onSessionSelect }) {
                         <Ionicons name="arrow-back" size={24} color="#fff" />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Syllabus</Text>
-                    <View style={{ width: 24 }} /> {/* Spacer to center title */}
+                    <View style={{ width: 24 }} />
                 </View>
             </View>
 
-            {/* Package Tabs */}
-            <View style={styles.packageTabs}>
-                <TouchableOpacity
-                    style={[styles.packageTab, activePackage === 'Gold package' ? styles.activePackage : styles.inactivePackage]}
-                    onPress={() => setActivePackage('Gold package')}
-                >
-                    <Text style={[styles.packageTabText, activePackage === 'Gold package' ? styles.activePackageText : styles.inactivePackageText]}>Gold package</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.packageTab, activePackage === 'Silver package' ? styles.activePackage : styles.inactivePackage]}
-                    onPress={() => setActivePackage('Silver package')}
-                >
-                    <Text style={[styles.packageTabText, activePackage === 'Silver package' ? styles.activePackageText : styles.inactivePackageText]}>Silver package</Text>
-                </TouchableOpacity>
-            </View>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+                
+                {/* Package Pils */}
+                <View style={styles.packageGroups}>
+                    {['Gold package', 'Silver package'].map(pkg => (
+                        <TouchableOpacity
+                            key={pkg}
+                            style={[styles.packagePill, activePackage === pkg ? styles.activePackagePill : styles.inactivePackagePill]}
+                            onPress={() => setActivePackage(pkg)}
+                        >
+                            <Text style={[styles.packagePillText, activePackage === pkg ? styles.activePackagePillText : styles.inactivePackagePillText]}>{pkg}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
 
-            {/* Age Group Pills */}
-            <View style={styles.ageGroupsWrapper}>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.ageGroups}
-                >
+                {/* Age Group Pils */}
+                <View style={styles.ageGroups}>
                     {['4-6 years', '7-9 years', '10-12 years'].map(age => (
                         <TouchableOpacity
                             key={age}
@@ -81,16 +76,14 @@ export default function Syllabus({ onBack, onSessionSelect }) {
                             <Text style={[styles.agePillText, activeAgeGroup === age ? styles.activeAgePillText : styles.inactiveAgePillText]}>{age}</Text>
                         </TouchableOpacity>
                     ))}
-                </ScrollView>
-            </View>
+                </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
                 {/* Session Plan Header */}
-                <View style={styles.sessionHeaderRow}>
-                    <View style={styles.sessionHeaderLeft}>
-                        <Text style={styles.sessionTitle}>Session Plan</Text>
-                        <Ionicons name="time-outline" size={16} color="#9CA3AF" style={styles.timeIcon} />
-                        <Text style={styles.totalTime}>4 Hours</Text>
+                <View style={styles.sessionPlanHeader}>
+                    <Text style={styles.sessionPlanTitle}>Session Plan</Text>
+                    <View style={styles.sessionPlanTimeContainer}>
+                        <Ionicons name="time-outline" size={16} color="#666" style={{ marginRight: 4 }} />
+                        <Text style={styles.sessionPlanTimeText}>4 Hours</Text>
                     </View>
                     <TouchableOpacity>
                         <Ionicons name="download-outline" size={24} color="#3B82F6" />
@@ -133,11 +126,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#1CAB4B', // Green color from screenshot
+        backgroundColor: '#1CAB4B',
         borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 16,
-        // Assuming a pattern might be an image, but solid color for now
     },
     backButton: {
         padding: 4,
@@ -147,59 +139,64 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#fff',
     },
-    packageTabs: {
+    content: {
+        paddingHorizontal: 16,
+        paddingBottom: 40,
+    },
+    packageGroups: {
         flexDirection: 'row',
-        marginHorizontal: 16,
-        backgroundColor: '#F3F4F6', // Light gray 
-        borderRadius: 8,
-        padding: 4,
+        gap: 12,
         marginBottom: 16,
+        justifyContent: 'center',
     },
-    packageTab: {
+    packagePill: {
         flex: 1,
-        paddingVertical: 12,
+        maxWidth: 160,
+        paddingVertical: 10,
+        borderRadius: 20,
         alignItems: 'center',
-        borderRadius: 6,
+        borderWidth: 1.5,
     },
-    activePackage: {
-        backgroundColor: '#3B82F6', // Blue
+    activePackagePill: {
+        backgroundColor: '#3B82F6',
+        borderColor: '#3B82F6',
     },
-    inactivePackage: {
-        backgroundColor: 'transparent',
+    inactivePackagePill: {
+        backgroundColor: '#fff',
+        borderColor: '#E5E7EB',
     },
-    packageTabText: {
+    packagePillText: {
         fontSize: 14,
         fontWeight: 'bold',
     },
-    activePackageText: {
+    activePackagePillText: {
         color: '#fff',
     },
-    inactivePackageText: {
-        color: '#1a1a1a',
-    },
-    ageGroupsWrapper: {
-        marginBottom: 24,
+    inactivePackagePillText: {
+        color: '#666',
     },
     ageGroups: {
-        paddingHorizontal: 16,
-        gap: 12, // Spacing between pills
+        flexDirection: 'row',
+        gap: 8,
+        marginBottom: 24,
     },
     agePill: {
-        paddingHorizontal: 20,
+        flex: 1,
         paddingVertical: 10,
-        borderRadius: 30, // Fully rounded
+        borderRadius: 20,
+        alignItems: 'center',
         borderWidth: 1.5,
     },
     activeAgePill: {
-        backgroundColor: '#3B82F6', // Blue background
+        backgroundColor: '#3B82F6',
         borderColor: '#3B82F6',
     },
     inactiveAgePill: {
         backgroundColor: '#fff',
-        borderColor: '#3B82F6', // Blue border
+        borderColor: '#3B82F6',
     },
     agePillText: {
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: 'bold',
     },
     activeAgePillText: {
@@ -208,34 +205,25 @@ const styles = StyleSheet.create({
     inactiveAgePillText: {
         color: '#3B82F6',
     },
-    content: {
-        paddingHorizontal: 16,
-        paddingBottom: 40,
-    },
-    sessionHeaderRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    sessionHeaderLeft: {
+    sessionPlanHeader: {
         flexDirection: 'row',
         alignItems: 'center',
+        marginBottom: 20,
     },
-    sessionTitle: {
-        fontSize: 22,
+    sessionPlanTitle: {
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#1a1a1a',
         marginRight: 12,
     },
-    timeIcon: {
-        marginRight: 4,
-        marginTop: 2,
+    sessionPlanTimeContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginRight: 'auto',
     },
-    totalTime: {
+    sessionPlanTimeText: {
         fontSize: 14,
-        color: '#9CA3AF',
-        fontWeight: '600',
+        color: '#666',
     },
     sessionCard: {
         flexDirection: 'row',
@@ -246,7 +234,7 @@ const styles = StyleSheet.create({
         height: 90,
         borderRadius: 8,
         overflow: 'hidden',
-        backgroundColor: '#F3F4F6', // Placeholder color
+        backgroundColor: '#F3F4F6',
         marginRight: 16,
     },
     cardImage: {

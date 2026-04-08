@@ -44,11 +44,11 @@ const MENU_ITEMS = [
         hasSubmenu: true,
         isOpen: true, // Shown open in the image
         submenu: [
-            { id: 'student_numbers', title: 'Student Numbers' },
-            { id: 'customer_feedback', title: 'Customer Feedback' },
+            { id: 'classes/studentNumbers', title: 'Student Numbers' },
+            { id: 'classes/customerFeedback', title: 'Customer Feedback' },
         ],
     },
-    { id: 'report', title: 'Report an issue', icon: 'warning-outline' },
+    { id: 'classes/reportIssueList', title: 'Report an issue', icon: 'warning-outline' },
     {
         id: 'quality',
         title: 'Quality Control',
@@ -56,8 +56,8 @@ const MENU_ITEMS = [
         hasSubmenu: true,
         isOpen: true, // Shown open in the image
         submenu: [
-            { id: 'create_report', title: 'Create a report' },
-            { id: 'my_reports', title: 'My reports' },
+            { id: 'classes/createQcReport', title: 'Create a report' },
+            { id: 'classes/myReports', title: 'My reports' },
         ],
     },
 ];

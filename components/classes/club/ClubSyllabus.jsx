@@ -1,13 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 const SESSION_ITEMS = [
     {
         id: 1,
-        title: 'Small-side games',
+        title: 'Small-sided games',
         desc: 'This skills tutorial will help you understand how to perform the Penguin.',
         time: '10 mins',
         image: require('../../../assets/images/skill.png')
+
     },
     {
         id: 2,
@@ -15,6 +16,7 @@ const SESSION_ITEMS = [
         desc: 'This skills tutorial will help you understand how to perform the Penguin.',
         time: '2 mins',
         image: require('../../../assets/images/skill.png')
+
     },
     {
         id: 3,
@@ -22,6 +24,7 @@ const SESSION_ITEMS = [
         desc: 'This skills tutorial will help you understand how to perform the Penguin.',
         time: '10 mins',
         image: require('../../../assets/images/skill.png')
+
     },
     {
         id: 4,
@@ -29,13 +32,11 @@ const SESSION_ITEMS = [
         desc: 'This skills tutorial will help you understand how to perform the Penguin.',
         time: '12 mins',
         image: require('../../../assets/images/skill.png')
+
     },
 ];
 
-export default function Syllabus({ onBack, onSessionSelect }) {
-    const [activePackage, setActivePackage] = useState('Silver package');
-    const [activeAgeGroup, setActiveAgeGroup] = useState('4-6 years');
-
+export default function ClubSyllabus({ onBack, onSessionSelect, title = "Session 1 plan" }) {
     return (
         <View style={styles.container}>
             {/* Green Header */}
@@ -44,47 +45,17 @@ export default function Syllabus({ onBack, onSessionSelect }) {
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#fff" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Syllabus</Text>
-                    <View style={{ width: 24 }} /> {/* Spacer to center title */}
+                    <Text style={styles.headerTitle}>{title}</Text>
+                    <View style={{ width: 24 }} />
                 </View>
             </View>
 
-            {/* Package Tabs */}
-            <View style={styles.packageTabs}>
-                <TouchableOpacity
-                    style={[styles.packageTab, activePackage === 'Gold package' ? styles.activePackage : styles.inactivePackage]}
-                    onPress={() => setActivePackage('Gold package')}
-                >
-                    <Text style={[styles.packageTabText, activePackage === 'Gold package' ? styles.activePackageText : styles.inactivePackageText]}>Gold package</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.packageTab, activePackage === 'Silver package' ? styles.activePackage : styles.inactivePackage]}
-                    onPress={() => setActivePackage('Silver package')}
-                >
-                    <Text style={[styles.packageTabText, activePackage === 'Silver package' ? styles.activePackageText : styles.inactivePackageText]}>Silver package</Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* Age Group Pills */}
-            <View style={styles.ageGroupsWrapper}>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.ageGroups}
-                >
-                    {['4-6 years', '7-9 years', '10-12 years'].map(age => (
-                        <TouchableOpacity
-                            key={age}
-                            style={[styles.agePill, activeAgeGroup === age ? styles.activeAgePill : styles.inactiveAgePill]}
-                            onPress={() => setActiveAgeGroup(age)}
-                        >
-                            <Text style={[styles.agePillText, activeAgeGroup === age ? styles.activeAgePillText : styles.inactiveAgePillText]}>{age}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
-            </View>
-
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+                {/* Banner Section */}
+                <View style={styles.bannerContainer}>
+                    <Image source={require('../../../assets/images/fundamental.png')} style={styles.bannerImage} />
+                </View>
+
                 {/* Session Plan Header */}
                 <View style={styles.sessionHeaderRow}>
                     <View style={styles.sessionHeaderLeft}>
@@ -105,7 +76,7 @@ export default function Syllabus({ onBack, onSessionSelect }) {
                         onPress={() => onSessionSelect && onSessionSelect(item.id)}
                     >
                         <View style={styles.imagePlaceholder}>
-                            <Image source={item.image} style={styles.cardImage} resizeMode="cover" />
+                            <Image source={item.image} style={styles.mapImage} resizeMode="contain" />
                         </View>
                         <View style={styles.cardContent}>
                             <Text style={styles.cardTitle}>{item.title}</Text>
@@ -133,11 +104,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#1CAB4B', // Green color from screenshot
+        backgroundColor: '#1CAB4B',
         borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 16,
-        // Assuming a pattern might be an image, but solid color for now
     },
     backButton: {
         padding: 4,
@@ -147,70 +117,19 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#fff',
     },
-    packageTabs: {
-        flexDirection: 'row',
-        marginHorizontal: 16,
-        backgroundColor: '#F3F4F6', // Light gray 
-        borderRadius: 8,
-        padding: 4,
-        marginBottom: 16,
-    },
-    packageTab: {
-        flex: 1,
-        paddingVertical: 12,
-        alignItems: 'center',
-        borderRadius: 6,
-    },
-    activePackage: {
-        backgroundColor: '#3B82F6', // Blue
-    },
-    inactivePackage: {
-        backgroundColor: 'transparent',
-    },
-    packageTabText: {
-        fontSize: 14,
-        fontWeight: 'bold',
-    },
-    activePackageText: {
-        color: '#fff',
-    },
-    inactivePackageText: {
-        color: '#1a1a1a',
-    },
-    ageGroupsWrapper: {
-        marginBottom: 24,
-    },
-    ageGroups: {
-        paddingHorizontal: 16,
-        gap: 12, // Spacing between pills
-    },
-    agePill: {
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 30, // Fully rounded
-        borderWidth: 1.5,
-    },
-    activeAgePill: {
-        backgroundColor: '#3B82F6', // Blue background
-        borderColor: '#3B82F6',
-    },
-    inactiveAgePill: {
-        backgroundColor: '#fff',
-        borderColor: '#3B82F6', // Blue border
-    },
-    agePillText: {
-        fontSize: 14,
-        fontWeight: 'bold',
-    },
-    activeAgePillText: {
-        color: '#fff',
-    },
-    inactiveAgePillText: {
-        color: '#3B82F6',
-    },
     content: {
         paddingHorizontal: 16,
         paddingBottom: 40,
+    },
+    bannerContainer: {
+        height: 120,
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 24,
+    },
+    bannerImage: {
+        width: '100%',
+        height: '100%',
     },
     sessionHeaderRow: {
         flexDirection: 'row',
@@ -246,7 +165,7 @@ const styles = StyleSheet.create({
         height: 90,
         borderRadius: 8,
         overflow: 'hidden',
-        backgroundColor: '#F3F4F6', // Placeholder color
+        backgroundColor: '#F3F4F6',
         marginRight: 16,
     },
     cardImage: {

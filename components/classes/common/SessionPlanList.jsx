@@ -4,34 +4,37 @@ import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 const SESSION_ITEMS = [
     {
         id: 1,
-        title: 'Small-side games',
-        desc: 'This skills tutorial will help you understand how to perform the Pinguim.',
+        title: 'Small-sided games',
+        desc: 'This skills tutorial will help you understand how to perform the Penguin.',
         time: '10 mins',
-        image: 'https://via.placeholder.com/140x90/86efac/ffffff?text=Small-side+games'
+        image: require('../../../assets/images/skill.png')
+
     },
     {
         id: 2,
         title: 'Introduction (Head coach)',
-        desc: 'This skills tutorial will help you understand how to perform the Pinguim.',
+        desc: 'This skills tutorial will help you understand how to perform the Penguin.',
         time: '2 mins',
-        image: 'https://via.placeholder.com/140x90/a78bfa/ffffff?text=Introduction'
+        image: require('../../../assets/images/skill.png')
+
     },
     {
         id: 3,
         title: 'Warm up activity',
-        desc: 'This skills tutorial will help you understand how to perform the Pinguim.',
+        desc: 'This skills tutorial will help you understand how to perform the Penguin.',
         time: '10 mins',
-        image: 'https://via.placeholder.com/140x90/86efac/ffffff?text=Warm+up'
+        image: require('../../../assets/images/skill.png')
+
     },
     {
         id: 4,
         title: 'Technical exercise',
-        desc: 'This skills tutorial will help you understand how to perform the Pinguim.',
+        desc: 'This skills tutorial will help you understand how to perform the Penguin.',
         time: '12 mins',
-        image: 'https://via.placeholder.com/140x90/86efac/ffffff?text=Technical'
+        image: require('../../../assets/images/skill.png')
+
     },
 ];
-
 export default function SessionPlanList({ onBack, onSessionSelect }) {
     return (
         <View style={styles.container}>
@@ -80,7 +83,7 @@ export default function SessionPlanList({ onBack, onSessionSelect }) {
                             onPress={() => onSessionSelect && onSessionSelect(item.id)}
                         >
                             <View style={styles.imagePlaceholder}>
-                                <Image source={{ uri: item.image }} style={styles.cardImage} resizeMode="cover" />
+                            <Image source={item.image} style={styles.cardImage} resizeMode="cover" />
                             </View>
                             <View style={styles.cardContent}>
                                 <Text style={styles.cardTitle}>{item.title}</Text>

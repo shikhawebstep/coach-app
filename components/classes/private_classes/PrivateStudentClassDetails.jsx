@@ -52,9 +52,14 @@ export default function PrivateStudentClassDetails({ onBack, onNotesClick, stude
                         </TouchableOpacity>
                     </View>
 
+                </View>
                     {/* Map Placeholder */}
                     <View style={styles.mapContainer}>
-                        <Image source={{ uri: 'https://via.placeholder.com/400x150/EEEEEE/999999?text=Map+Image' }} style={styles.mapImage} resizeMode="cover" />
+                    <Image
+                    source={require('../../../assets/images/map.png')}
+                    style={styles.mapImage}
+                    resizeMode="cover"
+                    />           
                     </View>
 
                     {/* Location */}
@@ -62,7 +67,6 @@ export default function PrivateStudentClassDetails({ onBack, onNotesClick, stude
                         <Ionicons name="location-outline" size={18} color="#666" />
                         <Text style={styles.locationText}>Kings Cross, Grays Inn Road, London WC2H 9HE [Outdoor Park]</Text>
                     </View>
-                </View>
 
                 {/* Student Information Section */}
                 <Text style={styles.sectionTitle}>Student Information</Text>
@@ -258,6 +262,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingRight: 16,
+        marginBottom:20,
     },
     locationText: {
         marginLeft: 8,

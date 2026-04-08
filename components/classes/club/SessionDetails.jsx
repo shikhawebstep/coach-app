@@ -8,8 +8,8 @@ const MEMBERS_DATA = [
     { id: 3, name: 'Donald Johnson', age: '7 Years', status: 'attended' },
 ];
 
-export default function SessionDetails({ onBack, onSessionPlanClick, sessionTitle = "Session 1" }) {
-    const [activeTab, setActiveTab] = useState('Trials');
+export default function SessionDetails({ onBack, onSessionPlanClick, onStudentSelect, sessionTitle = "Session 1" }) {
+    const [activeTab, setActiveTab] = useState('Coaches');
     const [members, setMembers] = useState(MEMBERS_DATA);
 
     const handleAttendance = (id, status) => {
@@ -51,16 +51,16 @@ export default function SessionDetails({ onBack, onSessionPlanClick, sessionTitl
                         </View>
                     </View>
 
-                    {/* Map Placeholder */}
-                    <View style={styles.mapContainer}>
-                        {/* Could replace with an actual MapView or Image */}
-                        <Image source={{ uri: 'https://via.placeholder.com/400x150/EEEEEE/999999?text=Map+Image' }} style={styles.mapImage} resizeMode="cover" />
-                    </View>
+                </View>
+                {/* Map Placeholder */}
+                <View style={styles.mapContainer}>
+                    {/* Could replace with an actual MapView or Image */}
+                    <Image source={require('../../../assets/images/map.png')} style={styles.mapImage} resizeMode="cover" />
                 </View>
 
                 {/* Tabs */}
                 <View style={styles.tabsContainer}>
-                    {['Members', 'Trials', 'Coaches'].map(tab => (
+                    {['Members', 'Coaches'].map(tab => (
                         <TouchableOpacity
                             key={tab}
                             style={[styles.tab, activeTab === tab ? styles.activeTab : styles.inactiveTab]}
@@ -71,10 +71,13 @@ export default function SessionDetails({ onBack, onSessionPlanClick, sessionTitl
                     ))}
                 </View>
 
-                {/* Members List */}
                 <View style={styles.membersList}>
                     {members.map((member, index) => (
-                        <View key={member.id} style={styles.memberCard}>
+                        <TouchableOpacity
+                            key={member.id}
+                            style={styles.memberCard}
+                            onPress={() => onStudentSelect && onStudentSelect(member.id)}
+                        >
                             <Text style={styles.memberIndex}>{index + 1}</Text>
                             <View style={styles.memberInfo}>
                                 <Text style={styles.memberName}>{member.name}</Text>
@@ -123,7 +126,7 @@ export default function SessionDetails({ onBack, onSessionPlanClick, sessionTitl
                                     </Text>
                                 </TouchableOpacity>
                             </View>
-                        </View>
+                        </TouchableOpacity>
                     ))}
                 </View>
 
@@ -234,6 +237,7 @@ const styles = StyleSheet.create({
         height: 140,
         borderRadius: 12,
         overflow: 'hidden',
+        marginBottom: 24,
     },
     mapImage: {
         width: '100%',
@@ -291,13 +295,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     memberName: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: 'bold',
         color: '#1a1a1a',
-        width: 110,
+        width: 90,
     },
     memberAge: {
-        fontSize: 13,
+        fontSize: 12,
         color: '#666',
         marginLeft: 8,
     },
@@ -333,7 +337,7 @@ const styles = StyleSheet.create({
         marginRight: 4,
     },
     btnText: {
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: 'bold',
     },
     btnTextWhite: {

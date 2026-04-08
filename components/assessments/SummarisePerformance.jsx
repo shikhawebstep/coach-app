@@ -1,31 +1,35 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-export default function UploadVideo({ onBack }) {
+export default function SummarisePerformance({ onBack, onComplete }) {
     return (
         <View style={styles.container}>
-            {/* Keeping spacing for where header usually is, mimicking minimalist look */}
-            <View style={styles.headerSpacer} />
-            
-            <Text style={styles.title}>Upload Video</Text>
+            {/* Header */}
+            <View style={styles.header}>
+                <TouchableOpacity onPress={onBack} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="#000" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Create report</Text>
+            </View>
+
+            <Text style={styles.title}>Summarise Performance</Text>
 
             <View style={styles.centerContent}>
+                <Text style={styles.timer}>00:30</Text>
+
                 {/* Ripple Effect Circles */}
                 <View style={styles.outerCircle}>
                     <View style={styles.middleCircle}>
                         <TouchableOpacity style={styles.innerCircle}>
-                            <View style={styles.iconBox}>
-                                <Ionicons name="add" size={32} color="#3B82F6" strokeWidth={4} style={styles.plusIcon} />
-                            </View>
+                            <Ionicons name="mic-outline" size={54} color="#fff" />
                         </TouchableOpacity>
                     </View>
                 </View>
             </View>
 
             <View style={styles.bottomContainer}>
-                <TouchableOpacity style={styles.nextButton}>
-                    <Text style={styles.nextButtonText}>Next</Text>
+                <TouchableOpacity style={styles.completeButton} onPress={onComplete}>
+                    <Text style={styles.completeButtonText}>Complete</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -37,11 +41,23 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
     },
-    headerSpacer: {
-        height: 60,
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingTop: 16,
+        paddingBottom: 24,
+    },
+    backButton: {
+        marginRight: 12,
+    },
+    headerTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#1a1a1a',
     },
     title: {
-        fontSize: 24,
+        fontSize: 22,
         fontWeight: 'bold',
         color: '#1a1a1a',
         textAlign: 'center',
@@ -52,18 +68,24 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    timer: {
+        fontSize: 56,
+        color: '#9CA3AF', // Gray
+        fontWeight: 'normal',
+        marginBottom: 60,
+    },
     outerCircle: {
-        width: 220,
-        height: 220,
-        borderRadius: 110,
-        backgroundColor: '#93C5FD', // Lightest blue
+        width: 200,
+        height: 200,
+        borderRadius: 100,
+        backgroundColor: '#93C5FD', // Light blue
         justifyContent: 'center',
         alignItems: 'center',
     },
     middleCircle: {
-        width: 170,
-        height: 170,
-        borderRadius: 85,
+        width: 156,
+        height: 156,
+        borderRadius: 78,
         backgroundColor: '#60A5FA', // Mid blue
         justifyContent: 'center',
         alignItems: 'center',
@@ -76,29 +98,18 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    iconBox: {
-        width: 48,
-        height: 48,
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    plusIcon: {
-        fontWeight: '900',
-    },
     bottomContainer: {
         paddingHorizontal: 20,
         paddingBottom: 40,
         paddingTop: 20,
     },
-    nextButton: {
+    completeButton: {
         backgroundColor: '#3B82F6',
         paddingVertical: 18,
         borderRadius: 30,
         alignItems: 'center',
     },
-    nextButtonText: {
+    completeButtonText: {
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold',

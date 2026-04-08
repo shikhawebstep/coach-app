@@ -1,26 +1,25 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import HolidayAddTrialist from './HolidayAddTrialist';
+import WeeklyAddTrialist from './WeeklyAddTrialist';
 
-const STUDENTS_DATA = [
+const MEMBERS_DATA = [
     { id: 1, name: 'John Smith', age: '7 Years', status: 'attended' },
     { id: 2, name: 'John Smith', age: '7 Years', status: null },
-    { id: 3, name: 'John Smith', age: '7 Years', status: null },
-    { id: 4, name: 'John Smith', age: '7 Years', status: 'not_attended' },
+    { id: 3, name: 'Donald Johnson', age: '7 Years', status: 'attended' },
 ];
 
-export default function HolidayCampDetails({ onBack, onSyllabusClick, onStudentSelect }) {
-    const [activeTab, setActiveTab] = useState('Day 1');
-    const [students, setStudents] = useState(STUDENTS_DATA);
+export default function WeeklySessionTrainingDetails({ onBack, onStudentSelect, sessionTitle, onSessionPlanClick, onSessionClick }) {
+    const [activeTab, setActiveTab] = useState('Trials');
+    const [members, setMembers] = useState(MEMBERS_DATA);
     const [showAddTrialist, setShowAddTrialist] = useState(false);
 
     const handleAttendance = (id, status) => {
-        setStudents(prev => prev.map(s => s.id === id ? { ...s, status } : s));
+        setMembers(prev => prev.map(m => m.id === id ? { ...m, status } : m));
     };
 
     if (showAddTrialist) {
-        return <HolidayAddTrialist onBack={() => setShowAddTrialist(false)} />;
+        return <WeeklyAddTrialist onBack={() => setShowAddTrialist(false)} />;
     }
 
     return (
@@ -31,39 +30,28 @@ export default function HolidayCampDetails({ onBack, onSyllabusClick, onStudentS
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#000" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Holiday camps</Text>
+                    <TouchableOpacity onPress={() => onSessionClick('weeklySession')}>
+                        <Text style={styles.headerTitle}>{sessionTitle}</Text>
+                    </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.syllabusButton} onPress={onSyllabusClick}>
-                    <Text style={styles.syllabusText}>Syllabus</Text>
+                <TouchableOpacity style={styles.sessionPlanButton} onPress={onSessionPlanClick}>
+                    <Text style={styles.sessionPlanText}>Session Plan</Text>
                 </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
                 {/* Info Card */}
-                <View style={styles.infoCard}>
+                <TouchableOpacity style={styles.infoCard} onPress={() => onSessionClick('weeklySession')}>
                     <View style={styles.infoRow}>
                         <View style={styles.infoItem}>
-                            <View style={styles.infoLabelContainer}>
-                                <Ionicons name="calendar-outline" size={16} color="#666" style={styles.infoIcon} />
-                                <Text style={styles.infoLabel}>Date</Text>
-                            </View>
-                            <Text style={styles.infoValue}>Sat 3rd Apr</Text>
+                            <Text style={styles.infoLabel}>Date</Text>
+                            <Text style={styles.infoValue}>Sat 3rd April 2023, 10:30-11:30am</Text>
                         </View>
-                        <View style={styles.infoItem}>
-                            <View style={styles.infoLabelContainer}>
-                                <Ionicons name="time-outline" size={16} color="#666" style={styles.infoIcon} />
-                                <Text style={styles.infoLabel}>Time</Text>
-                            </View>
-                            <Text style={styles.infoValue}>9:30am</Text>
+                        <View style={styles.infoItemSmall}>
+                            <Text style={styles.infoLabel}>Years</Text>
+                            <Text style={styles.infoValue}>4-7</Text>
                         </View>
-                        <View style={styles.infoItem}>
-                            <View style={styles.infoLabelContainer}>
-                                <Ionicons name="person-outline" size={16} color="#666" style={styles.infoIcon} />
-                                <Text style={styles.infoLabel}>Students</Text>
-                            </View>
-                            <Text style={styles.infoValue}>24</Text>
-                        </View>
-                        <View style={styles.infoItem}>
+                        <View style={styles.infoItemSmall}>
                             <Text style={styles.infoLabel}>Status</Text>
                             <View style={styles.statusBadge}>
                                 <Text style={styles.statusText}>Pending</Text>
@@ -71,68 +59,56 @@ export default function HolidayCampDetails({ onBack, onSyllabusClick, onStudentS
                         </View>
                     </View>
 
-                    </View>
-                    {/* Map Placeholder */}
-                    <View style={styles.mapContainer}>
-                        {/* Could replace with an actual MapView or Image */}
-                        <View style={styles.mapContainer}>
-                            <Image
-                                source={require('../../../assets/images/map.png')}
-                                style={styles.mapImage}
-                                resizeMode="cover"
-                            />
-                        </View>                   
-                         </View>
-
-                    {/* Location */}
-                    <View style={styles.locationContainer}>
-                        <Ionicons name="location-outline" size={18} color="#666" />
-                        <Text style={styles.locationText}>Kings Cross, Grays Inn Road, London WC2H 9HE [Outdoor Park]</Text>
-                    </View>
+                </TouchableOpacity>
+                <View style={styles.mapContainer}>
+                    <Image
+                        source={require('../../../assets/images/map.png')}
+                        style={styles.mapImage}
+                        resizeMode="cover"
+                    />
+                </View>
 
                 {/* Tabs */}
                 <View style={styles.tabsContainer}>
-                    {['Day 1', 'Day 2', 'Day 3'].map(tab => (
+                    {['Members', 'Trials', 'Coaches'].map(tab => (
                         <TouchableOpacity
                             key={tab}
-                            style={[styles.tab, activeTab === tab && styles.activeTab]}
+                            style={[styles.tab, activeTab === tab ? styles.activeTab : styles.inactiveTab]}
                             onPress={() => setActiveTab(tab)}
                         >
-                            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
+                            <Text style={[styles.tabText, activeTab === tab ? styles.activeTabText : styles.inactiveTabText]}>{tab}</Text>
                         </TouchableOpacity>
                     ))}
                 </View>
 
-                {/* Students List */}
-                <View style={styles.studentsList}>
-                    {students.map((student, index) => (
-                        <TouchableOpacity
-                            key={student.id}
-                            style={styles.studentCard}
-                            onPress={() => onStudentSelect && onStudentSelect(student.id)}
+                {/* Members List */}
+                <View style={styles.membersList}>
+                    {members.map((member, index) => (
+                        <TouchableOpacity key={member.id} style={styles.memberCard}
+                            onPress={() => onStudentSelect && onStudentSelect(member.id)}
                         >
-                            <Text style={styles.studentIndex}>{index + 1}</Text>
-                            <View style={styles.studentInfo}>
-                                <Text style={styles.studentName}>{student.name}</Text>
-                                <Text style={styles.studentAge}>{student.age}</Text>
+                            <Text style={styles.memberIndex}>{index + 1}</Text>
+                            <View style={styles.memberInfo}>
+                                <Text style={styles.memberName}>{member.name}</Text>
+                                <Text style={styles.memberAge}>{member.age}</Text>
                             </View>
                             <View style={styles.attendanceButtons}>
                                 <TouchableOpacity
                                     style={[
                                         styles.attendanceBtn,
-                                        student.status === 'attended' ? styles.btnAttendedActive : styles.btnAttendedInactive
+                                        member.status === 'attended' ? styles.btnAttendedActive : styles.btnAttendedInactive
                                     ]}
-                                    onPress={() => handleAttendance(student.id, 'attended')}
+                                    onPress={() => handleAttendance(member.id, 'attended')}
                                 >
                                     <Ionicons
                                         name="checkmark"
                                         size={18}
-                                        color={student.status === 'attended' ? '#fff' : '#000'}
+                                        color={member.status === 'attended' ? '#fff' : '#000'}
                                         style={styles.btnIcon}
                                     />
                                     <Text style={[
                                         styles.btnText,
-                                        student.status === 'attended' ? styles.btnTextWhite : styles.btnTextBlack
+                                        member.status === 'attended' ? styles.btnTextWhite : styles.btnTextBlack
                                     ]}>
                                         Attended
                                     </Text>
@@ -141,19 +117,19 @@ export default function HolidayCampDetails({ onBack, onSyllabusClick, onStudentS
                                 <TouchableOpacity
                                     style={[
                                         styles.attendanceBtn,
-                                        student.status === 'not_attended' ? styles.btnNotAttendedActive : styles.btnNotAttendedInactive
+                                        member.status === 'not_attended' ? styles.btnNotAttendedActive : styles.btnNotAttendedInactive
                                     ]}
-                                    onPress={() => handleAttendance(student.id, 'not_attended')}
+                                    onPress={() => handleAttendance(member.id, 'not_attended')}
                                 >
                                     <Ionicons
                                         name="close"
                                         size={18}
-                                        color={student.status === 'not_attended' ? '#fff' : '#E53E3E'}
+                                        color={member.status === 'not_attended' ? '#fff' : '#E53E3E'}
                                         style={styles.btnIcon}
                                     />
                                     <Text style={[
                                         styles.btnText,
-                                        student.status === 'not_attended' ? styles.btnTextWhite : styles.btnTextRed
+                                        member.status === 'not_attended' ? styles.btnTextWhite : styles.btnTextRed
                                     ]}>
                                         Not Attended
                                     </Text>
@@ -163,19 +139,25 @@ export default function HolidayCampDetails({ onBack, onSyllabusClick, onStudentS
                     ))}
                 </View>
 
-                {/* <TouchableOpacity
-                    style={styles.addTrialistButton}
-                    onPress={() => setShowAddTrialist(true)}
-                >
-                    <Ionicons name="add" size={24} color="#3B82F6" style={styles.addIcon} />
-                    <Text style={styles.addTrialistText}>Add walk by trialist</Text>
-                </TouchableOpacity>
+                {activeTab === 'Trials' && (
+                    <>
 
-                
-                <TouchableOpacity style={styles.confirmButton}>
-                    <Text style={styles.confirmButtonText}>Confirm</Text>
-                </TouchableOpacity> */}
+                        <TouchableOpacity
+                            style={styles.addTrialistButton}
+                            onPress={() => setShowAddTrialist(true)}
+                        >
+                            <Ionicons name="add" size={24} color="#3B82F6" style={styles.addIcon} />
+                            <Text style={styles.addTrialistText}>Add walk by trialist</Text>
+                        </TouchableOpacity>
+                        {/* Confirm Button */}
+                        <TouchableOpacity style={styles.confirmButton}>
+                            <Text style={styles.confirmButtonText}>Confirm</Text>
+                        </TouchableOpacity>
+                    </>
+                )}
+
             </ScrollView>
+
         </View>
     );
 }
@@ -205,13 +187,13 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#1a1a1a',
     },
-    syllabusButton: {
+    sessionPlanButton: {
         backgroundColor: '#1CAB4B', // Green
         paddingHorizontal: 16,
-        paddingVertical: 8,
+        paddingVertical: 10,
         borderRadius: 8,
     },
-    syllabusText: {
+    sessionPlanText: {
         color: '#fff',
         fontWeight: 'bold',
         fontSize: 14,
@@ -239,25 +221,22 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     infoItem: {
+        flex: 2,
+        paddingRight: 8,
+    },
+    infoItemSmall: {
         flex: 1,
-    },
-    infoLabelContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 4,
-    },
-    infoIcon: {
-        marginRight: 4,
     },
     infoLabel: {
         fontSize: 13,
-        color: '#666',
+        fontWeight: '600',
+        color: '#9CA3AF',
         marginBottom: 4,
     },
     infoValue: {
         fontSize: 14,
-        fontWeight: 'bold',
         color: '#1a1a1a',
+        lineHeight: 20,
     },
     statusBadge: {
         backgroundColor: '#FFD700',
@@ -273,76 +252,72 @@ const styles = StyleSheet.create({
     },
     mapContainer: {
         height: 140,
+        marginBottom: 20,
         borderRadius: 12,
         overflow: 'hidden',
-        marginBottom: 16,
-        backgroundColor: '#F3F4F6',
     },
     mapImage: {
         width: '100%',
         height: '100%',
     },
-    locationContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingRight: 16,
-        marginBottom:20,
-    },
-    locationText: {
-        marginLeft: 8,
-        fontSize: 13,
-        color: '#4B5563',
-        lineHeight: 18,
-    },
     tabsContainer: {
         flexDirection: 'row',
-        backgroundColor: '#F3F4F6',
-        borderRadius: 12,
-        padding: 4,
+        justifyContent: 'center',
         marginBottom: 24,
+        backgroundColor: '#F3F4F6',
+        borderRadius: 8,
+        padding: 4,
     },
     tab: {
         flex: 1,
         paddingVertical: 12,
         alignItems: 'center',
-        borderRadius: 8,
+        borderRadius: 6,
     },
     activeTab: {
-        backgroundColor: '#3B82F6', // Blue
+        backgroundColor: '#3B82F6',
+    },
+    inactiveTab: {
+        backgroundColor: 'transparent',
     },
     tabText: {
         fontSize: 15,
         fontWeight: 'bold',
-        color: '#4B5563',
     },
     activeTabText: {
         color: '#fff',
     },
-    studentsList: {
-        gap: 16,
+    inactiveTabText: {
+        color: '#1a1a1a',
     },
-    studentCard: {
+    membersList: {
+        gap: 0,
+        marginBottom: 24,
+    },
+    memberCard: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 8,
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
     },
-    studentIndex: {
+    memberIndex: {
         width: 24,
         fontSize: 14,
         color: '#666',
     },
-    studentInfo: {
+    memberInfo: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
     },
-    studentName: {
+    memberName: {
         fontSize: 12,
         fontWeight: 'bold',
         color: '#1a1a1a',
-        width: 80,
+        width: 100,
     },
-    studentAge: {
+    memberAge: {
         fontSize: 12,
         color: '#666',
         marginLeft: 8,
@@ -354,8 +329,8 @@ const styles = StyleSheet.create({
     attendanceBtn: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
+        paddingHorizontal: 8,
+        paddingVertical: 6,
         borderRadius: 20,
         borderWidth: 1.5,
     },
@@ -380,7 +355,7 @@ const styles = StyleSheet.create({
     },
     btnText: {
         fontSize: 12,
-        fontWeight: 'bold',
+        fontWeight: '600',
     },
     btnTextWhite: {
         color: '#fff',
@@ -400,8 +375,7 @@ const styles = StyleSheet.create({
         borderWidth: 1.5,
         borderColor: '#3B82F6',
         backgroundColor: '#fff',
-        marginTop: 24,
-        marginBottom: 16,
+        marginBottom: 24,
     },
     addIcon: {
         marginRight: 8,
@@ -416,7 +390,6 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         borderRadius: 30,
         alignItems: 'center',
-        marginBottom: 24,
     },
     confirmButtonText: {
         fontSize: 16,

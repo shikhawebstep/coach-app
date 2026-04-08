@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import AddTrialist from '../common/AddTrialist';
+import ClubAddTrialist from './ClubAddTrialist';
 const MEMBERS_DATA = [
     { id: 1, name: 'John Smith', age: '7 Years', status: 'attended' },
     { id: 2, name: 'John Smith', age: '7 Years', status: null },
@@ -17,7 +17,7 @@ export default function SessionTrainingDetails({ onBack, onStudentSelect, sessio
     };
 
     if (showAddTrialist) {
-        return <AddTrialist onBack={() => setShowAddTrialist(false)} />;
+        return <ClubAddTrialist onBack={() => setShowAddTrialist(false)} />;
     }
 
     return (
@@ -62,7 +62,7 @@ export default function SessionTrainingDetails({ onBack, onStudentSelect, sessio
                     <Image
                         source={require('../../../assets/images/map.png')}
                         style={styles.mapImage}
-                        resizeMode="cover"
+                        resizeMode="contain"
                     />
                 </View>
 

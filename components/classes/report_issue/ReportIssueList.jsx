@@ -14,7 +14,7 @@ const REPORTS_DATA = [
     { id: 7, venue: 'Tottenham', date: '3rd April 2023', time: '10:30-11:30am', category: 'Equipment', status: 'Solved' },
 ];
 
-export default function ReportIssueList({ onNewReport }) {
+export default function ReportIssueList({ onNewReport, onReportSelect }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategories, setSelectedCategories] = useState(['Equipment']);
 
@@ -68,7 +68,7 @@ export default function ReportIssueList({ onNewReport }) {
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
                 {REPORTS_DATA.map(report => (
-                    <TouchableOpacity key={report.id} style={styles.card}>
+                    <TouchableOpacity key={report.id} style={styles.card} onPress={() => onReportSelect && onReportSelect(report.id)}>
                         <View style={styles.col1}>
                             <Text style={styles.venue}>{report.venue}</Text>
                         </View>

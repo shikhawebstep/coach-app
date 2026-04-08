@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const TRAINING_DATA = [
     { id: 1, session: 'Session 1', date: '3rd April 2023', time: '10:30-11:30am', block: 'Block 1', status: 'Completed' },
@@ -13,18 +13,24 @@ const TRAINING_DATA = [
     { id: 8, session: 'Session 8', date: '3rd April 2023', time: '10:30-11:30am', block: 'Block 2', status: 'Pending' },
 ];
 
-const MATCHES_DATA = [
-    { id: 1, match: 'Match 8', date: '3rd April 2023', time: '10:30-11:30am', vs: 'Vs. Dragons', status: 'Pending' },
-    { id: 2, match: 'Match 7', date: '3rd April 2023', time: '10:30-11:30am', vs: 'Vs. Dragons', status: 'Completed' },
-    { id: 3, match: 'Match 6', date: '3rd April 2023', time: '10:30-11:30am', vs: 'Vs. Dragons', status: 'Completed' },
-    { id: 4, match: 'Match 5', date: '3rd April 2023', time: '10:30-11:30am', vs: 'Vs. Dragons', status: 'Completed' },
-    { id: 5, match: 'Match 4', date: '3rd April 2023', time: '10:30-11:30am', vs: 'Vs. Dragons', status: 'Completed' },
-    { id: 6, match: 'Match 3', date: '3rd April 2023', time: '10:30-11:30am', vs: 'Vs. Dragons', status: 'Completed' },
-    { id: 7, match: 'Match 2', date: '3rd April 2023', time: '10:30-11:30am', vs: 'Vs. Dragons', status: 'Completed' },
-    { id: 8, match: 'Match 1', date: '3rd April 2023', time: '10:30-11:30am', vs: 'Vs. Dragons', status: 'Completed' },
+const TEAMS_DATA = [
+    { id: 1, name: 'SS F.C. Under 11\'s (Kings Cross)', image: require('../../../assets/images/sslogo.png') },
+    { id: 2, name: 'SS F.C. Under 12\'s (Kings Cross)', image: require('../../../assets/images/sslogo.png') },
+    { id: 3, name: 'SS F.C. Under 13\'s (Kings Cross)', image: require('../../../assets/images/sslogo.png') },
 ];
 
-export default function SelectATeam({ onBack, onSessionSelect }) {
+const MATCHES_DATA = [
+    { id: 1, match: 'Match 8', date: '3rd April 2023', time: '10:30-11:30am', vs: 'Vs. Dragons', status: 'Pending', image: require('../../../assets/images/sslogo.png') },
+    { id: 2, match: 'Match 7', date: '3rd April 2023', time: '10:30-11:30am', vs: 'Vs. Dragons', status: 'Completed', image: require('../../../assets/images/sslogo.png') },
+    { id: 3, match: 'Match 6', date: '3rd April 2023', time: '10:30-11:30am', vs: 'Vs. Dragons', status: 'Completed', image: require('../../../assets/images/sslogo.png') },
+    { id: 4, match: 'Match 5', date: '3rd April 2023', time: '10:30-11:30am', vs: 'Vs. Dragons', status: 'Completed', image: require('../../../assets/images/sslogo.png') },
+    { id: 5, match: 'Match 4', date: '3rd April 2023', time: '10:30-11:30am', vs: 'Vs. Dragons', status: 'Completed', image: require('../../../assets/images/sslogo.png') },
+    { id: 6, match: 'Match 3', date: '3rd April 2023', time: '10:30-11:30am', vs: 'Vs. Dragons', status: 'Completed', image: require('../../../assets/images/sslogo.png') },
+    { id: 7, match: 'Match 2', date: '3rd April 2023', time: '10:30-11:30am', vs: 'Vs. Dragons', status: 'Completed', image: require('../../../assets/images/sslogo.png') },
+    { id: 8, match: 'Match 1', date: '3rd April 2023', time: '10:30-11:30am', vs: 'Vs. Dragons', status: 'Completed', image: require('../../../assets/images/sslogo.png') },
+];
+
+export default function SelectATeam({ onBack, onSessionSelect, onMatchSelect }) {
     const [searchQuery, setSearchQuery] = useState('SS F.C. Under 11\'s (Kings Cross)');
     const [activeTab, setActiveTab] = useState('Training');
 
@@ -34,7 +40,23 @@ export default function SelectATeam({ onBack, onSessionSelect }) {
 
     const renderList = () => {
         if (!searchQuery) {
-            return null;
+            return (
+                <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
+                    <Text style={styles.listTitle}>Your teams</Text>
+                    {TEAMS_DATA.map((team) => (
+                        <TouchableOpacity
+                            key={team.id}
+                            style={styles.teamCard}
+                            onPress={() => setSearchQuery(team.name)}
+                        >
+                            <View style={styles.teamImageContainer}>
+                                <Image source={team.image} style={styles.teamImage} resizeMode="contain" />
+                            </View>
+                            <Text style={styles.teamCardTitle}>{team.name}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+            );
         }
 
         const data = activeTab === 'Training' ? TRAINING_DATA : MATCHES_DATA;
@@ -45,8 +67,9 @@ export default function SelectATeam({ onBack, onSessionSelect }) {
                     <TouchableOpacity
                         key={item.id}
                         style={styles.card}
-                        onPress={activeTab === 'Training' ? () => onSessionSelect(item.id) : undefined}
+                        onPress={activeTab === 'Training' ? () => onSessionSelect(item.id) : () => onMatchSelect && onMatchSelect(item.id)}
                     >
+                      
                         <View style={styles.cardInfo}>
                             <Text style={styles.cardTitle}>
                                 {activeTab === 'Training' ? item.session : item.match}
@@ -229,6 +252,53 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.05,
         shadowRadius: 8,
         elevation: 2,
+    },
+    listTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 16,
+        color: '#1a1a1a',
+    },
+    teamCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F3F4F6',
+        borderRadius: 8,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        marginBottom: 12,
+    },
+    teamImageContainer: {
+        width: 40,
+        height: 40,
+        marginRight: 12,
+        borderRadius: 20,
+        overflow: 'hidden',
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    teamImage: {
+        width: 30,
+        height: 30,
+    },
+    teamCardTitle: {
+        fontSize: 16,
+        color: '#1a1a1a',
+        fontWeight: '500',
+    },
+    cardImageContainer: {
+        width: 32,
+        height: 32,
+        marginRight: 12,
+        borderRadius: 16,
+        backgroundColor: '#F3F4F6',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    cardImageIcon: {
+        width: 24,
+        height: 24,
     },
     cardInfo: {
         width: 70,
