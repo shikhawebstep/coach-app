@@ -22,7 +22,6 @@ export default function TabLayout() {
         <>
             <Header
                 onMenuPress={() => openMenu('Menu')}
-                onNotificationPress={() => openMenu('Notifications')}
             />
 
             <SideMenu
@@ -50,21 +49,21 @@ export default function TabLayout() {
                         height: 25,
                         marginBottom: 2,
                     },
+                    tabBarLabelStyle: {
+                        fontSize: 13,
+                        fontWeight: '700',
+                    },
                 }}
             >
                 <Tabs.Screen
                     name="index"
                     options={{
                         title: 'Home',
-                        tabBarLabelStyle: {
-                            fontSize: 13,
-                            fontWeight: '700',
-                            color: '#9E9E9E',
-                        },
-                        tabBarIcon: () => (
+                        tabBarIcon: ({ focused }) => (
                             <Image
                                 source={require('../../assets/images/home.png')}
-                                style={{ width: 25, height: 25, marginBottom: 10, objectFit: "contain", }}
+                                style={{ width: 25, height: 25, marginBottom: 10, objectFit: 'contain',
+                                    tintColor: focused ? Colors[colorScheme ?? 'light'].tint : '#9E9E9E' }}
                             />
                         ),
                     }}
@@ -74,15 +73,11 @@ export default function TabLayout() {
                     name="calendar"
                     options={{
                         title: 'Calendar',
-                        tabBarLabelStyle: {
-                            fontSize: 13,
-                            fontWeight: '700',
-                            color: '#9E9E9E',
-                        },
-                        tabBarIcon: () => (
+                        tabBarIcon: ({ focused }) => (
                             <Image
                                 source={require('../../assets/images/Calendar.png')}
-                                style={{ width: 25, height: 25, marginBottom: 10, objectFit: "contain", }}
+                                style={{ width: 25, height: 25, marginBottom: 10, objectFit: 'contain',
+                                    tintColor: focused ? Colors[colorScheme ?? 'light'].tint : '#9E9E9E' }}
                             />
                         ),
                     }}
@@ -92,15 +87,11 @@ export default function TabLayout() {
                     name="classes"
                     options={{
                         title: 'Classes',
-                        tabBarLabelStyle: {
-                            fontSize: 13,
-                            fontWeight: '700',
-                            color: '#9E9E9E',
-                        },
-                        tabBarIcon: () => (
+                        tabBarIcon: ({ focused }) => (
                             <Image
                                 source={require('../../assets/images/Document.png')}
-                                style={{ width: 25, height: 25, marginBottom: 10, objectFit: "contain", }}
+                                style={{ width: 25, height: 25, marginBottom: 10, objectFit: 'contain',
+                                    tintColor: focused ? Colors[colorScheme ?? 'light'].tint : '#9E9E9E' }}
                             />
                         ),
                     }}
@@ -110,15 +101,11 @@ export default function TabLayout() {
                     name="music"
                     options={{
                         title: 'Music',
-                        tabBarLabelStyle: {
-                            fontSize: 13,
-                            fontWeight: '700',
-                            color: '#9E9E9E',
-                        },
-                        tabBarIcon: () => (
+                        tabBarIcon: ({ focused }) => (
                             <Image
                                 source={require('../../assets/images/music.png')}
-                                style={{ width: 25, height: 25, marginBottom: 10, objectFit: "contain", }}
+                                style={{ width: 25, height: 25, marginBottom: 10, objectFit: 'contain',
+                                    tintColor: focused ? Colors[colorScheme ?? 'light'].tint : '#9E9E9E' }}
                             />
                         ),
                     }}
@@ -128,21 +115,16 @@ export default function TabLayout() {
                     name="result"
                     options={{
                         title: 'My Results',
-                        tabBarLabelStyle: {
-                            fontSize: 13,
-                            fontWeight: '700',
-                            color: '#9E9E9E',
-                        },
-                        tabBarIcon: () => (
+                        tabBarIcon: ({ focused }) => (
                             <Image
                                 source={require('../../assets/images/Activity.png')}
-                                style={{ width: 25, height: 25, marginBottom: 10, objectFit: "contain", }}
+                                style={{ width: 25, height: 25, marginBottom: 10, objectFit: 'contain',
+                                    tintColor: focused ? Colors[colorScheme ?? 'light'].tint : '#9E9E9E' }}
                             />
                         ),
                     }}
                 />
             </Tabs>
-
         </>
     );
 }

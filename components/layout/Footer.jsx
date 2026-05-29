@@ -1,5 +1,4 @@
 import { usePathname, useRouter } from 'expo-router';
-import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Footer() {
@@ -52,10 +51,10 @@ export default function Footer() {
                         onPress={() => router.push(tab.route)}
                     >
                         <Image
-                            source={isActive ? tab.iconActive : tab.iconInactive}
-                            style={styles.icon}
-                            resizeMode="contain"
-                        />
+    source={isActive ? tab.iconActive : tab.iconInactive}
+    style={[styles.icon, { tintColor: isActive ? '#2196F3' : '#666' }]}  // ✅ add this
+    resizeMode="contain"
+/>
                         <Text style={[styles.label, isActive && styles.activeLabel]}>
                             {tab.name}
                         </Text>

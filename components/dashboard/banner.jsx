@@ -60,9 +60,15 @@ const Banner = () => {
                     <Text style={[styles.nextSession, { color: textColor }]}>What’s coming up...</Text>
                     <Text style={styles.seeAll}>See full calendar</Text>
                 </View>
-                <View style={{ flexDirection: 'row', marginTop: 20, alignItems: 'center', flexWrap: 'nowrap', overflow: 'scroll', display: 'flex', gap: 20 }}>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    nestedScrollEnabled={true}
+                    style={{ marginHorizontal: -16, marginTop: 20 }}
+                    contentContainerStyle={{ paddingHorizontal: 16 }}
+                >
                     {bookings.map((booking, index) => (
-                        <View key={index} style={{ width: "90%", }}>
+                        <View key={index} style={{ width: 280, marginRight: 16 }}>
                             <ImageBackground imageStyle={styles.bgImage}
                                 source={booking.image} style={{ padding: 20, paddingTop: 100 }}>
                                 <View style={styles.overlay} />
@@ -77,7 +83,7 @@ const Banner = () => {
                         </View>
                     ))}
 
-                </View>
+                </ScrollView>
 
 
                 <View style={{ flexDirection: 'row', marginTop: 40, position: 'relative', backgroundColor: "#213990", borderRadius: 10, paddingHorizontal: 10, paddingVertical: 20, alignItems: 'center', display: 'flex', gap: 20 }}>

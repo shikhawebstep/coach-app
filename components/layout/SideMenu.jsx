@@ -13,7 +13,6 @@ import {
     TouchableWithoutFeedback,
     View
 } from 'react-native';
-import NotificationsList from '../classes/common/NotificationsList';
 
 const { width, height } = Dimensions.get('window');
 
@@ -116,109 +115,108 @@ export default function SideMenu({ visible, onClose, initialTab = 'Menu' }) {
     };
 
     return (
-        <Modal
-            visible={visible}
-            transparent={true}
-            animationType="none"
-            onRequestClose={onClose}
-        >
-            <View style={styles.modalOverlay}>
-                <TouchableWithoutFeedback onPress={onClose}>
-                    <View style={styles.backdrop} />
-                </TouchableWithoutFeedback>
+        <>
+            <Modal
+                visible={visible}
+                transparent={true}
+                animationType="none"
+                onRequestClose={onClose}
+            >
+                <View style={styles.modalOverlay}>
+                    <TouchableWithoutFeedback onPress={onClose}>
+                        <View style={styles.backdrop} />
+                    </TouchableWithoutFeedback>
 
-                <Animated.View
-                    style={[
-                        styles.menuContainer,
-                        { transform: [{ translateX: slideAnim }] },
-                    ]}
-                >
-                    <ImageBackground
-                        source={require('@/assets/images/Sidebar.png')}
-                        style={styles.bgImage}
+                    <Animated.View
+                        style={[
+                            styles.menuContainer,
+                            { transform: [{ translateX: slideAnim }] },
+                        ]}
                     >
-                        {/* Header with Close Button */}
-                        <View style={styles.header}>
-                            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                                <Ionicons name="close" size={30} color="#fff" />
-                            </TouchableOpacity>
-                        </View>
+                        <ImageBackground
+                            source={require('@/assets/images/Sidebar.png')}
+                            style={styles.bgImage}
+                        >
+                            {/* Header with Close Button */}
+                            <View style={styles.header}>
+                                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                                    <Ionicons name="close" size={30} color="#fff" />
+                                </TouchableOpacity>
+                            </View>
 
-                        <Text style={styles.menuTitle}>Main Menu</Text>
+                            <Text style={styles.menuTitle}>Main Menu</Text>
 
-                     
-                        <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
-                            {activeTab === 'Menu' && items.map((item) => (
-                                <View key={item.id}>
-                                    <TouchableOpacity
-                                        style={styles.menuItem}
-                                        onPress={() => item.hasSubmenu ? toggleSubmenu(item.id) : handleNavigation(item.id)}
-                                    >
-                                        <View style={styles.menuItemLeft}>
-                                            <Ionicons name={item.icon} size={24} color="#fff" />
-                                            <Text style={styles.menuItemText}>{item.title}</Text>
-                                        </View>
-                                        {item.hasSubmenu && (
-                                            <Ionicons
-                                                name="chevron-down"
-                                                size={20}
-                                                color="#fff"
-                                                style={{ transform: [{ rotate: item.isOpen ? '180deg' : '0deg' }] }}
-                                            />
+
+                            <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
+                                {activeTab === 'Menu' && items.map((item) => (
+                                    <View key={item.id}>
+                                        <TouchableOpacity
+                                            style={styles.menuItem}
+                                            onPress={() => item.hasSubmenu ? toggleSubmenu(item.id) : handleNavigation(item.id)}
+                                        >
+                                            <View style={styles.menuItemLeft}>
+                                                <Ionicons name={item.icon} size={24} color="#fff" />
+                                                <Text style={styles.menuItemText}>{item.title}</Text>
+                                            </View>
+                                            {item.hasSubmenu && (
+                                                <Ionicons
+                                                    name="chevron-down"
+                                                    size={20}
+                                                    color="#fff"
+                                                    style={{ transform: [{ rotate: item.isOpen ? '180deg' : '0deg' }] }}
+                                                />
+                                            )}
+                                        </TouchableOpacity>
+
+                                        {/* Submenu */}
+                                        {item.hasSubmenu && item.isOpen && (
+                                            <View style={styles.submenuContainer}>
+                                                {item.submenu.map((subItem, index) => (
+                                                    <TouchableOpacity
+                                                        key={subItem.id}
+                                                        style={styles.submenuItem}
+                                                        onPress={() => handleNavigation(subItem.id)}
+                                                    >
+                                                        <View style={styles.timelineLine}>
+                                                            {/* Start Dot */}
+                                                            <View style={[styles.timelineDot, index === 0 && { marginTop: 0 }]} />
+                                                            {/* Vertical Line */}
+                                                            {item.submenu.length > 1 && index !== item.submenu.length - 1 && (
+                                                                <View style={styles.verticalLine} />
+                                                            )}
+                                                        </View>
+                                                        <Text style={styles.submenuText}>{subItem.title}</Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </View>
                                         )}
-                                    </TouchableOpacity>
+                                    </View>
+                                ))}
 
-                                    {/* Submenu */}
-                                    {item.hasSubmenu && item.isOpen && (
-                                        <View style={styles.submenuContainer}>
-                                            {item.submenu.map((subItem, index) => (
-                                                <TouchableOpacity
-                                                    key={subItem.id}
-                                                    style={styles.submenuItem}
-                                                    onPress={() => handleNavigation(subItem.id)}
-                                                >
-                                                    <View style={styles.timelineLine}>
-                                                        {/* Start Dot */}
-                                                        <View style={[styles.timelineDot, index === 0 && { marginTop: 0 }]} />
-                                                        {/* Vertical Line */}
-                                                        {item.submenu.length > 1 && index !== item.submenu.length - 1 && (
-                                                            <View style={styles.verticalLine} />
-                                                        )}
-                                                    </View>
-                                                    <Text style={styles.submenuText}>{subItem.title}</Text>
-                                                </TouchableOpacity>
-                                            ))}
-                                        </View>
-                                    )}
-                                </View>
-                            ))}
+                                {activeTab === 'Profile' && (
+                                    <View style={styles.componentPlaceholder}>
+                                        <Ionicons name="person-circle-outline" size={80} color="#fdbb2d" />
+                                        <Text style={styles.placeholderText}>Profile Component</Text>
+                                        <Text style={styles.placeholderSubtext}>View and edit your account details here.</Text>
+                                    </View>
+                                )}
 
-                            {activeTab === 'Profile' && (
-                                <View style={styles.componentPlaceholder}>
-                                    <Ionicons name="person-circle-outline" size={80} color="#fdbb2d" />
-                                    <Text style={styles.placeholderText}>Profile Component</Text>
-                                    <Text style={styles.placeholderSubtext}>View and edit your account details here.</Text>
-                                </View>
-                            )}
 
-                            {activeTab === 'Notifications' && (
-                                <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                                    <NotificationsList />
-                                </View>
-                            )}
-                        </ScrollView>
+                            </ScrollView>
 
-                        {/* Footer / Logout */}
-                        <View style={styles.footer}>
-                            <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
-                                <Ionicons name="log-out-outline" size={24} color="#fff" />
-                                <Text style={styles.menuItemText}>Log out</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </ImageBackground>
-                </Animated.View>
-            </View>
-        </Modal>
+                            {/* Footer / Logout */}
+                            <View style={styles.footer}>
+                                <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+                                    <Ionicons name="log-out-outline" size={24} color="#fff" />
+                                    <Text style={styles.menuItemText}>Log out</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </ImageBackground>
+                    </Animated.View>
+                </View>
+            </Modal>  
+        
+        </>
     );
 }
 
@@ -260,11 +258,9 @@ const styles = StyleSheet.create({
     },
     menuTitle: {
         fontSize: 28,
-        fontWeight: 'bold',
         color: '#fdbb2d', // Gold Color
         marginBottom: 30,
         fontFamily: 'Urbanist_700Bold',
-
     },
     menuList: {
         flex: 1,
@@ -284,7 +280,7 @@ const styles = StyleSheet.create({
     menuItemText: {
         color: '#fff',
         fontSize: 16,
-        fontWeight: '500',
+        fontFamily: 'Urbanist_500Medium',
     },
     submenuContainer: {
         paddingLeft: 22, // Align with icon center
@@ -316,6 +312,7 @@ const styles = StyleSheet.create({
     submenuText: {
         color: '#fff',
         fontSize: 15,
+        fontFamily: 'Urbanist_400Regular',
     },
     footer: {
         paddingTop: 20,
@@ -339,7 +336,7 @@ const styles = StyleSheet.create({
     tabText: {
         color: '#fff',
         fontSize: 14,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
     activeTabText: {
         color: '#1a1a1a',
@@ -354,12 +351,13 @@ const styles = StyleSheet.create({
     placeholderText: {
         color: '#fff',
         fontSize: 20,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         marginTop: 15,
     },
     placeholderSubtext: {
         color: '#aaa',
         fontSize: 14,
+        fontFamily: 'Urbanist_400Regular',
         textAlign: 'center',
         marginTop: 8,
     },

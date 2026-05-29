@@ -5,22 +5,20 @@ import SummarisePerformance from '@/components/assessments/SummarisePerformance'
 import UploadVideo from '@/components/assessments/UploadVideo';
 import BirthdayParties from '@/components/classes/birthday_parties/BirthdayParties';
 import BirthdayPartyDetails from '@/components/classes/birthday_parties/BirthdayPartyDetails';
-import BirthdaySyllabus from '@/components/classes/birthday_parties/BirthdaySyllabus';
 import BirthdaySessionExercise from '@/components/classes/birthday_parties/BirthdaySessionExercise';
+import BirthdaySyllabus from '@/components/classes/birthday_parties/BirthdaySyllabus';
 import ClassDetails from '@/components/classes/club/ClassDetails';
+import ClubSearchSkill from '@/components/classes/club/ClubSearchSkill';
+import ClubSessionExercise from '@/components/classes/club/ClubSessionExercise';
+import ClubStudentClassDetails from '@/components/classes/club/ClubStudentClassDetails';
+import ClubStudentInformation from '@/components/classes/club/ClubStudentInformation';
+import ClubSyllabus from '@/components/classes/club/ClubSyllabus';
 import SelectATeam from '@/components/classes/club/SelectATeam';
 import SessionDetails from '@/components/classes/club/SessionDetails';
 import SessionMatchDetails from '@/components/classes/club/SessionMatchDetails';
-import SessionTrainingDetails from '@/components/classes/club/SessionTrainingDetails';
-import ClubSearchSkill from '@/components/classes/club/ClubSearchSkill';
-import ClubSessionExercise from '@/components/classes/club/ClubSessionExercise';
-import ClubSyllabus from '@/components/classes/club/ClubSyllabus';
-import ClubStudentClassDetails from '@/components/classes/club/ClubStudentClassDetails';
-import ClubStudentInformation from '@/components/classes/club/ClubStudentInformation';
 import AddTrialist from '@/components/classes/common/AddTrialist';
 import AppHomeCategories from '@/components/classes/common/AppHomeCategories';
 import CoachResults from '@/components/classes/common/CoachResults';
-import CustomerFeedback from '@/components/classes/venue_health/CustomerFeedback';
 import GameDetails from '@/components/classes/common/GameDetails';
 import GameDetailsSearch from '@/components/classes/common/GameDetailsSearch';
 import HomeDashboard from '@/components/classes/common/HomeDashboard';
@@ -28,36 +26,31 @@ import MusicPlayer from '@/components/classes/common/MusicPlayer';
 import Notes from '@/components/classes/common/Notes';
 import NotificationDetails from '@/components/classes/common/NotificationDetails';
 import NotificationsList from '@/components/classes/common/NotificationsList';
-import OtherAreas from '@/components/classes/quality_control/OtherAreas';
-import Questionnaire from '@/components/classes/quality_control/Questionnaire';
-import RecordComments from '@/components/classes/quality_control/RecordComments';
-import SearchSkill from '@/components/classes/common/SearchSkill';
-import SessionExercise from '@/components/classes/common/SessionExercise';
 import SessionPlanList from '@/components/classes/common/SessionPlanList';
-import StudentClassDetails from '@/components/classes/common/StudentClassDetails';
-import StudentInformation from '@/components/classes/common/StudentInformation';
-import StudentNumbers from '@/components/classes/venue_health/StudentNumbers';
-import SyllabusDayDetails from '@/components/classes/common/SyllabusDayDetails';
 import SyllabusSkill from '@/components/classes/common/SyllabusSkill';
 import VenuesFilter from '@/components/classes/common/VenuesFilter';
 import HolidayCampDetails from '@/components/classes/holiday_camps/HolidayCampDetails';
 import HolidayCampsList from '@/components/classes/holiday_camps/HolidayCampsList';
 import HolidaySearchSkill from '@/components/classes/holiday_camps/HolidaySearchSkill';
 import HolidaySessionExercise from '@/components/classes/holiday_camps/HolidaySessionExercise';
-import HolidaySyllabus from '@/components/classes/holiday_camps/HolidaySyllabus';
 import HolidayStudentClassDetails from '@/components/classes/holiday_camps/HolidayStudentClassDetails';
 import HolidayStudentInformation from '@/components/classes/holiday_camps/HolidayStudentInformation';
+import HolidaySyllabus from '@/components/classes/holiday_camps/HolidaySyllabus';
 import PrivateClassesBookings from '@/components/classes/private_classes/PrivateClassesBookings';
 import PrivateStudentClassDetails from '@/components/classes/private_classes/PrivateStudentClassDetails';
 import CreateQcReport from '@/components/classes/quality_control/CreateQcReport';
+import MyReports from '@/components/classes/quality_control/MyReports';
+import OtherAreas from '@/components/classes/quality_control/OtherAreas';
+import Questionnaire from '@/components/classes/quality_control/Questionnaire';
+import RecordComments from '@/components/classes/quality_control/RecordComments';
+import ReportSummary from '@/components/classes/quality_control/ReportSummary';
 import IssueReport from '@/components/classes/report_issue/IssueReport';
 import ReportIssueForm from '@/components/classes/report_issue/ReportIssueForm';
 import ReportIssueList from '@/components/classes/report_issue/ReportIssueList';
-import ReportSummary from '@/components/classes/quality_control/ReportSummary';
-import MyReports from '@/components/classes/quality_control/MyReports';
+import CustomerFeedback from '@/components/classes/venue_health/CustomerFeedback';
+import StudentNumbers from '@/components/classes/venue_health/StudentNumbers';
 import SelectAVenue from '@/components/classes/weekly_classes/SelectAVenue';
 import SelectAVenueList from '@/components/classes/weekly_classes/SelectAVenueList';
-import WeeklyAddTrialist from '@/components/classes/weekly_classes/WeeklyAddTrialist';
 import WeeklySearchSkill from '@/components/classes/weekly_classes/WeeklySearchSkill';
 import WeeklySessionDetails from '@/components/classes/weekly_classes/WeeklySessionDetails';
 import WeeklySessionExercise from '@/components/classes/weekly_classes/WeeklySessionExercise';
@@ -424,10 +417,7 @@ export default function Classes() {
         return <RecordComments onBack={() => setCurrentView('dashboard')} />;
     }
 
-    if (currentView === 'summarisePerformance') {
-        return <SummarisePerformance onBack={() => setCurrentView('dashboard')} />;
-    }
-
+   
     if (currentView === 'otherAreas') {
         return <OtherAreas onBack={() => setCurrentView('dashboard')} />;
     }

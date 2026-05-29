@@ -1,12 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Image, ImageBackground, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Image, ImageBackground, Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
 import ProfileModal from './ProfileModal';
+import NotificationsList from '../classes/common/NotificationsList';
 
-export default function Header({ title, showBack = false, onMenuPress, onNotificationPress }) {
+export default function Header({ title, showBack = false, onMenuPress }) {
     const router = useRouter();
     const [isProfileVisible, setIsProfileVisible] = useState(false);
+    const [isNotificationsVisible, setIsNotificationsVisible] = useState(false);
+
+    const handleNotificationPress = () => {
+        setIsNotificationsVisible(true);
+    };
 
     return (
         <>
@@ -39,7 +45,7 @@ export default function Header({ title, showBack = false, onMenuPress, onNotific
                     </View>
 
                     <View style={styles.rightContainer}>
-                        <TouchableOpacity style={styles.iconButton} onPress={onNotificationPress}>
+                        <TouchableOpacity style={styles.iconButton} onPress={handleNotificationPress}>
                             <Ionicons name="notifications-outline" size={26} color="#fff" />
                             <View style={styles.badge} />
                         </TouchableOpacity>
@@ -58,6 +64,23 @@ export default function Header({ title, showBack = false, onMenuPress, onNotific
                 visible={isProfileVisible}
                 onClose={() => setIsProfileVisible(false)}
             />
+
+            <Modal
+                visible={isNotificationsVisible}
+                animationType="slide"
+                onRequestClose={() => setIsNotificationsVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalHeader}>
+                        <TouchableOpacity onPress={() => setIsNotificationsVisible(false)} style={styles.modalBackButton}>
+                            <Ionicons name="arrow-back" size={28} color="#1a1a1a" />
+                        </TouchableOpacity>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                        <NotificationsList onNotificationSelect={() => setIsNotificationsVisible(false)} />
+                    </View>
+                </View>
+            </Modal>
         </>
     );
 }
@@ -135,5 +158,19 @@ const styles = StyleSheet.create({
     profileImage: {
         width: 36,
         height: 36,
+    },
+    modalContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+        paddingTop: 40,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingBottom: 8,
+    },
+    modalBackButton: {
+        padding: 4,
     },
 });
