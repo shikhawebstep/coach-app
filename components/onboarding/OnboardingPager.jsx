@@ -1,7 +1,7 @@
 import { Colors } from '@/constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback, useRef, useState } from 'react';
-import { Dimensions, FlatList, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Dimensions, FlatList, Image, StyleSheet, View } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -9,25 +9,26 @@ export default function OnboardingPager({ slides, onIndexChanged }) {
     const [activeIndex, setActiveIndex] = useState(0);
     const flatListRef = useRef(null);
 
-    const onViewableItemsChanged = useCallback(({ viewableItems }) => {
-        if (viewableItems.length > 0) {
+    const onIndexChangedRef = useRef(onIndexChanged);
+    onIndexChangedRef.current = onIndexChanged;
+
+    // Use useRef to guarantee the function reference never changes on rerender,
+    // avoiding the React Native "Changing onViewableItemsChanged on the fly" error.
+    const onViewableItemsChanged = useRef(({ viewableItems }) => {
+        if (viewableItems && viewableItems.length > 0) {
             const index = viewableItems[0].index;
-            if (index !== null && index !== activeIndex) {
+            if (index !== null) {
                 setActiveIndex(index);
-                if (onIndexChanged) {
-                    onIndexChanged(index);
+                if (onIndexChangedRef.current) {
+                    onIndexChangedRef.current(index);
                 }
             }
         }
-    }, [activeIndex, onIndexChanged]);
+    }).current;
 
     const viewabilityConfig = useRef({
         itemVisiblePercentThreshold: 50,
     }).current;
-
-    const scrollToIndex = (index) => {
-        flatListRef.current?.scrollToIndex({ index, animated: true });
-    };
 
     const renderItem = ({ item }) => (
         <View style={styles.slide}>
@@ -58,19 +59,6 @@ export default function OnboardingPager({ slides, onIndexChanged }) {
                 windowSize={3}
                 style={styles.flatList}
             />
-
-            <View style={styles.pagination}>
-                {slides.map((_, index) => (
-                    <TouchableOpacity
-                        key={index}
-                        onPress={() => scrollToIndex(index)}
-                        style={[
-                            styles.dot,
-                            activeIndex === index ? styles.activeDot : styles.inactiveDot
-                        ]}
-                    />
-                ))}
-            </View>
         </View>
     );
 }
@@ -99,26 +87,5 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         height: '40%',
-    },
-    pagination: {
-        flexDirection: 'row',
-        position: 'absolute',
-        bottom: 120,
-        alignSelf: 'center',
-        paddingVertical: 10,
-    },
-    dot: {
-        height: 6,
-        borderRadius: 3,
-        marginHorizontal: 3,
-    },
-    activeDot: {
-        width: 20,
-        backgroundColor: Colors.light.primary,
-    },
-    inactiveDot: {
-        width: 6,
-        backgroundColor: Colors.light.primary,
-        opacity: 0.3,
     },
 });

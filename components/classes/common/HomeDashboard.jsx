@@ -48,35 +48,42 @@ export default function HomeDashboard() {
                 </View>
 
                 {/* Horizontal Events ScrollView */}
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-                    {/* Card 1 */}
-                    <TouchableOpacity style={styles.eventCard}>
-                        <Image source={{ uri: 'https://via.placeholder.com/300x400/3B82F6/ffffff?text=Kids+Playing' }} style={styles.eventImage} />
-                        <View style={styles.eventOverlay} />
-                        <View style={styles.eventContent}>
-                            <Text style={styles.eventTitle}>Birthday Party</Text>
-                            <View style={styles.eventRow}>
-                                <Text style={styles.eventDate}>10th April</Text>
-                                <View style={styles.verticalDivider} />
-                                <Text style={styles.eventTime}>10:30-12pm</Text>
-                            </View>
-                        </View>
-                    </TouchableOpacity>
+                <View style={{ overflow: 'hidden' }}>
 
-                    {/* Card 2 */}
-                    <TouchableOpacity style={styles.eventCard}>
-                        <Image source={{ uri: 'https://via.placeholder.com/300x400/EC4899/ffffff?text=Holiday+Camp' }} style={styles.eventImage} />
-                        <View style={styles.eventOverlay} />
-                        <View style={styles.eventContent}>
-                            <Text style={styles.eventTitle}>Holiday Camp</Text>
-                            <View style={styles.eventRow}>
-                                <Text style={styles.eventDate}>22nd July</Text>
-                                <View style={styles.verticalDivider} />
-                                <Text style={styles.eventTime}>9am-3pm</Text>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        style={{ height: 256 }}
+                        contentContainerStyle={{ paddingHorizontal: 16 }}
+                    >                    {/* Card 1 */}
+                        <TouchableOpacity style={styles.eventCard}>
+                            <Image source={{ uri: 'https://via.placeholder.com/300x400/3B82F6/ffffff?text=Kids+Playing' }} style={styles.eventImage} />
+                            <View style={styles.eventOverlay} />
+                            <View style={styles.eventContent}>
+                                <Text style={styles.eventTitle}>Birthday Party</Text>
+                                <View style={styles.eventRow}>
+                                    <Text style={styles.eventDate}>10th April</Text>
+                                    <View style={styles.verticalDivider} />
+                                    <Text style={styles.eventTime}>10:30-12pm</Text>
+                                </View>
                             </View>
-                        </View>
-                    </TouchableOpacity>
-                </ScrollView>
+                        </TouchableOpacity>
+
+                        {/* Card 2 */}
+                        <TouchableOpacity style={styles.eventCard}>
+                            <Image source={{ uri: 'https://via.placeholder.com/300x400/EC4899/ffffff?text=Holiday+Camp' }} style={styles.eventImage} />
+                            <View style={styles.eventOverlay} />
+                            <View style={styles.eventContent}>
+                                <Text style={styles.eventTitle}>Holiday Camp</Text>
+                                <View style={styles.eventRow}>
+                                    <Text style={styles.eventDate}>22nd July</Text>
+                                    <View style={styles.verticalDivider} />
+                                    <Text style={styles.eventTime}>9am-3pm</Text>
+                                </View>
+                            </View>
+                        </TouchableOpacity>
+                    </ScrollView>
+                </View>
 
                 {/* Refer a Coach Banner */}
                 <TouchableOpacity style={styles.referBanner}>
@@ -242,10 +249,10 @@ const styles = StyleSheet.create({
     },
     horizontalScroll: {
         marginBottom: 24,
-        overflow: 'visible',
+        height: 256,  // ✅ enough room for 240px cards + padding
     },
     eventCard: {
-        width: 220,
+        width: 180,
         height: 240,
         borderRadius: 16,
         marginRight: 16,

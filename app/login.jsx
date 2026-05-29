@@ -1,5 +1,6 @@
 import AuthInput from '@/components/auth/AuthInput';
 import CustomButton from '@/components/common/CustomButton';
+import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -7,6 +8,7 @@ import { Image, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, Sta
 
 export default function Login() {
     const router = useRouter();
+    const { login, isProfileCompleted, isOnboardingCompleted } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
@@ -18,7 +20,14 @@ export default function Login() {
         setTimeout(() => {
             setIsLoading(false);
             if (email && password) {
-                router.replace('/(tabs)');
+                login();
+                if (!isProfileCompleted) {
+                    router.replace('/fill-profile');
+                } else if (!isOnboardingCompleted) {
+                    router.replace('/first-time-onboarding');
+                } else {
+                    router.replace('/(tabs)');
+                }
             } else {
                 alert('Please enter email and password');
             }
@@ -194,7 +203,7 @@ const styles = StyleSheet.create({
     forgotText: {
         color: '#F7D02A',
         fontSize: 16,
-        textDecorationLine: 'underline',
+
     },
     footer: {
         alignItems: 'center',

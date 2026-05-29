@@ -146,19 +146,7 @@ export default function SideMenu({ visible, onClose, initialTab = 'Menu' }) {
 
                         <Text style={styles.menuTitle}>Main Menu</Text>
 
-                        {/* Tabs Switcher */}
-                        <View style={styles.tabsContainer}>
-                            {['Menu', 'Profile', 'Notifications'].map(tab => (
-                                <TouchableOpacity
-                                    key={tab}
-                                    style={[styles.tab, activeTab === tab && styles.activeTab]}
-                                    onPress={() => setActiveTab(tab)}
-                                >
-                                    <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-
+                     
                         <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
                             {activeTab === 'Menu' && items.map((item) => (
                                 <View key={item.id}>
@@ -215,7 +203,7 @@ export default function SideMenu({ visible, onClose, initialTab = 'Menu' }) {
 
                             {activeTab === 'Notifications' && (
                                 <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-                                     <NotificationsList />
+                                    <NotificationsList />
                                 </View>
                             )}
                         </ScrollView>
@@ -244,7 +232,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.5)',
     },
     menuContainer: {
-        width: width * 0.85,
+        width: '100%',
         height: '100%',
         backgroundColor: '#2b2b2b', // Fallback
         position: 'absolute',
@@ -275,6 +263,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#fdbb2d', // Gold Color
         marginBottom: 30,
+        fontFamily: 'Urbanist_700Bold',
+
     },
     menuList: {
         flex: 1,

@@ -1,6 +1,6 @@
 import CustomButton from '@/components/common/CustomButton';
 import { useRouter } from 'expo-router';
-import { Image, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Image, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Success() {
     const router = useRouter();
@@ -57,6 +57,15 @@ export default function Success() {
                             variant="primary"
                             style={styles.submitButton}
                         />
+
+                        <TouchableOpacity
+                            onPress={() => router.push('/create-new-password')}
+                            style={styles.simulateContainer}
+                        >
+                            <Text style={styles.simulateText}>
+                                Simulate opening email link (Create New Password)
+                            </Text>
+                        </TouchableOpacity>
                     </View>
 
                     <View style={styles.footer}>
@@ -155,5 +164,17 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 16,
         opacity: 0.8,
+    },
+    simulateContainer: {
+        alignItems: 'center',
+        marginTop: 20,
+        padding: 10,
+    },
+    simulateText: {
+        color: '#FFC600',
+        fontSize: 14,
+        textDecorationLine: 'underline',
+        opacity: 0.8,
+        textAlign: 'center',
     },
 });

@@ -1,0 +1,123 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import ProfileModal from './ProfileModal';
+
+export default function OnboardingHeader({ title, showBack = false, onMenuPress, onNotificationPress }) {
+    const router = useRouter();
+    const [isProfileVisible, setIsProfileVisible] = useState(false);
+
+    return (
+        <>
+
+            <View style={styles.container}>
+                <View style={styles.leftContainer}>
+                    <View style={styles.logoContainer}>
+                        <Image
+                            source={require('../../assets/images/coach-logo.png')}
+                            style={styles.logoImage}
+                        />
+
+                    </View>
+                </View>
+
+                <View style={styles.centerContainer}>
+
+                </View>
+
+                <View style={styles.rightContainer}>
+                    <TouchableOpacity style={styles.iconButton} onPress={onNotificationPress}>
+                        <Ionicons name="notifications-outline" size={26} color="#fff" />
+                        <View style={styles.badge} />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.profileButton} onPress={() => setIsProfileVisible(true)}>
+
+                        <Image
+                            source={require('@/assets/images/Ellipse.png')}
+                            style={styles.profileImage}
+                        />
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+            <ProfileModal
+                visible={isProfileVisible}
+                onClose={() => setIsProfileVisible(false)}
+            />
+        </>
+    );
+}
+
+const styles = StyleSheet.create({
+    bgImage: {
+        width: '100%',
+        justifyContent: 'center',
+    },
+    container: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingTop: 30, // Status bar padding
+    },
+    logoImage: {
+        width: 130,
+        objectFit: "contain"
+    },
+    leftContainer: {
+        flex: 1,
+        alignItems: 'flex-start',
+    },
+    centerContainer: {
+        flex: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    rightContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: 12,
+    },
+    logoContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    logoTextWhite: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+    logoTextGold: {
+        fontSize: 24,
+        fontStyle: 'italic',
+        fontWeight: 'bold',
+        color: '#fdbb2d', // Gold/Yellow color
+        marginLeft: 2,
+        fontFamily: 'serif',
+    },
+    iconButton: {
+        padding: 4,
+        position: 'relative',
+    },
+    badge: {
+        position: 'absolute',
+        top: 4,
+        right: 4,
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: '#ff4444',
+        borderWidth: 1.5,
+        borderColor: '#4a4a4a',
+    },
+    profileButton: {
+        marginLeft: 8,
+    },
+    profileImage: {
+        width: 36,
+        height: 36,
+    },
+});

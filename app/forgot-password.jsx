@@ -165,7 +165,6 @@ const styles = StyleSheet.create({
     signInLink: {
         color: '#FFC600',
         fontWeight: 'bold',
-        textDecorationLine: 'underline',
     },
     submitButton: {
         marginTop: 10,
