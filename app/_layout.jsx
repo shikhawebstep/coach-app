@@ -7,19 +7,74 @@ import {
 } from '@expo-google-fonts/urbanist';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
+import { useEffect } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { RootSiblingParent } from 'react-native-root-siblings';
 
 export const unstable_settings = {
     anchor: '(tabs)',
 };
 
-export default function RootLayout() {
+function RootLayoutNav() {
     const colorScheme = useColorScheme();
+    const { isLoggedIn, isAuthLoading, isProfileCompleted, isOnboardingCompleted } = useAuth();
+    const segments = useSegments();
+    const router = useRouter();
+
+    const inAuthGroup = segments[0] === '(tabs)' || !segments[0] || segments[0] === 'index' || segments[0] === 'first-time-onboarding' || segments[0] === 'fill-profile' || segments[0] === 'success';
+
+    useEffect(() => {
+        if (isAuthLoading) return;
+
+        if (!isLoggedIn && inAuthGroup) {
+            router.replace('/login');
+        } else if (isLoggedIn && (segments[0] === 'login' || segments[0] === 'forgot-password')) {
+            if (!isProfileCompleted) {
+                router.replace('/fill-profile');
+            } else if (!isOnboardingCompleted) {
+                router.replace('/first-time-onboarding');
+            } else {
+                router.replace('/(tabs)');
+            }
+        }
+    }, [isLoggedIn, isAuthLoading, segments, inAuthGroup, isProfileCompleted, isOnboardingCompleted]);
+
+    if (isAuthLoading || (!isLoggedIn && inAuthGroup)) {
+        return (
+            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                <View style={{ flex: 1, backgroundColor: '#101014', justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#F7D02A" />
+                </View>
+            </ThemeProvider>
+        );
+    }
+
+    return (
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+                <Stack.Screen name="login" options={{ headerShown: false }} />
+                <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
+                <Stack.Screen name="success" options={{ headerShown: false }} />
+                <Stack.Screen name="create-new-password" options={{ headerShown: false }} />
+                <Stack.Screen name="fill-profile" options={{ headerShown: false }} />
+                <Stack.Screen name="first-time-onboarding" options={{ headerShown: false }} />
+                <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+            </Stack>
+            <StatusBar style="auto" />
+        </ThemeProvider>
+    );
+}
+
+export default function RootLayout() {
     const [loaded] = useFonts({
         Urbanist_400Regular,
         Urbanist_500Medium,
@@ -31,22 +86,10 @@ export default function RootLayout() {
     if (!loaded) return null;
 
     return (
-        <AuthProvider>
-            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                <Stack>
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                    <Stack.Screen name="index" options={{ headerShown: false }} />
-                    <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-                    <Stack.Screen name="login" options={{ headerShown: false }} />
-                    <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
-                    <Stack.Screen name="success" options={{ headerShown: false }} />
-                    <Stack.Screen name="create-new-password" options={{ headerShown: false }} />
-                    <Stack.Screen name="fill-profile" options={{ headerShown: false }} />
-                    <Stack.Screen name="first-time-onboarding" options={{ headerShown: false }} />
-                    <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-                </Stack>
-                <StatusBar style="auto" />
-            </ThemeProvider>
-        </AuthProvider>
+        <RootSiblingParent>
+            <AuthProvider>
+                <RootLayoutNav />
+            </AuthProvider>
+        </RootSiblingParent>
     );
 }

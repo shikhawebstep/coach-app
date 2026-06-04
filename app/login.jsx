@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Toast from 'react-native-root-toast';
 
 export default function Login() {
     const router = useRouter();
@@ -15,12 +16,43 @@ export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleLogin = async () => {
+        if (!email || !password) {
+            Toast.show('Please enter email and password', { duration: Toast.durations.LONG, position: Toast.positions.TOP });
+            return;
+        }
+
         setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setIsLoading(false);
-            if (email && password) {
-                login();
+        try {
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+
+            const raw = JSON.stringify({
+                "email": email,
+                "password": password
+            });
+
+            const requestOptions = {
+                method: "POST",
+                headers: myHeaders,
+                body: raw,
+                redirect: "follow"
+            };
+
+            const response = await fetch("https://api.grabbite.com/api/coachpro/auth/login", requestOptions);
+            const resultText = await response.text();
+            console.log(resultText);
+            
+            let resultObj = {};
+            try {
+                resultObj = JSON.parse(resultText);
+            } catch (e) {}
+
+            if (response.ok) {
+                const token = resultObj.token || resultObj.data?.token || '';
+                const userId = resultObj.id || resultObj.userId || resultObj.data?.id || resultObj.data?.user?.id || resultObj.data?.admin?.id || resultObj.user?.id || '';
+
+                Toast.show(resultObj.message || 'Logged in successfully!', { duration: Toast.durations.LONG, position: Toast.positions.TOP });
+                login(token, userId);
                 if (!isProfileCompleted) {
                     router.replace('/fill-profile');
                 } else if (!isOnboardingCompleted) {
@@ -29,9 +61,14 @@ export default function Login() {
                     router.replace('/(tabs)');
                 }
             } else {
-                alert('Please enter email and password');
+                Toast.show(resultObj.message || 'Login failed. Please check your credentials.', { duration: Toast.durations.LONG, position: Toast.positions.TOP });
             }
-        }, 1500);
+        } catch (error) {
+            console.error(error);
+            Toast.show('An error occurred during login.', { duration: Toast.durations.LONG, position: Toast.positions.TOP });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleForgotPassword = () => {
@@ -151,7 +188,6 @@ const styles = StyleSheet.create({
     },
     header: {
         alignItems: 'center',
-        fontFamily: 'Urbanist_700Bold'
     },
     logo: {
         width: 200,
@@ -187,13 +223,13 @@ const styles = StyleSheet.create({
     rememberText: {
         color: '#fff',
         fontSize: 16,
+        fontFamily: 'Urbanist_400Regular',
     },
     signInButton: {
         marginBottom: 20,
         backgroundColor: '#F7D02A',
         color: '#101014',
         fontSize: 16,
-        fontWeight: '700',
         fontFamily: 'Urbanist_700Bold'
     },
     forgotContainer: {
@@ -203,7 +239,7 @@ const styles = StyleSheet.create({
     forgotText: {
         color: '#F7D02A',
         fontSize: 16,
-
+        fontFamily: 'Urbanist_500Medium',
     },
     footer: {
         alignItems: 'center',
@@ -220,5 +256,6 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 16,
         opacity: 0.8,
+        fontFamily: 'Urbanist_400Regular',
     },
 });

@@ -26,11 +26,11 @@ export default function CoachResults({ onBack, title = "My results" }) {
 
             {/* Search Input */}
             <View style={styles.searchContainer}>
-                <Ionicons name="search-outline" size={20} color="#a0a0a0" style={styles.searchIcon} />
+                <Ionicons name="search-outline" size={20} color="#797A88" style={styles.searchIcon} />
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Select a coach..."
-                    placeholderTextColor="#a0a0a0"
+                    placeholderTextColor="#797A88"
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
@@ -83,6 +83,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
+        fontFamily: 'Urbanist_700Bold',
         fontWeight: 'bold',
         color: '#1a1a1a',
     },
@@ -90,7 +91,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginHorizontal: 16,
-        backgroundColor: '#fff',
+        backgroundColor: '#F6F6F7',
         borderWidth: 1,
         borderColor: '#E5E7EB', // Lighter grey border
         borderRadius: 12,

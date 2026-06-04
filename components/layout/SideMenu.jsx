@@ -1,6 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
+
 import {
     Animated,
     Dimensions,
@@ -66,6 +69,19 @@ export default function SideMenu({ visible, onClose, initialTab = 'Menu' }) {
     const [items, setItems] = useState(MENU_ITEMS);
     const [activeTab, setActiveTab] = useState(initialTab); // 'Menu', 'Profile', 'Notifications'
 
+
+
+    const { logout } = useAuth();
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+            router.replace('/login');
+        } catch (error) {
+            console.log('Error logging out:', error);
+        }
+    };
+
     // Reset active tab when menu becomes visible if initialTab is provided
     useEffect(() => {
         if (visible) {
@@ -99,10 +115,7 @@ export default function SideMenu({ visible, onClose, initialTab = 'Menu' }) {
         }));
     };
 
-    const handleLogout = () => {
-        onClose();
-        router.replace('/login');
-    };
+ 
 
     const handleNavigation = (route) => {
         onClose();
@@ -206,16 +219,18 @@ export default function SideMenu({ visible, onClose, initialTab = 'Menu' }) {
 
                             {/* Footer / Logout */}
                             <View style={styles.footer}>
-                                <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
-                                    <Ionicons name="log-out-outline" size={24} color="#fff" />
-                                    <Text style={styles.menuItemText}>Log out</Text>
-                                </TouchableOpacity>
+                                <View style={styles.footer}>
+                                    <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+                                        <Ionicons name="log-out-outline" size={24} color="#fff" />
+                                        <Text style={styles.menuItemText}>Log out</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         </ImageBackground>
                     </Animated.View>
                 </View>
-            </Modal>  
-        
+            </Modal>
+
         </>
     );
 }

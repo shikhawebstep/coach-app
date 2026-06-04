@@ -1,10 +1,12 @@
+import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { useEffect, useRef, useState } from 'react';
 import {
     Animated,
     Dimensions,
-    Image,
     ImageBackground,
+    Linking,
     Modal,
     ScrollView,
     StyleSheet,
@@ -17,8 +19,12 @@ import {
 const { width } = Dimensions.get('window');
 
 export default function ProfileModal({ visible, onClose }) {
+    const { token, userId } = useAuth();
     const [view, setView] = useState('profile');
+    const [profileData, setProfileData] = useState(null);
     // 'profile' | 'contract' | 'referCoach' | 'latestResults' | 'averageResults'
+
+    console.log('profileData', profileData)
 
     const slideAnim = useRef(new Animated.Value(-width)).current;
 
@@ -39,6 +45,27 @@ export default function ProfileModal({ visible, onClose }) {
         }
     }, [visible]);
 
+    console.log('token', token, userId)
+    useEffect(() => {
+        if (!token || !userId) return;
+
+
+        const myHeaders = new Headers();
+        myHeaders.append("Authorization", `Bearer ${token}`);
+
+        fetch(`https://api.grabbite.com/api/coachpro/account-profile/${userId}`, {
+            method: "GET",
+            headers: myHeaders,
+        })
+            .then((r) => r.json())
+            .then((result) => {
+                if (result.status && result.data) {
+                    setProfileData(result.data);
+                }
+            })
+            .catch((error) => console.error(error));
+    }, [token, userId]);
+
     const handleBack = () => {
         if (view === 'contract') setView('profile');
         else if (view === 'referCoach') setView('profile');
@@ -55,8 +82,14 @@ export default function ProfileModal({ visible, onClose }) {
             <View style={styles.profileImageContainer}>
                 <View style={styles.profileImageWrapper}>
                     <Image
-                        source={require('../../assets/images/Ellipse.png')}
-                        style={styles.profileLargeImage}
+                        source={
+                            profileData?.profile
+                                ? { uri: profileData.profile }
+                                : require('../../assets/images/Ellipse.png')
+                        }
+                        onError={(e) => console.log("Image Error:", e.nativeEvent)}
+
+                       style={[styles.profileImage, { borderRadius: 35 }]}
                     />
                 </View>
                 <TouchableOpacity style={styles.editIconBadge}>
@@ -68,7 +101,7 @@ export default function ProfileModal({ visible, onClose }) {
                 <View style={styles.inputContainer}>
                     <TextInput
                         style={styles.input}
-                        value="Ethan"
+                        value={profileData?.firstName || ""}
                         placeholder="First Name"
                         placeholderTextColor="#999"
                     />
@@ -77,7 +110,7 @@ export default function ProfileModal({ visible, onClose }) {
                 <View style={styles.inputContainer}>
                     <TextInput
                         style={styles.input}
-                        value="Bond Vaughan"
+                        value={profileData?.lastName || ""}
                         placeholder="Last Name"
                         placeholderTextColor="#999"
                     />
@@ -86,7 +119,7 @@ export default function ProfileModal({ visible, onClose }) {
                 <View style={styles.inputContainer}>
                     <TextInput
                         style={styles.inputTextWithIcon}
-                        value="ethan@sambasoccerschools.com"
+                        value={profileData?.email || ""}
                         placeholder="Email"
                         placeholderTextColor="#999"
                     />
@@ -100,12 +133,42 @@ export default function ProfileModal({ visible, onClose }) {
                     </View>
                     <TextInput
                         style={styles.phoneInput}
-                        value="+1 111 467 378 399"
+                        value={profileData?.phoneNumber || ""}
                         placeholder="Phone Number"
                         placeholderTextColor="#999"
                         keyboardType="phone-pad"
                     />
                 </View>
+
+                {/* City & Postal Code */}
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        value={profileData?.city || ""}
+                        placeholder="City"
+                        placeholderTextColor="#999"
+                    />
+                </View>
+
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        value={profileData?.postalCode || ""}
+                        placeholder="Postal Code"
+                        placeholderTextColor="#999"
+                        keyboardType="number-pad"
+                    />
+                </View>
+
+                {/* Referral Code (read-only) */}
+                {profileData?.referralCode ? (
+                    <View style={[styles.inputContainer, { backgroundColor: '#f0f4ff' }]}>
+                        <Ionicons name="gift-outline" size={18} color="#3b5fdf" style={{ marginRight: 8 }} />
+                        <Text style={[styles.input, { color: '#3b5fdf' }]}>
+                            Referral Code: {profileData.referralCode}
+                        </Text>
+                    </View>
+                ) : null}
 
                 <TouchableOpacity
                     style={styles.contractActionCard}
@@ -130,65 +193,99 @@ export default function ProfileModal({ visible, onClose }) {
     );
 
     // ─── Step 2: Sign Contract ───────────────────────────────────────────────
-    const renderContract = () => (
-        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            <View style={styles.contractHeaderRow}>
-                <Text style={styles.pageTitleHeader}>Sign your contract</Text>
-                <View style={styles.completeBadge}>
-                    <Text style={styles.completeBadgeText}>Complete</Text>
+    const renderContract = () => {
+        const contract = profileData?.contract;
+        const isSigned = contract?.status === 'signed';
+        const pdfUrl = contract?.signedPdfFile || contract?.pdfFile;
+
+        return (
+            <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                <View style={styles.contractHeaderRow}>
+                    <Text style={styles.pageTitleHeader}>Sign your contract</Text>
+                    <View style={[styles.completeBadge, { backgroundColor: isSigned ? '#02b45a' : '#f59e0b' }]}>
+                        <Text style={styles.completeBadgeText}>
+                            {isSigned ? 'Signed' : 'Pending'}
+                        </Text>
+                    </View>
                 </View>
-            </View>
 
-            <View style={styles.contractButtonRow}>
-                <TouchableOpacity style={styles.contractTopButton}>
-                    <Text style={styles.contractTopBtnText}>Previous</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => setView('referCoach')}
-                    style={styles.contractTopButton}
-                >
-                    <Text style={styles.contractTopBtnText}>Next</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.contractTopButton}>
-                    <Text style={styles.contractTopBtnText}>Download</Text>
-                </TouchableOpacity>
-            </View>
+                <View style={styles.contractButtonRow}>
+                    <TouchableOpacity style={styles.contractTopButton}>
+                        <Text style={styles.contractTopBtnText}>Previous</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => setView('referCoach')}
+                        style={styles.contractTopButton}
+                    >
+                        <Text style={styles.contractTopBtnText}>Next</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.contractTopButton}
+                        onPress={() => { if (pdfUrl) Linking.openURL(pdfUrl); }}
+                    >
+                        <Text style={styles.contractTopBtnText}>Download</Text>
+                    </TouchableOpacity>
+                </View>
 
-            <View style={styles.contractContent}>
-                <Text style={styles.contractMainTitle}>INDEPENDENT CONTRACTOR AGREEMENT</Text>
+                <View style={styles.contractContent}>
+                    <Text style={styles.contractMainTitle}>
+                        {contract?.title || 'INDEPENDENT CONTRACTOR AGREEMENT'}
+                    </Text>
 
-                <Text style={styles.contractParagraph}>
-                    This independent contractor agreement is between{' '}
-                    <Text style={styles.boldText}>Ethan Bond Vaughan</Text>
-                    {' '}And SAMBA SOCCER SCHOOLS GLOBAL LTD ("We", "Us", "Our", the "Company")
-                </Text>
+                    {contract?.contractType ? (
+                        <Text style={[styles.contractParagraph, { color: '#3b5fdf', fontFamily: 'Urbanist_700Bold' }]}>
+                            Contract Type: {contract.contractType}
+                        </Text>
+                    ) : null}
 
-                <Text style={styles.contractSectionTitle}>Background</Text>
-                <Text style={styles.contractParagraph}>
-                    a. The Company is of the opinion that the Contractor has the necessary qualifications, experience and abilities to provide services to the Company.
-                </Text>
-                <Text style={styles.contractParagraph}>
-                    b. The Contractor agrees to provide such services to the Company on the terms and conditions set out in the Agreement.
-                </Text>
+                    <Text style={styles.contractParagraph}>
+                        This independent contractor agreement is between{' '}
+                        <Text style={styles.boldText}>
+                            {profileData ? `${profileData.firstName} ${profileData.lastName}` : 'Coach'}
+                        </Text>
+                        {' '}And SAMBA SOCCER SCHOOLS GLOBAL LTD ("We", "Us", "Our", the "Company")
+                    </Text>
 
-                <Text style={styles.contractSectionTitle}>General</Text>
-                <Text style={styles.contractParagraph}>
-                    IN CONSIDERATION OF the matters described above and of the mutual benefits and obligations set forth in this Agreement, the receipt and sufficiency of which consideration is hereby acknowledged, the Company and the Contractor (individually the "Party" and collectively the "Parties" to this Agreement) agree as follows:
-                </Text>
+                    {contract?.description ? (
+                        <>
+                            <Text style={styles.contractSectionTitle}>Description</Text>
+                            <Text style={styles.contractParagraph}>{contract.description}</Text>
+                        </>
+                    ) : null}
 
-                <Text style={styles.contractSectionTitle}>General</Text>
-                <Text style={styles.contractParagraph}>
-                    a. The particulars of this Agreement are as set out in this Agreement and the Company policies, procedures and rules as may be introduced and/or varied from time to time.
-                </Text>
-                <Text style={styles.contractParagraph}>
-                    b. The Company has a duty to safeguard all students, parents and guardians and their personal information. The Contractor agrees to adhere to the Company's policies and understands that failure to do so may lead to all work being withdrawn.
-                </Text>
-                <Text style={styles.contractParagraph}>
-                    c. Any amendments or modifications of this Agreement or additional obligation assumed by either Party in connection with this agreement will only be binding if evidenced in writing and signed by both parties.
-                </Text>
-            </View>
-        </ScrollView>
-    );
+                    <Text style={styles.contractSectionTitle}>Background</Text>
+                    <Text style={styles.contractParagraph}>
+                        a. The Company is of the opinion that the Contractor has the necessary qualifications, experience and abilities to provide services to the Company.
+                    </Text>
+                    <Text style={styles.contractParagraph}>
+                        b. The Contractor agrees to provide such services to the Company on the terms and conditions set out in the Agreement.
+                    </Text>
+
+                    <Text style={styles.contractSectionTitle}>General</Text>
+                    <Text style={styles.contractParagraph}>
+                        IN CONSIDERATION OF the matters described above and of the mutual benefits and obligations set forth in this Agreement, the receipt and sufficiency of which consideration is hereby acknowledged, the Company and the Contractor (individually the "Party" and collectively the "Parties" to this Agreement) agree as follows:
+                    </Text>
+
+                    <Text style={styles.contractSectionTitle}>General</Text>
+                    <Text style={styles.contractParagraph}>
+                        a. The particulars of this Agreement are as set out in this Agreement and the Company policies, procedures and rules as may be introduced and/or varied from time to time.
+                    </Text>
+                    <Text style={styles.contractParagraph}>
+                        b. The Company has a duty to safeguard all students, parents and guardians and their personal information. The Contractor agrees to adhere to the Company's policies and understands that failure to do so may lead to all work being withdrawn.
+                    </Text>
+                    <Text style={styles.contractParagraph}>
+                        c. Any amendments or modifications of this Agreement or additional obligation assumed by either Party in connection with this agreement will only be binding if evidenced in writing and signed by both parties.
+                    </Text>
+
+                    {isSigned && contract?.signedAt ? (
+                        <Text style={[styles.contractParagraph, { color: '#02b45a', marginTop: 16 }]}>
+                            ✓ Signed on {new Date(contract.signedAt).toLocaleDateString()}
+                        </Text>
+                    ) : null}
+                </View>
+            </ScrollView>
+        );
+    };
 
     // ─── Step 3: Refer a Coach ───────────────────────────────────────────────
     const renderReferCoach = () => (
@@ -234,7 +331,7 @@ export default function ProfileModal({ visible, onClose }) {
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.actionButton, styles.saveButtonBlue]}
-                        onPress={() => setView('latestResults')}  // ✅ add this
+                        onPress={() => setView('latestResults')}
                     >
                         <Text style={styles.actionButtonTextWhite}>Submit</Text>
                     </TouchableOpacity>
@@ -243,7 +340,7 @@ export default function ProfileModal({ visible, onClose }) {
         </ScrollView>
     );
 
-    // ─── Step 4 & 5: Results (shared UI, tab switches between Latest/Average) ─
+    // ─── Step 4 & 5: Results ─────────────────────────────────────────────────
     const renderResults = () => {
         const isLatest = view === 'latestResults';
 
@@ -283,14 +380,18 @@ export default function ProfileModal({ visible, onClose }) {
             <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 <View style={styles.resultHeader}>
                     <Image
-                        source={require('../../assets/images/Ellipse.png')}
-                        style={styles.profileImage}
+                        source={
+                            profileData?.profile
+                                ? { uri: profileData.profile }
+                                : require('../../assets/images/Ellipse.png')
+                        }
+                        style={[styles.profileImage, { borderRadius: 35 }]}
                     />
-
                     <Text style={[styles.pageTitle, { fontSize: 32 }]}>
                         Your results are in...
                     </Text>
                 </View>
+
                 {/* Tab toggle */}
                 <View style={styles.resultTabRow}>
                     <TouchableOpacity
@@ -337,11 +438,8 @@ export default function ProfileModal({ visible, onClose }) {
                     style={styles.scoreCard}
                     imageStyle={{ borderRadius: 16, opacity: 0.5 }}
                 >
-                    {/* Donut chart */}
-                   // Replace the donutWrapper View block with:
                     <View style={styles.donutWrapper}>
                         <View style={styles.donutTrack}>
-                            {/* Top-right arc */}
                             <View style={[styles.donutSegment, {
                                 borderTopColor: data.color,
                                 borderRightColor: data.color,
@@ -354,7 +452,6 @@ export default function ProfileModal({ visible, onClose }) {
                             <Text style={styles.donutPercent}>{data.percentage}%</Text>
                         </View>
                     </View>
-                    {/* Label */}
                     <View style={styles.scoreLabelWrapper}>
                         <Text style={styles.scoreLabelText}>{data.label}</Text>
                         <Image
@@ -514,6 +611,7 @@ const styles = StyleSheet.create({
     profileImageWrapper: {
         width: 110,
         height: 110,
+        borderRadius: 55,
         overflow: 'hidden',
         justifyContent: 'center',
         alignItems: 'center',
@@ -554,7 +652,6 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 16,
         color: '#333',
-
         fontFamily: 'Urbanist_500Medium',
     },
     inputTextWithIcon: {
@@ -670,7 +767,6 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     completeBadge: {
-        backgroundColor: '#02b45a',
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 6,
@@ -797,7 +893,7 @@ const styles = StyleSheet.create({
         height: 76,
         borderRadius: 38,
         borderWidth: 8,
-        borderColor: '#444',           // grey track
+        borderColor: '#444',
         position: 'absolute',
         justifyContent: 'center',
         alignItems: 'center',
@@ -823,17 +919,6 @@ const styles = StyleSheet.create({
         fontFamily: 'Urbanist_700Bold',
         color: '#fff',
     },
-
-    donutOuter: {
-        width: 100,
-        height: 100,
-        borderRadius: '100%',
-        borderWidth: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-
-
     scoreLabelWrapper: {
         flex: 1,
         flexDirection: 'row',
@@ -845,9 +930,6 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontFamily: 'Urbanist_700Bold',
         flex: 1,
-    },
-    scoreEmoji: {
-        fontSize: 28,
     },
     ratingRow: {
         flexDirection: 'row',
@@ -864,7 +946,7 @@ const styles = StyleSheet.create({
     ratingScore: {
         fontSize: 40,
         color: '#fff',
-        fontFamily: 'LuckiestGuy_400Regular'
+        fontFamily: 'LuckiestGuy_400Regular',
     },
     ratingLabel: {
         fontSize: 18,
@@ -921,7 +1003,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
-        marginVertical:20,
-        flexWrap: 'wrap', // optional for small screens
+        marginVertical: 20,
+        flexWrap: 'wrap',
     },
 });

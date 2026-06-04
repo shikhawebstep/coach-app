@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     Dimensions,
     Image,
@@ -9,8 +9,11 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
+    ActivityIndicator
 } from "react-native";
+import { useRouter } from "expo-router";
+import { useAuth } from "@/context/AuthContext";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -631,9 +634,26 @@ const Dashboard = ({ coachName, completedIds, onTaskPress, onGetStarted }) => {
 // ROOT
 // ─────────────────────────────────────────────────────────────
 export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
+  const router = useRouter();
+  const { isLoggedIn, isAuthLoading } = useAuth();
+
   const [screen, setScreen]         = useState("splash"); // 'splash' | 'dashboard'
   const [activeTask, setActiveTask] = useState(null);     // task object or null
   const [completed, setCompleted]   = useState([]);       // array of task ids
+
+  useEffect(() => {
+    if (!isAuthLoading && !isLoggedIn) {
+      router.replace('/login');
+    }
+  }, [isAuthLoading, isLoggedIn]);
+
+  if (isAuthLoading || (!isAuthLoading && !isLoggedIn)) {
+    return (
+      <View style={{ flex: 1, backgroundColor: C.bgDark, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={C.yellow} />
+      </View>
+    );
+  }
 
   const openTask  = (task) => setActiveTask(task);
   const closeTask = () => setActiveTask(null);

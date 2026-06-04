@@ -359,7 +359,6 @@ const styles = StyleSheet.create({
     skipButtonText: {
         color: '#fff',
         fontSize: 16,
-        fontWeight: '700',
         fontFamily: 'Urbanist_700Bold',
     },
     completeButton: {
@@ -368,7 +367,6 @@ const styles = StyleSheet.create({
     completeButtonText: {
         color: '#000',
         fontSize: 16,
-        fontWeight: '700',
         fontFamily: 'Urbanist_700Bold',
     },
 
