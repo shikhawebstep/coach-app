@@ -11,10 +11,8 @@ const NOTIFICATIONS_DATA = [
                 id: 'n1',
                 title: 'New Training Course Added',
                 subtitle: 'Health and Safety video now released',
-                icon: 'add',
-                iconBg: '#3B82F6', // Blue
+                image: require('@/assets/images/add.png'),
                 unread: true,
-                type: 'icon'
             }
         ]
     },
@@ -26,10 +24,8 @@ const NOTIFICATIONS_DATA = [
                 id: 'n2',
                 title: 'Class Cancelled',
                 subtitle: 'Your class on Saturday 18th May has been cancelled.',
-                icon: 'close',
-                iconBg: '#EF4444', // Red
+                image: require('@/assets/images/cancel.png'),
                 unread: false,
-                type: 'icon'
             }
         ]
     },
@@ -41,17 +37,15 @@ const NOTIFICATIONS_DATA = [
                 id: 'n3',
                 title: 'Annual Training Dates',
                 subtitle: 'Our Annual Training is on 18th Sept',
-                image: 'https://via.placeholder.com/150/8B5CF6/ffffff?text=Avatar',
+                image: require('@/assets/images/annual.png'),
                 unread: false,
-                type: 'image'
             },
             {
                 id: 'n4',
                 title: 'Birthday Party Booking',
                 subtitle: "You've been booked on Sat 19th May",
-                image: 'https://via.placeholder.com/150/1CAB4B/ffffff?text=Avatar2',
+                image: require('@/assets/images/birthdayn.png'),
                 unread: false,
-                type: 'image'
             }
         ]
     }
@@ -89,21 +83,16 @@ export default function NotificationsList({ onNotificationSelect }) {
                                 onPress={() => onNotificationSelect && onNotificationSelect(item.id)}
                             >
                                 <View style={styles.iconContainer}>
-                                    {item.type === 'icon' ? (
-                                        <View style={[styles.iconCircle, { backgroundColor: item.iconBg }]}>
-                                            <Ionicons name={item.icon} size={24} color="#fff" />
-                                        </View>
-                                    ) : (
-                                        <Image source={{ uri: item.image }} style={styles.avatarImage} />
-                                    )}
-                                    {/* Unread indicator */}
-                                    {item.unread && <View style={styles.unreadDot} />}
+                                    <Image source={item.image} style={styles.avatarImage} />
                                 </View>
 
                                 <View style={styles.contentContainer}>
                                     <Text style={styles.notificationTitle}>{item.title}</Text>
                                     <Text style={styles.notificationSubtitle} numberOfLines={2}>{item.subtitle}</Text>
                                 </View>
+
+                                {/* Unread indicator on the top-right corner of the card */}
+                                {item.unread && <View style={styles.unreadDot} />}
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -128,8 +117,8 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
         color: '#1a1a1a',
+        fontFamily: 'Urbanist_700Bold',
     },
     hideReadContainer: {
         flexDirection: 'row',
@@ -139,6 +128,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#666',
         marginLeft: 6,
+        fontFamily: 'Urbanist_400Regular',
     },
     scrollContent: {
         paddingHorizontal: 16,
@@ -149,9 +139,9 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 16,
-        fontWeight: 'bold',
         color: '#1a1a1a',
         marginBottom: 16,
+        fontFamily: 'Urbanist_700Bold',
     },
     notificationCard: {
         flexDirection: 'row',
@@ -166,17 +156,10 @@ const styles = StyleSheet.create({
         elevation: 2,
         borderWidth: 1,
         borderColor: '#F9FAFB',
+        position: 'relative',
     },
     iconContainer: {
-        position: 'relative',
         marginRight: 16,
-    },
-    iconCircle: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        justifyContent: 'center',
-        alignItems: 'center',
     },
     avatarImage: {
         width: 60,
@@ -185,14 +168,12 @@ const styles = StyleSheet.create({
     },
     unreadDot: {
         position: 'absolute',
-        top: 0,
-        right: -4,
-        width: 16,
-        height: 16,
-        backgroundColor: '#FF6B6B',
-        borderRadius: 8,
-        borderWidth: 2,
-        borderColor: '#fff',
+        top: 12,
+        right: 12,
+        width: 12,
+        height: 12,
+        backgroundColor: '#FF4D4D',
+        borderRadius: 6,
     },
     contentContainer: {
         flex: 1,
@@ -200,13 +181,14 @@ const styles = StyleSheet.create({
     },
     notificationTitle: {
         fontSize: 16,
-        fontWeight: 'bold',
         color: '#1a1a1a',
         marginBottom: 4,
+        fontFamily: 'Urbanist_700Bold',
     },
     notificationSubtitle: {
         fontSize: 13,
         color: '#6B7280',
         lineHeight: 18,
+        fontFamily: 'Urbanist_400Regular',
     },
 });

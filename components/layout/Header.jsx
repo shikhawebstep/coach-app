@@ -4,14 +4,21 @@ import { useState } from 'react';
 import { Image, ImageBackground, Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
 import ProfileModal from './ProfileModal';
 import NotificationsList from '../classes/common/NotificationsList';
+import NotificationDetails from '../classes/common/NotificationDetails';
 
 export default function Header({ title, showBack = false, onMenuPress }) {
     const router = useRouter();
     const [isProfileVisible, setIsProfileVisible] = useState(false);
     const [isNotificationsVisible, setIsNotificationsVisible] = useState(false);
+    const [notificationsView, setNotificationsView] = useState('list'); // 'list' or 'details'
 
     const handleNotificationPress = () => {
+        setNotificationsView('list');
         setIsNotificationsVisible(true);
+    };
+
+    const handleNotificationSelect = (id) => {
+        setNotificationsView('details');
     };
 
     return (
@@ -70,14 +77,48 @@ export default function Header({ title, showBack = false, onMenuPress }) {
                 animationType="slide"
                 onRequestClose={() => setIsNotificationsVisible(false)}
             >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalHeader}>
-                        <TouchableOpacity onPress={() => setIsNotificationsVisible(false)} style={styles.modalBackButton}>
-                            <Ionicons name="arrow-back" size={28} color="#1a1a1a" />
-                        </TouchableOpacity>
-                    </View>
+                <View style={{ flex: 1, backgroundColor: '#fff' }}>
+                    <ImageBackground
+                        source={require('@/assets/images/Login.png')}
+                        style={styles.bgImage}
+                        resizeMode="cover"
+                    >
+                        <View style={[styles.container, { borderBottomWidth: 0 }]}>
+                            <View style={styles.leftContainer}>
+                                <TouchableOpacity onPress={() => setIsNotificationsVisible(false)} style={styles.iconButton}>
+                                    <Ionicons name="menu" size={32} color="#fff" />
+                                </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.centerContainer}>
+                                <View style={styles.logoContainer}>
+                                    <Image
+                                        source={require('../../assets/images/coach-logo.png')}
+                                        style={styles.logoImage}
+                                    />
+                                </View>
+                            </View>
+
+                            <View style={styles.rightContainer}>
+                                <TouchableOpacity style={styles.iconButton} onPress={() => setIsNotificationsVisible(false)}>
+                                    <Ionicons name="notifications-outline" size={26} color="#fff" />
+                                    <View style={styles.badge} />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.profileButton} onPress={() => { setIsNotificationsVisible(false); setIsProfileVisible(true); }}>
+                                    <Image
+                                        source={require('@/assets/images/Ellipse.png')}
+                                        style={styles.profileImage}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </ImageBackground>
                     <View style={{ flex: 1 }}>
-                        <NotificationsList onNotificationSelect={() => setIsNotificationsVisible(false)} />
+                        {notificationsView === 'list' ? (
+                            <NotificationsList onNotificationSelect={handleNotificationSelect} />
+                        ) : (
+                            <NotificationDetails onBack={() => setNotificationsView('list')} />
+                        )}
                     </View>
                 </View>
             </Modal>

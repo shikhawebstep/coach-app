@@ -86,9 +86,9 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 22,
-        fontWeight: 'bold',
         color: '#1a1a1a',
         flexShrink: 1,
+        fontFamily: 'Urbanist_700Bold',
     },
     content: {
         paddingHorizontal: 16,
@@ -109,6 +109,7 @@ const styles = StyleSheet.create({
     metaText: {
         fontSize: 14,
         color: '#1a1a1a',
+        fontFamily: 'Urbanist_500Medium',
     },
     divider: {
         height: 1,
@@ -133,7 +134,7 @@ const styles = StyleSheet.create({
     badgeText: {
         color: '#EF4444', // Red
         fontSize: 12,
-        fontWeight: '600',
+        fontFamily: 'Urbanist_600SemiBold',
     },
     bodyContainer: {
         paddingRight: 16,
@@ -143,5 +144,6 @@ const styles = StyleSheet.create({
         color: '#4B5563',
         lineHeight: 24,
         marginBottom: 20,
+        fontFamily: 'Urbanist_400Regular',
     },
 });
