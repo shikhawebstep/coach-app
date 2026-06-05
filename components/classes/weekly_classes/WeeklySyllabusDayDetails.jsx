@@ -1,171 +1,208 @@
 import { Ionicons } from '@expo/vector-icons';
+import { ResizeMode, Video } from 'expo-av';
 import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+const LEVEL_KEYS = ['beginner', 'intermediate', 'advanced', 'pro'];
 
-const SESSION_ITEMS = [
-    {
-        id: 1,
-        title: 'Small-side games',
-        desc: 'This skills tutorial will help you understand how to perform the Pinguim.',
-        time: '10 mins',
-        image: require('../../../assets/images/skill.png')
+const LEVEL_LABELS = {
+    beginner: 'Beginners (4–5)',
+    intermediate: 'Intermediate (6–7)',
+    advanced: 'Advanced',
+    pro: 'Pro',
+};
 
-    },
-    {
-        id: 2,
-        title: 'Introduction (Head coach)',
-        desc: 'This skills tutorial will help you understand how to perform the Pinguim.',
-        time: '2 mins',
-        image: require('../../../assets/images/skill.png')
+export default function WeeklySyllabusDayDetails({ onBack, onSessionItemSelect, sessionPlan }) {
+    const levels = sessionPlan?.levels || {};
 
-    },
-    {
-        id: 3,
-        title: 'Warm up activity',
-        desc: 'This skills tutorial will help you understand how to perform the Pinguim.',
-        time: '10 mins',
-        image: require('../../../assets/images/skill.png')
+    const availableLevels = LEVEL_KEYS.filter(key => levels[key]?.length > 0);
+    const [activeTab, setActiveTab] = useState(availableLevels[0] || 'beginner');
 
-    },
-    {
-        id: 4,
-        title: 'Technical exercise',
-        desc: 'This skills tutorial will help you understand how to perform the Pinguim.',
-        time: '12 mins',
-        image: require('../../../assets/images/skill.png')
-    },
-    {
-        id: 5,
-        title: 'Tactical exercise',
-        desc: 'This skills tutorial will help you understand how to perform the Pinguim.',
-        time: '12 mins',
-        image: require('../../../assets/images/skill.png')
-    },
-    {
-        id: 6,
-        title: 'Small-side games',
-        desc: 'This skills tutorial will help you understand how to perform the Pinguim.',
-        time: '10 mins',
-        image: require('../../../assets/images/skill.png')
-    },
-    {
-        id: 7,
-        title: 'Lesson debrief',
-        desc: 'This skills tutorial will help you understand how to perform the Pinguim.',
-        time: '2 mins',
-        image: require('../../../assets/images/skill.png')
-    },
-];
+    const activeLevelData = levels[activeTab]?.[0];
+    const exercises = activeLevelData?.sessionExercises || [];
 
-export default function WeeklySyllabusDayDetails({ onBack, onSessionItemSelect }) {
-    const [activeTab, setActiveTab] = useState('Beginners [4-5]');
+    const bannerKey = `${activeTab}_banner`;
+    const videoKey = `${activeTab}_video`;
+    const bannerUrl = sessionPlan?.[bannerKey];
+    const videoUrl = sessionPlan?.[videoKey];
+
+
+    console.log('sessionPlan', sessionPlan)
+
+    const parseImageUrls = (imageUrlStr) => {
+        try {
+            return JSON.parse(imageUrlStr) || [];
+        } catch {
+            return [];
+        }
+    };
+
+    const totalDuration = exercises.reduce((sum, ex) => {
+        const match = ex.duration?.match(/(\d+)/);
+        return sum + (match ? parseInt(match[1]) : 0);
+    }, 0);
+
+    if (!sessionPlan) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={{ color: '#666' }}>No session plan available.</Text>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
             <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Green Header Wrapper */}
-                <View style={styles.greenHeaderContainer}>
+
+                {/* ── Green Rounded Header ── */}
+                <View style={styles.headerWrap}>
                     <View style={styles.greenHeader}>
                         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                            <Ionicons name="arrow-back" size={24} color="#fff" />
+                            <Ionicons name="arrow-back" size={22} color="#fff" />
                         </TouchableOpacity>
                         <Text style={styles.headerTitle}>Syllabus</Text>
-                        <View style={{ width: 24 }} /> {/* Spacer */}
+                        <View style={{ width: 22 }} />
                     </View>
                 </View>
 
-                {/* Level Tabs */}
-                <View style={styles.levelTabs}>
-                    <TouchableOpacity
-                        style={[styles.levelTab, activeTab === 'Beginners [4-5]' ? styles.activeLevelTab : styles.inactiveLevelTab]}
-                        onPress={() => setActiveTab('Beginners [4-5]')}
+                {/* ── Level Pill Tabs ── */}
+                {availableLevels.length > 0 && (
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.tabsRow}
                     >
-                        <Text style={[styles.levelTabText, activeTab === 'Beginners [4-5]' ? styles.activeLevelTabText : styles.inactiveLevelTabText]}>
-                            Beginners [4-5]
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.levelTab, activeTab === 'Intermediate [6-7]' ? styles.activeLevelTab : styles.inactiveLevelTab]}
-                        onPress={() => setActiveTab('Intermediate [6-7]')}
-                    >
-                        <Text style={[styles.levelTabText, activeTab === 'Intermediate [6-7]' ? styles.activeLevelTabText : styles.inactiveLevelTabText]}>
-                            Intermediate [6-7]
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.content}>
-                    {/* Banner Image */}
-                    <View style={styles.bannerContainer}>
-                        <Image
-                            source={require('../../../assets/images/pele.png')}
-                            style={styles.bannerImage}
-                        />
-                    </View>
-
-                    {/* Skill Info */}
-                    <View style={styles.skillHeaderRow}>
-                        <Text style={styles.skillTitle}>Skill Of The Day</Text>
-                    </View>
-                    <View style={styles.skillSubtitleRow}>
-                        <Text style={styles.skillSubtitle}>The Pinguim</Text>
-                        <TouchableOpacity style={styles.soundIconBtn}>
-                            <Ionicons name="volume-medium" size={18} color="#3B82F6" />
-                        </TouchableOpacity>
-                    </View>
-                    <Text style={styles.skillDesc}>In todays lesson, students will learn to perform the Pinguim.</Text>
-
-                    {/* Video Player Placeholder */}
-                    <View style={styles.videoPlayerContainer}>
-                        <Image
-                            source={require('../../../assets/images/session.png')}
-                            style={styles.videoImage}
-                        />
-                        {/* Overlay Controls */}
-                        <View style={styles.videoOverlay}>
-                            <TouchableOpacity style={styles.centerPauseBtn}>
-                                <Ionicons name="pause" size={32} color="#fff" />
-                            </TouchableOpacity>
-
-                            <View style={styles.videoBottomControls}>
-                                <TouchableOpacity>
-                                    <Ionicons name="play" size={20} color="#fff" style={styles.controlIcon} />
-                                </TouchableOpacity>
-                                <Text style={styles.videoTime}>0:10 / 0:41</Text>
-
-                                <View style={styles.videoRightControls}>
-                                    <TouchableOpacity>
-                                        <Ionicons name="volume-high" size={20} color="#fff" style={styles.controlIcon} />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity>
-                                        <Ionicons name="scan-outline" size={20} color="#fff" style={styles.controlIcon} />
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </View>
-                    </View>
-
-                    {/* Session List */}
-                    <View style={styles.sessionList}>
-                        {SESSION_ITEMS.map((item, index) => (
+                        {availableLevels.map(level => (
                             <TouchableOpacity
-                                key={`${item.id}-${index}`}
-                                style={styles.sessionCard}
-                                onPress={() => onSessionItemSelect && onSessionItemSelect(item.id)}
+                                key={level}
+                                style={[styles.tab, activeTab === level ? styles.tabActive : styles.tabInactive]}
+                                onPress={() => setActiveTab(level)}
+                                activeOpacity={0.8}
                             >
-                                <View style={styles.imagePlaceholder}>
-                                    <Image source={item.image} style={styles.cardImage} resizeMode="cover" />
-                                </View>
-                                <View style={styles.cardContent}>
-                                    <Text style={styles.cardTitle}>{item.title}</Text>
-                                    <Text style={styles.cardDesc} numberOfLines={3}>{item.desc}</Text>
-                                    <Text style={styles.cardTime}>{item.time}</Text>
-                                </View>
+                                <Text style={[styles.tabText, activeTab === level ? styles.tabTextActive : styles.tabTextInactive]}>
+                                    {LEVEL_LABELS[level]}
+                                </Text>
                             </TouchableOpacity>
                         ))}
+                    </ScrollView>
+                )}
+
+                <View style={styles.body}>
+
+                    {/* ── Banner Image ── */}
+                    {/* ── Banner Image / Video ── */}
+                    <View style={styles.bannerWrap}>
+                        {bannerUrl ? (
+                            <Image source={{ uri: bannerUrl }} style={styles.bannerImg} resizeMode="cover" />
+                        ) : videoUrl ? (
+                            <Video
+                                source={{ uri: videoUrl }}
+                                style={styles.bannerImg}
+                                resizeMode={ResizeMode.COVER}
+                                shouldPlay={false}
+                                useNativeControls
+                            />
+                        ) : (
+                            <View style={styles.bannerPlaceholder}>
+                                <Text style={styles.bannerPlaceholderText}>PLAY LIKE PELÉ</Text>
+                            </View>
+                        )}
+                    </View>
+
+                    {/* ── Skill Of The Day ── */}
+                    {activeLevelData && (
+                        <View style={styles.skillSection}>
+                            <Text style={styles.skillOfDayLabel}>Skill Of The Day</Text>
+                            <View style={styles.skillNameRow}>
+                                <Text style={styles.skillName}>{activeLevelData.skillOfTheDay}</Text>
+                                <TouchableOpacity style={styles.soundBtn}>
+                                    <Ionicons name="volume-medium" size={18} color="#22c55e" />
+                                </TouchableOpacity>
+                            </View>
+                            <Text style={styles.skillDesc}>{activeLevelData.description}</Text>
+                        </View>
+                    )}
+
+                    {/* ── Player Photo (full-width) ── */}
+                    {/* ── Player Video / Photo ── */}
+                    {videoUrl ? (
+                        <View style={styles.playerPhotoWrap}>
+                            <Video
+                                source={{ uri: videoUrl }}
+                                style={styles.playerPhoto}
+                                resizeMode={ResizeMode.COVER}
+                                shouldPlay={false}
+                                useNativeControls
+                            />
+                        </View>
+                    ) : activeLevelData?.player ? (
+                        <View style={styles.playerPhotoWrap}>
+                            <View style={styles.playerPhotoPlaceholder}>
+                                <Ionicons name="person" size={60} color="#ccc" />
+                                <Text style={styles.playerName}>{activeLevelData.player}</Text>
+                            </View>
+                        </View>
+                    ) : null}
+
+                    {/* ── Session Plan Header ── */}
+                    {exercises.length > 0 && (
+                        <View style={styles.sessionHeader}>
+                            <View style={styles.sessionTitleRow}>
+                                <Text style={styles.sessionTitle}>Session Plan</Text>
+                                <View style={styles.durationPill}>
+                                    <Ionicons name="time-outline" size={13} color="#6B7280" />
+                                    <Text style={styles.durationText}>{totalDuration} mins</Text>
+                                </View>
+                            </View>
+                            <TouchableOpacity style={styles.downloadBtn}>
+                                <Ionicons name="download-outline" size={20} color="#22c55e" />
+                            </TouchableOpacity>
+                        </View>
+                    )}
+
+                    {/* ── Exercise Cards ── */}
+                    <View style={styles.exerciseList}>
+                        {exercises.map((exercise) => {
+                            const images = parseImageUrls(exercise.imageUrl);
+                            const imageUri = images[0];
+                            return (
+                                <TouchableOpacity
+                                    key={exercise.id}
+                                    style={styles.exerciseCard}
+                                    onPress={() => onSessionItemSelect && onSessionItemSelect(exercise.id)}
+                                    activeOpacity={0.85}
+                                >
+                                    {/* Thumbnail — green field style */}
+                                    <View style={styles.thumbWrap}>
+                                        {imageUri ? (
+                                            <Image source={{ uri: imageUri }} style={styles.thumbImg} resizeMode="cover" />
+                                        ) : (
+                                            <View style={styles.fieldThumb}>
+                                                {/* Mimics the green football field miniature */}
+                                                <View style={styles.fieldCenter}>
+                                                    <View style={styles.fieldCircle} />
+                                                    <View style={styles.fieldLine} />
+                                                </View>
+                                                <View style={styles.fieldGoalLeft} />
+                                                <View style={styles.fieldGoalRight} />
+                                            </View>
+                                        )}
+                                    </View>
+
+                                    {/* Text */}
+                                    <View style={styles.exerciseInfo}>
+                                        <Text style={styles.exTitle}>{exercise.title}</Text>
+                                        <Text style={styles.exDesc} numberOfLines={3}>
+                                            {exercise.description?.replace(/<[^>]+>/g, '') || ''}
+                                        </Text>
+                                        <Text style={styles.exDuration}>{exercise.duration}</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            );
+                        })}
                     </View>
                 </View>
-                <View style={{ height: 40 }} />
+
+                <View style={{ height: 48 }} />
             </ScrollView>
         </View>
     );
@@ -176,187 +213,283 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
     },
-    greenHeaderContainer: {
-        paddingHorizontal: 16,
-        paddingTop: 16,
-        marginBottom: 16,
+
+    /* ── Header ── */
+    headerWrap: {
+        paddingHorizontal: 14,
+        paddingTop: 14,
+        marginBottom: 14,
     },
     greenHeader: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         backgroundColor: '#22c55e',
-        borderRadius: 12,
+        borderRadius: 14,
         paddingHorizontal: 16,
-        paddingVertical: 18,
+        paddingVertical: 16,
     },
     backButton: {
-        padding: 4,
+        padding: 2,
     },
     headerTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#fff',
-    },
-    levelTabs: {
-        flexDirection: 'row',
-        marginHorizontal: 16,
-        backgroundColor: '#F3F4F6',
-        borderRadius: 8,
-        padding: 4,
-        marginBottom: 16,
-    },
-    levelTab: {
-        flex: 1,
-        paddingVertical: 10,
-        alignItems: 'center',
-        borderRadius: 6,
-    },
-    activeLevelTab: {
-        backgroundColor: '#3B82F6',
-    },
-    inactiveLevelTab: {
-        backgroundColor: 'transparent',
-    },
-    levelTabText: {
-        fontSize: 13,
-        fontWeight: 'bold',
-    },
-    activeLevelTabText: {
-        color: '#fff',
-    },
-    inactiveLevelTabText: {
-        color: '#1a1a1a',
-    },
-    content: {
-        paddingHorizontal: 16,
-    },
-    bannerContainer: {
-        width: '100%',
-        height: 80,
-        borderRadius: 8,
-        overflow: 'hidden',
-        marginBottom: 20,
-    },
-    bannerImage: {
-        width: '100%',
-        height: '100%',
-        resizeMode: 'cover',
-    },
-    skillHeaderRow: {
-        marginBottom: 4,
-    },
-    skillTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
+        fontWeight: '700',
+        color: '#fff',
+        letterSpacing: 0.3,
     },
-    skillSubtitleRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
+
+    /* ── Level Tabs ── */
+    tabsRow: {
+        paddingHorizontal: 14,
+        gap: 8,
+        marginBottom: 18,
     },
-    skillSubtitle: {
-        fontSize: 16,
-        color: '#4B5563',
+    tab: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 50,
+        borderWidth: 1.5,
     },
-    soundIconBtn: {
-        marginLeft: 6,
+    tabActive: {
+        backgroundColor: '#22c55e',
+        borderColor: '#22c55e',
     },
-    skillDesc: {
-        fontSize: 14,
-        color: '#6B7280',
-        lineHeight: 20,
-        marginBottom: 20,
+    tabInactive: {
+        backgroundColor: '#fff',
+        borderColor: '#22c55e',
     },
-    videoPlayerContainer: {
+    tabText: {
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    tabTextActive: {
+        color: '#fff',
+    },
+    tabTextInactive: {
+        color: '#22c55e',
+    },
+
+    /* ── Body ── */
+    body: {
+        paddingHorizontal: 14,
+    },
+
+    /* ── Banner ── */
+    bannerWrap: {
         width: '100%',
-        height: 200,
+        height: 110,
         borderRadius: 12,
         overflow: 'hidden',
-        position: 'relative',
-        marginBottom: 24,
-    },
-    videoImage: {
-        width: '100%',
-        height: '100%',
-    },
-    videoOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0,0,0,0.2)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    centerPauseBtn: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    videoBottomControls: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        padding: 12,
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.4)',
-    },
-    controlIcon: {
-        marginHorizontal: 8,
-    },
-    videoTime: {
-        color: '#fff',
-        fontSize: 12,
-        fontWeight: '500',
-        flex: 1,
-    },
-    videoRightControls: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    sessionList: {
-        marginTop: 10,
-    },
-    sessionCard: {
-        flexDirection: 'row',
         marginBottom: 20,
     },
-    imagePlaceholder: {
-        width: 130,
-        height: 85,
-        borderRadius: 8,
-        overflow: 'hidden',
-        backgroundColor: '#F3F4F6',
-        marginRight: 12,
-    },
-    cardImage: {
+    bannerImg: {
         width: '100%',
         height: '100%',
     },
-    cardContent: {
+    bannerPlaceholder: {
         flex: 1,
+        backgroundColor: '#f0fdf4',
+        alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 2,
+        borderWidth: 1,
+        borderColor: '#bbf7d0',
+        borderRadius: 12,
     },
-    cardTitle: {
-        fontSize: 13,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
+    bannerPlaceholderText: {
+        fontSize: 22,
+        fontWeight: '900',
+        color: '#15803d',
+        letterSpacing: 1,
+    },
+
+    /* ── Skill Section ── */
+    skillSection: {
+        marginBottom: 18,
+    },
+    skillOfDayLabel: {
+        fontSize: 17,
+        fontWeight: '800',
+        color: '#111827',
         marginBottom: 4,
     },
-    cardDesc: {
-        fontSize: 11,
-        color: '#6B7280',
-        lineHeight: 16,
+    skillNameRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
         marginBottom: 8,
     },
-    cardTime: {
-        fontSize: 11,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
+    skillName: {
+        fontSize: 15,
+        color: '#374151',
+        fontWeight: '500',
+    },
+    soundBtn: {
+        padding: 2,
+    },
+    skillDesc: {
+        fontSize: 13,
+        color: '#6B7280',
+        lineHeight: 19,
+    },
+
+    /* ── Player Photo ── */
+    playerPhotoWrap: {
+        width: '100%',
+        height: 220,
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 22,
+    },
+    playerPhoto: {
+        width: '100%',
+        height: '100%',
+    },
+    playerPhotoPlaceholder: {
+        flex: 1,
+        backgroundColor: '#e5e7eb',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+    },
+    playerName: {
+        fontSize: 14,
+        color: '#6B7280',
+        fontWeight: '600',
+    },
+
+    /* ── Session Plan Header ── */
+    sessionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 14,
+    },
+    sessionTitleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    sessionTitle: {
+        fontSize: 17,
+        fontWeight: '800',
+        color: '#111827',
+    },
+    durationPill: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 3,
+        backgroundColor: '#F3F4F6',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 20,
+    },
+    durationText: {
+        fontSize: 12,
+        color: '#6B7280',
+        fontWeight: '500',
+    },
+    downloadBtn: {
+        width: 34,
+        height: 34,
+        borderRadius: 17,
+        backgroundColor: '#f0fdf4',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+
+    /* ── Exercise Cards ── */
+    exerciseList: {
+        gap: 0,
+    },
+    exerciseCard: {
+        flexDirection: 'row',
+        marginBottom: 18,
+        alignItems: 'flex-start',
+    },
+
+    /* Thumbnail — green football field */
+    thumbWrap: {
+        width: 120,
+        height: 80,
+        borderRadius: 10,
+        overflow: 'hidden',
+        marginRight: 12,
+        flexShrink: 0,
+    },
+    thumbImg: {
+        width: '100%',
+        height: '100%',
+    },
+    fieldThumb: {
+        flex: 1,
+        backgroundColor: '#4ade80',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+    },
+    fieldCenter: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    fieldCircle: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        borderWidth: 1.5,
+        borderColor: 'rgba(255,255,255,0.7)',
+        position: 'absolute',
+    },
+    fieldLine: {
+        width: 1.5,
+        height: 80,
+        backgroundColor: 'rgba(255,255,255,0.5)',
+        position: 'absolute',
+    },
+    fieldGoalLeft: {
+        position: 'absolute',
+        left: 0,
+        top: '30%',
+        width: 8,
+        height: '40%',
+        borderRightWidth: 1.5,
+        borderTopWidth: 1.5,
+        borderBottomWidth: 1.5,
+        borderColor: 'rgba(255,255,255,0.7)',
+    },
+    fieldGoalRight: {
+        position: 'absolute',
+        right: 0,
+        top: '30%',
+        width: 8,
+        height: '40%',
+        borderLeftWidth: 1.5,
+        borderTopWidth: 1.5,
+        borderBottomWidth: 1.5,
+        borderColor: 'rgba(255,255,255,0.7)',
+    },
+
+    /* Exercise text */
+    exerciseInfo: {
+        flex: 1,
+        paddingTop: 2,
+    },
+    exTitle: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: '#111827',
+        marginBottom: 4,
+        lineHeight: 18,
+    },
+    exDesc: {
+        fontSize: 11.5,
+        color: '#6B7280',
+        lineHeight: 16,
+        marginBottom: 6,
+    },
+    exDuration: {
+        fontSize: 11.5,
+        fontWeight: '700',
+        color: '#374151',
     },
 });

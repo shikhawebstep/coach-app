@@ -17,10 +17,10 @@ export function AuthProvider({ children }) {
             try {
                 const storedToken = await AsyncStorage.getItem('userToken');
 
-                console.log('storedToken',storedToken);
+                console.log('storedToken', storedToken);
                 const storedUserId = await AsyncStorage.getItem('userId');
-                console.log('storedUserId',storedUserId);
-                
+                console.log('storedUserId', storedUserId);
+
                 if (storedToken && storedUserId) {
                     setToken(storedToken);
                     setUserId(storedUserId);
@@ -37,14 +37,14 @@ export function AuthProvider({ children }) {
                     redirect: "follow"
                 };
 
-                const response = await fetch("https://api.grabbite.com/api/coachpro/auth/login/verify", requestOptions);
+                const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/auth/login/verify`, requestOptions);
                 const resultText = await response.text();
                 console.log("Verify session result:", resultText);
-                
+
                 let resultObj = {};
                 try {
                     resultObj = JSON.parse(resultText);
-                } catch (e) {}
+                } catch (e) { }
 
                 if (response.ok && resultObj.success !== false && resultObj.status !== false) {
                     setIsLoggedIn(true);

@@ -52,7 +52,6 @@ import StudentNumbers from '@/components/classes/venue_health/StudentNumbers';
 import SelectAVenue from '@/components/classes/weekly_classes/SelectAVenue';
 import SelectAVenueList from '@/components/classes/weekly_classes/SelectAVenueList';
 import WeeklySearchSkill from '@/components/classes/weekly_classes/WeeklySearchSkill';
-import WeeklySessionDetails from '@/components/classes/weekly_classes/WeeklySessionDetails';
 import WeeklySessionExercise from '@/components/classes/weekly_classes/WeeklySessionExercise';
 import WeeklySessionTrainingDetails from '@/components/classes/weekly_classes/WeeklySessionTrainingDetails';
 import WeeklyStudentClassDetails from '@/components/classes/weekly_classes/WeeklyStudentClassDetails';
@@ -65,7 +64,11 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 export default function Classes() {
     const params = useLocalSearchParams();
     const [currentView, setCurrentView] = useState(params.view || 'dashboard');
-
+    const [selectedVenue, setSelectedVenue] = useState(null);
+    const [selectedSessionId, setSelectedSessionId] = useState(null);
+    const [selectedStudent, setSelectedStudent] = useState(null);
+const [selectedSessionData, setSelectedSessionData] = useState(null);
+const [selectedSessionDate, setSelectedSessionDate] = useState(null);
     useEffect(() => {
         if (params.view) {
             setCurrentView(params.view);
@@ -135,14 +138,23 @@ export default function Classes() {
         />;
     }
 
-    if (currentView === 'weeklySession') {
-        return <WeeklySessionDetails
-            onBack={() => setCurrentView('sessionTrainingDetails')}
-            onSessionPlanClick={() => setCurrentView('syllabusDayDetails')}
-            onStudentSelect={(id) => setCurrentView('studentClass')}
-        />;
-    }
-
+  if (currentView === 'sessionTrainingDetails') {
+    return <WeeklySessionTrainingDetails
+        sessionId={selectedSessionId}
+        sessionDate={selectedSessionDate}
+        onBack={() => setCurrentView('venueList')}
+        onStudentSelect={(student) => {
+            setSelectedStudent(student);
+            setCurrentView('studentClass');
+        }}
+        onSessionClick={(view) => setCurrentView(view)}
+        onSessionPlanClick={(sessionData) => {        // ← receive sessionData here
+            setSelectedSessionData(sessionData);
+            setCurrentView('syllabusDayDetails');
+        }}
+        sessionTitle="Session"
+    />;
+}
     if (currentView === 'clubSyllabus') {
         return <ClubSyllabus
             onBack={() => setCurrentView('session')}
@@ -185,6 +197,7 @@ export default function Classes() {
 
     if (currentView === 'studentClass') {
         return <WeeklyStudentClassDetails
+            student={selectedStudent}
             onBack={() => setCurrentView('sessionTrainingDetails')}
             onNotesClick={() => setCurrentView('notes')}
         />;
@@ -197,15 +210,17 @@ export default function Classes() {
         />;
     }
 
-    if (currentView === 'venueList') {
-        return <SelectAVenueList
-            onBack={() => setCurrentView('venue')}
-            onSessionSelect={(id) => {
-                setCurrentView('sessionTrainingDetails');
-            }}
-        />;
-    }
-
+if (currentView === 'venueList') {
+    return <SelectAVenueList
+        venueId={selectedVenue?.id}
+        onBack={() => setCurrentView('venue')}
+        onSessionSelect={(sessionId, sessionDate) => {    // ← receive date too
+            setSelectedSessionId(sessionId);
+            setSelectedSessionDate(sessionDate);          // ← store it
+            setCurrentView('sessionTrainingDetails');
+        }}
+    />;
+}
     if (currentView === 'birthday') {
         return <BirthdayParties
             onBack={() => setCurrentView('dashboard')}
@@ -236,10 +251,12 @@ export default function Classes() {
     if (currentView === 'venue' || currentView === 'weekly') {
         return <SelectAVenue
             onBack={() => setCurrentView('dashboard')}
-            onVenueSelect={(id) => setCurrentView('venueList')}
+            onVenueSelect={(venue) => {
+                setSelectedVenue(venue);        // ← store it
+                setCurrentView('venueList');
+            }}
         />;
     }
-
     if (currentView === 'notes') {
         return <Notes
             onBack={() => setCurrentView('studentClass')}
@@ -253,20 +270,25 @@ export default function Classes() {
 
     if (currentView === 'sessionTrainingDetails') {
         return <WeeklySessionTrainingDetails
+            sessionId={selectedSessionId}
             onBack={() => setCurrentView('venueList')}
-            onStudentSelect={(id) => setCurrentView('studentInformation')}
+            onStudentSelect={(student) => {
+                setSelectedStudent(student);
+                setCurrentView('studentClass'); // changed from studentInformation to studentClass so we can see the student details and notes UI
+            }}
             onSessionClick={(view) => setCurrentView(view)}
             onSessionPlanClick={() => setCurrentView('syllabusDayDetails')}
-            sessionTitle="Session 1"
+            sessionTitle="Session"
         />;
     }
 
-    if (currentView === 'syllabusDayDetails') {
-        return <WeeklySyllabusDayDetails
-            onBack={() => setCurrentView('sessionTrainingDetails')}
-            onSessionItemSelect={(id) => setCurrentView('sessionExercise')}
-        />;
-    }
+  if (currentView === 'syllabusDayDetails') {
+    return <WeeklySyllabusDayDetails
+        onBack={() => setCurrentView('sessionTrainingDetails')}
+        onSessionItemSelect={(id) => setCurrentView('sessionExercise')}
+        sessionPlan={selectedSessionData?.sessionPlan}
+    />;
+}
 
     if (currentView === 'sessionExercise') {
         return <WeeklySessionExercise
@@ -328,9 +350,9 @@ export default function Classes() {
     }
 
     if (currentView === 'reportIssueList') {
-        return <ReportIssueList 
-            onNewReport={() => setCurrentView('reportIssueForm')} 
-            onReportSelect={() => setCurrentView('issueReport')} 
+        return <ReportIssueList
+            onNewReport={() => setCurrentView('reportIssueForm')}
+            onReportSelect={() => setCurrentView('issueReport')}
         />;
     }
 
@@ -370,7 +392,7 @@ export default function Classes() {
 
 
     if (currentView === 'studentInformation') {
-        return <WeeklyStudentInformation onBack={() => setCurrentView('sessionTrainingDetails')} />;
+        return <WeeklyStudentInformation student={selectedStudent} onBack={() => setCurrentView('sessionTrainingDetails')} />;
     }
 
     if (currentView === 'createQcReport') {
@@ -417,7 +439,7 @@ export default function Classes() {
         return <RecordComments onBack={() => setCurrentView('dashboard')} />;
     }
 
-   
+
     if (currentView === 'otherAreas') {
         return <OtherAreas onBack={() => setCurrentView('dashboard')} />;
     }

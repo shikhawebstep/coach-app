@@ -1,58 +1,47 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
-const NOTIFICATIONS_DATA = [
-    {
-        id: 1,
-        section: 'Today',
-        data: [
-            {
-                id: 'n1',
-                title: 'New Training Course Added',
-                subtitle: 'Health and Safety video now released',
-                image: require('@/assets/images/add.png'),
-                unread: true,
-            }
-        ]
-    },
-    {
-        id: 2,
-        section: 'Yesterday',
-        data: [
-            {
-                id: 'n2',
-                title: 'Class Cancelled',
-                subtitle: 'Your class on Saturday 18th May has been cancelled.',
-                image: require('@/assets/images/cancel.png'),
-                unread: false,
-            }
-        ]
-    },
-    {
-        id: 3,
-        section: 'December 11, 2024',
-        data: [
-            {
-                id: 'n3',
-                title: 'Annual Training Dates',
-                subtitle: 'Our Annual Training is on 18th Sept',
-                image: require('@/assets/images/annual.png'),
-                unread: false,
-            },
-            {
-                id: 'n4',
-                title: 'Birthday Party Booking',
-                subtitle: "You've been booked on Sat 19th May",
-                image: require('@/assets/images/birthdayn.png'),
-                unread: false,
-            }
-        ]
-    }
-];
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function NotificationsList({ onNotificationSelect }) {
     const [hideRead, setHideRead] = useState(false);
+    const [sections, setSections] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchNotifications();
+    }, []);
+
+    const fetchNotifications = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/notifications/list`,
+                { method: "GET", redirect: "follow" }
+            );
+            const result = await response.json();
+            if (response.ok) {
+                setSections(result?.notifications || []);
+            }
+        } catch (error) {
+            console.error("Failed to fetch notifications:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const visibleSections = hideRead
+        ? sections
+            .map(s => ({ ...s, data: s.data.filter(n => n.unread) }))
+            .filter(s => s.data.length > 0)
+        : sections;
+
+    if (loading) {
+        return (
+            <View style={styles.centered}>
+                <ActivityIndicator size="large" color="#000" />
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
@@ -72,31 +61,38 @@ export default function NotificationsList({ onNotificationSelect }) {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-                {NOTIFICATIONS_DATA.map((section) => (
-                    <View key={section.id} style={styles.sectionContainer}>
-                        <Text style={styles.sectionTitle}>{section.section}</Text>
-
-                        {section.data.map(item => (
-                            <TouchableOpacity
-                                key={item.id}
-                                style={styles.notificationCard}
-                                onPress={() => onNotificationSelect && onNotificationSelect(item.id)}
-                            >
-                                <View style={styles.iconContainer}>
-                                    <Image source={item.image} style={styles.avatarImage} />
-                                </View>
-
-                                <View style={styles.contentContainer}>
-                                    <Text style={styles.notificationTitle}>{item.title}</Text>
-                                    <Text style={styles.notificationSubtitle} numberOfLines={2}>{item.subtitle}</Text>
-                                </View>
-
-                                {/* Unread indicator on the top-right corner of the card */}
-                                {item.unread && <View style={styles.unreadDot} />}
-                            </TouchableOpacity>
-                        ))}
+                {visibleSections.length === 0 ? (
+                    <View style={styles.centered}>
+                        <Text style={styles.emptyText}>No notifications</Text>
                     </View>
-                ))}
+                ) : (
+                    visibleSections.map((section) => (
+                        <View key={section.id} style={styles.sectionContainer}>
+                            <Text style={styles.sectionTitle}>{section.section}</Text>
+                            {section.data.map(item => (
+                                <TouchableOpacity
+                                    key={item.id}
+                                    style={styles.notificationCard}
+                                    onPress={() => onNotificationSelect?.(item.id)}
+                                >
+                                    <View style={styles.iconContainer}>
+                                        <Image
+                                            source={{ uri: item.image }}
+                                            style={styles.avatarImage}
+                                        />
+                                    </View>
+                                    <View style={styles.contentContainer}>
+                                        <Text style={styles.notificationTitle}>{item.title}</Text>
+                                        <Text style={styles.notificationSubtitle} numberOfLines={2}>
+                                            {item.subtitle}
+                                        </Text>
+                                    </View>
+                                    {item.unread && <View style={styles.unreadDot} />}
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    ))
+                )}
             </ScrollView>
         </View>
     );
@@ -106,6 +102,17 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+    },
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 40,
+    },
+    emptyText: {
+        fontSize: 14,
+        color: '#6B7280',
+        fontFamily: 'Urbanist_400Regular',
     },
     header: {
         flexDirection: 'row',

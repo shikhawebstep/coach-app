@@ -1,66 +1,145 @@
+import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-const SESSION_DATA = [
-    { id: 1, session: 'Session 1', date: '3rd April 2023', time: '10:30-11:30am', coach: 'Pele', status: 'Completed' },
-    { id: 2, session: 'Session 2', date: '3rd April 2023', time: '10:30-11:30am', coach: 'Pele', status: 'Completed' },
-    { id: 3, session: 'Session 3', date: '3rd April 2023', time: '10:30-11:30am', coach: 'Pele', status: 'Completed' },
-    { id: 4, session: 'Session 4', date: '3rd April 2023', time: '10:30-11:30am', coach: 'Pele', status: 'Completed' },
-    { id: 5, session: 'Session 5', date: '3rd April 2023', time: '10:30-11:30am', coach: 'Pele', status: 'Pending' },
-    { id: 6, session: 'Session 6', date: '3rd April 2023', time: '10:30-11:30am', coach: 'Pele', status: 'Pending' },
-    { id: 7, session: 'Session 7', date: '3rd April 2023', time: '10:30-11:30am', coach: 'Pele', status: 'Pending' },
-    { id: 8, session: 'Session 8', date: '3rd April 2023', time: '10:30-11:30am', coach: 'Ronaldo', status: 'Pending' },
-];
+export default function SelectAVenueList({ venueId, onBack, onSessionSelect }) {
+    const { token } = useAuth();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeClassTab, setActiveClassTab] = useState(null);
+    const [activeTermTab, setActiveTermTab] = useState(null);
+    const [classes, setClasses] = useState([]);
+    const [termsByClass, setTermsByClass] = useState({}); // { classScheduleId: [term, ...] }
+    const [loading, setLoading] = useState(true);
 
-export default function SelectAVenueList({ onBack, onSessionSelect }) {
-    const [searchQuery, setSearchQuery] = useState('Chelsea');
-    const [activeTab, setActiveTab] = useState('Class 1: 4-7');
+    useEffect(() => {
+        if (venueId) fetchClasses();
+        else setLoading(false);
+    }, [venueId]);
 
-    const handleClearSearch = () => {
-        setSearchQuery('');
+    const fetchClasses = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/weekly-classes/${venueId}/detail`,
+                { method: 'GET', headers: { Authorization: `Bearer ${token}` } }
+            );
+            const result = await response.json();
+            if (response.ok) {
+                const classSchedules = result?.data?.classSchedules || [];
+                setClasses(classSchedules);
+
+                // Build: { classScheduleId -> [{ termId, termName, sessions[] }] }
+                const map = {};
+                const termGroups = result?.data?.termGroups || [];
+                termGroups.forEach(tg => {
+                    tg.terms?.forEach(term => {
+                        const termSessions = term.sessionsMap || [];
+                        termSessions.forEach(session => {
+                            const csId = session.sessionPlan?.classScheduleId;
+                            if (!csId) return;
+                            if (!map[csId]) map[csId] = [];
+                            // find or create term bucket
+                            let bucket = map[csId].find(b => b.termId === term.id);
+                            if (!bucket) {
+                                bucket = { termId: term.id, termName: term.termName, sessions: [] };
+                                map[csId].push(bucket);
+                            }
+                            bucket.sessions.push(session);
+                        });
+                    });
+                });
+                setTermsByClass(map);
+
+                if (classSchedules.length > 0) {
+                    const firstClassId = classSchedules[0].id;
+                    setActiveClassTab(firstClassId);
+                    const firstTerms = map[firstClassId] || [];
+                    if (firstTerms.length > 0) setActiveTermTab(firstTerms[0].termId);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch classes:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const renderList = () => {
-        if (!searchQuery) {
-            return null;
-        }
+    const handleClassTabPress = (classId) => {
+        setActiveClassTab(classId);
+        setSearchQuery('');
+        const terms = termsByClass[classId] || [];
+        setActiveTermTab(terms.length > 0 ? terms[0].termId : null);
+    };
 
-        return (
-            <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
-                {SESSION_DATA.map((item) => (
+   const renderList = () => {
+    if (loading) return <ActivityIndicator size="large" color="#3B82F6" style={{ marginTop: 40 }} />;
+
+    const terms = termsByClass[activeClassTab] || [];
+    const activeTerm = terms.find(t => t.termId === activeTermTab);
+    const sessions = activeTerm?.sessions || [];
+
+    const activeClass = classes.find(c => c.id === activeClassTab); // ← add this
+    const timeLabel = activeClass
+        ? `${activeClass.startTime} - ${activeClass.endTime}`
+        : '';
+
+    const displaySessions = sessions.filter(s =>
+        !searchQuery || s.sessionPlan?.groupName?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    if (displaySessions.length === 0) {
+        return <Text style={{ textAlign: 'center', marginTop: 20, color: '#666' }}>No sessions found.</Text>;
+    }
+    const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    const day = date.getDate();
+    const suffix = day % 10 === 1 && day !== 11 ? 'st'
+        : day % 10 === 2 && day !== 12 ? 'nd'
+        : day % 10 === 3 && day !== 13 ? 'rd'
+        : 'th';
+    const month = date.toLocaleString('en-GB', { month: 'long' });
+    const year = date.getFullYear();
+    return `${day}${suffix} ${month} ${year}`;
+};
+
+    return (
+        <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
+            {displaySessions.map((item, index) => {
+                const isCompleted = item.sessionPlan?.status === 'completed';
+                const sessionName = item.sessionPlan?.groupName || `Session ${index + 1}`;
+                return (
                     <TouchableOpacity
-                        key={item.id}
+                        key={item.sessionPlan?.mapId ?? index}
                         style={styles.card}
-                        onPress={() => onSessionSelect(item.id)}
+                        onPress={() => onSessionSelect(item.sessionPlan?.mapId)}
                     >
                         <View style={styles.cardInfo}>
-                            <Text style={styles.cardTitle}>{item.session}</Text>
+                            <Text style={styles.cardTitle} numberOfLines={1}>Session {index + 1}</Text>
                         </View>
                         <View style={styles.cardDetails}>
-                            <Text style={styles.cardText}>{item.date}</Text>
-                            <Text style={styles.cardText}>{item.time}</Text>
+                            <Text style={styles.cardText}>{formatDate(item.sessionDate)}</Text>
+                            <Text style={styles.cardText}>{timeLabel}</Text>  {/* ← add this */}
                         </View>
-                        <View style={styles.cardBlock}>
-                            <Text style={styles.blockText}>{item.coach}</Text>
+                        <View style={styles.cardInfo}>
+                            <Text style={styles.cardTitle} numberOfLines={1}>{sessionName}</Text>
                         </View>
                         <View style={styles.cardStatusContainer}>
-                            <View style={[
-                                styles.statusBadge,
-                                item.status === 'Completed' ? styles.statusCompleted : styles.statusPending
-                            ]}>
-                                <Text style={[
-                                    styles.statusText,
-                                    item.status === 'Completed' ? styles.statusTextWhite : styles.statusTextBlack
-                                ]}>{item.status}</Text>
+                            <View style={[styles.statusBadge, isCompleted ? styles.statusCompleted : styles.statusPending]}>
+                                <Text style={[styles.statusText, isCompleted ? styles.statusTextWhite : styles.statusTextBlack]}>
+                                    {isCompleted ? 'Completed' : 'Pending'}
+                                </Text>
                             </View>
                             <Ionicons name="chevron-forward" size={20} color="#000" style={styles.chevron} />
                         </View>
                     </TouchableOpacity>
-                ))}
-            </ScrollView>
-        );
-    }
+                );
+            })}
+        </ScrollView>
+    );
+};
+
+    const currentTerms = termsByClass[activeClassTab] || [];
 
     return (
         <View style={styles.container}>
@@ -69,7 +148,7 @@ export default function SelectAVenueList({ onBack, onSessionSelect }) {
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Select a venue</Text>
+                <Text style={styles.headerTitle}>Select a Session</Text>
             </View>
 
             {/* Search Bar */}
@@ -77,34 +156,30 @@ export default function SelectAVenueList({ onBack, onSessionSelect }) {
                 <Ionicons name="search-outline" size={20} color="#a0a0a0" style={styles.searchIcon} />
                 <TextInput
                     style={styles.searchInput}
-                    placeholder="Select a venue..."
+                    placeholder="Search sessions..."
                     placeholderTextColor="#a0a0a0"
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
                 {searchQuery.length > 0 && (
-                    <TouchableOpacity onPress={handleClearSearch} style={styles.clearIcon}>
+                    <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearIcon}>
                         <Ionicons name="close-circle" size={20} color="#a0a0a0" />
                     </TouchableOpacity>
                 )}
             </View>
 
-            {/* Horizontal Tabs */}
-            {searchQuery.length > 0 && (
+            {/* Class Tabs */}
+            {!loading && classes.length > 0 && (
                 <View style={styles.tabsWrapper}>
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.tabsContainer}
-                    >
-                        {['Class 1: 4-7', 'Class 2: 8-12', 'Class 3: 4-7'].map((tab) => (
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsContainer}>
+                        {classes.map((cls,i) => (
                             <TouchableOpacity
-                                key={tab}
-                                style={[styles.tab, activeTab === tab ? styles.activeTab : styles.inactiveTab]}
-                                onPress={() => setActiveTab(tab)}
+                                key={cls.id}
+                                style={[styles.tab, activeClassTab === cls.id ? styles.activeTab : styles.inactiveTab]}
+                                onPress={() => handleClassTabPress(cls.id)}
                             >
-                                <Text style={[styles.tabText, activeTab === tab ? styles.activeTabText : styles.inactiveTabText]}>
-                                    {tab}
+                                <Text style={[styles.tabText, activeClassTab === cls.id ? styles.activeTabText : styles.inactiveTabText]}>
+                                   Class {i+1}: {cls.className}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -112,12 +187,29 @@ export default function SelectAVenueList({ onBack, onSessionSelect }) {
                 </View>
             )}
 
-            {/* List */}
+            {/* Term Tabs */}
+            {!loading && currentTerms.length > 1 && (
+                <View style={[styles.tabsWrapper, { marginBottom: 12 }]}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsContainer}>
+                        {currentTerms.map(term => (
+                            <TouchableOpacity
+                                key={term.termId}
+                                style={[styles.termTab, activeTermTab === term.termId ? styles.activeTermTab : styles.inactiveTermTab]}
+                                onPress={() => setActiveTermTab(term.termId)}
+                            >
+                                <Text style={[styles.termTabText, activeTermTab === term.termId ? styles.activeTermTabText : styles.inactiveTermTabText]}>
+                                    {term.termName}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                </View>
+            )}
+
             {renderList()}
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -272,5 +364,30 @@ const styles = StyleSheet.create({
     },
     chevron: {
         marginLeft: 4,
+    }, 
+    termTab: {
+        paddingVertical: 6,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        borderWidth: 1,
+        marginRight: 8,
+    },
+    activeTermTab: {
+        backgroundColor: '#EFF6FF',
+        borderColor: '#3B82F6',
+    },
+    inactiveTermTab: {
+        backgroundColor: '#F3F4F6',
+        borderColor: '#E5E7EB',
+    },
+    termTabText: {
+        fontSize: 13,
+        fontWeight: '500',
+    },
+    activeTermTabText: {
+        color: '#3B82F6',
+    },
+    inactiveTermTabText: {
+        color: '#6B7280',
     },
 });

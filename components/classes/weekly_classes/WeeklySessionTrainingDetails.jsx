@@ -1,25 +1,117 @@
+import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import WeeklyAddTrialist from './WeeklyAddTrialist';
 
-const MEMBERS_DATA = [
-    { id: 1, name: 'John Smith', age: '7 Years', status: 'attended' },
-    { id: 2, name: 'John Smith', age: '7 Years', status: null },
-    { id: 3, name: 'Donald Johnson', age: '7 Years', status: 'attended' },
-];
-
-export default function WeeklySessionTrainingDetails({ onBack, onStudentSelect, sessionTitle, onSessionPlanClick, onSessionClick }) {
-    const [activeTab, setActiveTab] = useState('Trials');
-    const [members, setMembers] = useState(MEMBERS_DATA);
+export default function WeeklySessionTrainingDetails({ sessionId, onBack, onStudentSelect, sessionTitle, onSessionPlanClick, onSessionClick, sessionDate }) {
+    const { token } = useAuth();
+    const [activeTab, setActiveTab] = useState('Members');
+    const [members, setMembers] = useState([]);
+    const [sessionData, setSessionData] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [showAddTrialist, setShowAddTrialist] = useState(false);
 
-    const handleAttendance = (id, status) => {
-        setMembers(prev => prev.map(m => m.id === id ? { ...m, status } : m));
+    useEffect(() => {
+        if (sessionId) {
+            fetchSessionDetails();
+        }
+    }, [sessionId]);
+
+    const fetchSessionDetails = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/weekly-classes/session/${sessionId}`,
+                {
+                    method: 'GET',
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            const result = await response.json();
+            if (response.ok) {
+                setSessionData(result.data);
+                const bookingsMembers = result?.data?.bookings?.members || [];
+                const flattened = [];
+                bookingsMembers.forEach(booking => {
+                    booking.students.forEach(student => {
+                        flattened.push({
+                            bookingId: booking.id,
+                            studentId: student.id,
+                            name: `${student.studentFirstName || ''} ${student.studentLastName || ''}`.trim(),
+                            age: `${student.age} Years`,
+                            status: student.attendance,
+                            rawStudent: student,
+                        });
+                    });
+                });
+                setMembers(flattened);
+            } else {
+                console.error('Failed to fetch session details:', result);
+            }
+        } catch (error) {
+            console.error('Failed to fetch session details:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    const day = date.getDate();
+    const suffix = day % 10 === 1 && day !== 11 ? 'st'
+        : day % 10 === 2 && day !== 12 ? 'nd'
+        : day % 10 === 3 && day !== 13 ? 'rd'
+        : 'th';
+    const month = date.toLocaleString('en-GB', { month: 'long' });
+    const year = date.getFullYear();
+    return `${day}${suffix} ${month} ${year}`;
+};
+
+    const handleAttendance = async (studentId, status) => {
+        // Save previous state for rollback
+        const previousMembers = members;
+
+        // Optimistic UI update
+        setMembers(prev => prev.map(m => m.studentId === studentId ? { ...m, status } : m));
+
+        try {
+            const response = await fetch(
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/weekly-classes/session/${sessionId}/attendance/${studentId}`,
+                {
+                    method: 'PATCH',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ attendance: status }),
+                }
+            );
+
+            if (response.ok) {
+                console.log('✅ Attendance updated successfully');
+            } else {
+                const errorText = await response.text();
+                console.error(`❌ Failed to update attendance (${response.status}):`, errorText);
+                // Revert optimistic update on failure
+                setMembers(previousMembers);
+            }
+        } catch (error) {
+            console.error('❌ Network error updating attendance:', error.message);
+            // Revert optimistic update on network error
+            setMembers(previousMembers);
+        }
     };
 
     if (showAddTrialist) {
         return <WeeklyAddTrialist onBack={() => setShowAddTrialist(false)} />;
+    }
+
+    if (loading) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color="#3B82F6" />
+            </View>
+        );
     }
 
     return (
@@ -34,32 +126,41 @@ export default function WeeklySessionTrainingDetails({ onBack, onStudentSelect, 
                         <Text style={styles.headerTitle}>{sessionTitle}</Text>
                     </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.sessionPlanButton} onPress={onSessionPlanClick}>
+                <TouchableOpacity
+                    style={styles.sessionPlanButton}
+                    onPress={() => onSessionPlanClick(sessionData)}
+                >
                     <Text style={styles.sessionPlanText}>Session Plan</Text>
                 </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+
                 {/* Info Card */}
                 <TouchableOpacity style={styles.infoCard} onPress={() => onSessionClick('weeklySession')}>
                     <View style={styles.infoRow}>
                         <View style={styles.infoItem}>
                             <Text style={styles.infoLabel}>Date</Text>
-                            <Text style={styles.infoValue}>Sat 3rd April 2023, 10:30-11:30am</Text>
+                            {/* FIX: wrapped both values in a single Text, added space/newline between date and time */}
+                            <Text style={styles.infoValue}>
+                                {formatDate(sessionData?.sessionDate)}{'\n'}
+                                {sessionData?.classSchedule?.startTime} - {sessionData?.classSchedule?.endTime}
+                            </Text>
                         </View>
                         <View style={styles.infoItemSmall}>
                             <Text style={styles.infoLabel}>Years</Text>
-                            <Text style={styles.infoValue}>4-7</Text>
+                            <Text style={styles.infoValue}>{sessionData?.classSchedule?.className || '—'}</Text>
                         </View>
                         <View style={styles.infoItemSmall}>
                             <Text style={styles.infoLabel}>Status</Text>
                             <View style={styles.statusBadge}>
-                                <Text style={styles.statusText}>Pending</Text>
+                                <Text style={styles.statusText}>{sessionData?.status || 'Pending'}</Text>
                             </View>
                         </View>
                     </View>
-
                 </TouchableOpacity>
+
+                {/* Map */}
                 <View style={styles.mapContainer}>
                     <Image
                         source={require('../../../assets/images/map.png')}
@@ -76,72 +177,82 @@ export default function WeeklySessionTrainingDetails({ onBack, onStudentSelect, 
                             style={[styles.tab, activeTab === tab ? styles.activeTab : styles.inactiveTab]}
                             onPress={() => setActiveTab(tab)}
                         >
-                            <Text style={[styles.tabText, activeTab === tab ? styles.activeTabText : styles.inactiveTabText]}>{tab}</Text>
+                            <Text style={[styles.tabText, activeTab === tab ? styles.activeTabText : styles.inactiveTabText]}>
+                                {tab}
+                            </Text>
                         </TouchableOpacity>
                     ))}
                 </View>
 
-                {/* Members List */}
-                <View style={styles.membersList}>
-                    {members.map((member, index) => (
-                        <TouchableOpacity key={member.id} style={styles.memberCard}
-                            onPress={() => onStudentSelect && onStudentSelect(member.id)}
-                        >
-                            <Text style={styles.memberIndex}>{index + 1}</Text>
-                            <View style={styles.memberInfo}>
-                                <Text style={styles.memberName}>{member.name}</Text>
-                                <Text style={styles.memberAge}>{member.age}</Text>
-                            </View>
-                            <View style={styles.attendanceButtons}>
+                {/* Members Tab */}
+                {activeTab === 'Members' && (
+                    <View style={styles.membersList}>
+                        {members.length === 0 ? (
+                            <Text style={styles.emptyText}>No members found.</Text>
+                        ) : (
+                            members.map((member, index) => (
                                 <TouchableOpacity
-                                    style={[
-                                        styles.attendanceBtn,
-                                        member.status === 'attended' ? styles.btnAttendedActive : styles.btnAttendedInactive
-                                    ]}
-                                    onPress={() => handleAttendance(member.id, 'attended')}
+                                    key={member.studentId}
+                                    style={styles.memberCard}
+                                    onPress={() => onStudentSelect && onStudentSelect(member)}
                                 >
-                                    <Ionicons
-                                        name="checkmark"
-                                        size={18}
-                                        color={member.status === 'attended' ? '#fff' : '#000'}
-                                        style={styles.btnIcon}
-                                    />
-                                    <Text style={[
-                                        styles.btnText,
-                                        member.status === 'attended' ? styles.btnTextWhite : styles.btnTextBlack
-                                    ]}>
-                                        Attended
-                                    </Text>
-                                </TouchableOpacity>
+                                    <Text style={styles.memberIndex}>{index + 1}</Text>
+                                    <View style={styles.memberInfo}>
+                                        <Text style={styles.memberName} numberOfLines={1}>{member.name}</Text>
+                                        <Text style={styles.memberAge}>{member.age}</Text>
+                                    </View>
+                                    <View style={styles.attendanceButtons}>
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.attendanceBtn,
+                                                member.status === 'attended' ? styles.btnAttendedActive : styles.btnAttendedInactive,
+                                            ]}
+                                            onPress={() => handleAttendance(member.studentId, 'attended')}
+                                        >
+                                            <Ionicons
+                                                name="checkmark"
+                                                size={18}
+                                                color={member.status === 'attended' ? '#fff' : '#1CAB4B'}
+                                                style={styles.btnIcon}
+                                            />
+                                            <Text style={[
+                                                styles.btnText,
+                                                member.status === 'attended' ? styles.btnTextWhite : styles.btnTextGreen,
+                                            ]}>
+                                                Attended
+                                            </Text>
+                                        </TouchableOpacity>
 
-                                <TouchableOpacity
-                                    style={[
-                                        styles.attendanceBtn,
-                                        member.status === 'not_attended' ? styles.btnNotAttendedActive : styles.btnNotAttendedInactive
-                                    ]}
-                                    onPress={() => handleAttendance(member.id, 'not_attended')}
-                                >
-                                    <Ionicons
-                                        name="close"
-                                        size={18}
-                                        color={member.status === 'not_attended' ? '#fff' : '#E53E3E'}
-                                        style={styles.btnIcon}
-                                    />
-                                    <Text style={[
-                                        styles.btnText,
-                                        member.status === 'not_attended' ? styles.btnTextWhite : styles.btnTextRed
-                                    ]}>
-                                        Not Attended
-                                    </Text>
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.attendanceBtn,
+                                                member.status === 'not attended' ? styles.btnNotAttendedActive : styles.btnNotAttendedInactive,
+                                            ]}
+                                            onPress={() => handleAttendance(member.studentId, 'not attended')}
+                                        >
+                                            <Ionicons
+                                                name="close"
+                                                size={18}
+                                                color={member.status === 'not attended' ? '#fff' : '#E53E3E'}
+                                                style={styles.btnIcon}
+                                            />
+                                            <Text style={[
+                                                styles.btnText,
+                                                member.status === 'not attended' ? styles.btnTextWhite : styles.btnTextRed,
+                                            ]}>
+                                                Not Attended
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </TouchableOpacity>
-                            </View>
-                        </TouchableOpacity>
-                    ))}
-                </View>
+                            ))
+                        )}
+                    </View>
+                )}
 
+                {/* Trials Tab */}
                 {activeTab === 'Trials' && (
                     <>
-
                         <TouchableOpacity
                             style={styles.addTrialistButton}
                             onPress={() => setShowAddTrialist(true)}
@@ -149,15 +260,18 @@ export default function WeeklySessionTrainingDetails({ onBack, onStudentSelect, 
                             <Ionicons name="add" size={24} color="#3B82F6" style={styles.addIcon} />
                             <Text style={styles.addTrialistText}>Add walk by trialist</Text>
                         </TouchableOpacity>
-                        {/* Confirm Button */}
                         <TouchableOpacity style={styles.confirmButton}>
                             <Text style={styles.confirmButtonText}>Confirm</Text>
                         </TouchableOpacity>
                     </>
                 )}
 
-            </ScrollView>
+                {/* Coaches Tab — placeholder */}
+                {activeTab === 'Coaches' && (
+                    <Text style={styles.emptyText}>No coaches assigned.</Text>
+                )}
 
+            </ScrollView>
         </View>
     );
 }
@@ -188,7 +302,7 @@ const styles = StyleSheet.create({
         color: '#1a1a1a',
     },
     sessionPlanButton: {
-        backgroundColor: '#1CAB4B', // Green
+        backgroundColor: '#1CAB4B',
         paddingHorizontal: 16,
         paddingVertical: 10,
         borderRadius: 8,
@@ -218,7 +332,6 @@ const styles = StyleSheet.create({
     infoRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 16,
     },
     infoItem: {
         flex: 2,
@@ -291,7 +404,6 @@ const styles = StyleSheet.create({
         color: '#1a1a1a',
     },
     membersList: {
-        gap: 0,
         marginBottom: 24,
     },
     memberCard: {
@@ -345,6 +457,7 @@ const styles = StyleSheet.create({
     btnNotAttendedActive: {
         backgroundColor: '#E53E3E',
         borderColor: '#E53E3E',
+        color:'#fff',
     },
     btnNotAttendedInactive: {
         backgroundColor: '#fff',
@@ -360,11 +473,17 @@ const styles = StyleSheet.create({
     btnTextWhite: {
         color: '#fff',
     },
-    btnTextBlack: {
-        color: '#1a1a1a',
+    btnTextGreen: {
+        color: '#1CAB4B',
     },
     btnTextRed: {
         color: '#E53E3E',
+    },
+    emptyText: {
+        textAlign: 'center',
+        color: '#9CA3AF',
+        fontSize: 14,
+        marginTop: 24,
     },
     addTrialistButton: {
         flexDirection: 'row',
