@@ -168,7 +168,7 @@ export default function WeeklySyllabusDayDetails({ onBack, onSessionItemSelect, 
                                 <TouchableOpacity
                                     key={exercise.id}
                                     style={styles.exerciseCard}
-                                    onPress={() => onSessionItemSelect && onSessionItemSelect(exercise.id)}
+                                    onPress={() => onSessionItemSelect && onSessionItemSelect(exercise)}
                                     activeOpacity={0.85}
                                 >
                                     {/* Thumbnail — green field style */}

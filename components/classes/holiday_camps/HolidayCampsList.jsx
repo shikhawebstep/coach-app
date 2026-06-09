@@ -1,5 +1,6 @@
+import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const CAMPS_DATA = [
@@ -11,7 +12,32 @@ const CAMPS_DATA = [
 
 export default function HolidayCampsList({ onBack, onCampSelect }) {
     const [searchQuery, setSearchQuery] = useState('');
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const { token } = useAuth();
 
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/holiday-camp/venues`,
+                {
+                    method: 'GET',
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            const result = await response.json();
+            if (response.ok) setData(result?.data || []);
+        } catch (error) {
+            console.error('Failed to fetch bookings:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
     const filteredCamps = CAMPS_DATA.filter((camp) =>
         camp.title.toLowerCase().includes(searchQuery.toLowerCase())
     );

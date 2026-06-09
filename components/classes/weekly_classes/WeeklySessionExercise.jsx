@@ -1,7 +1,83 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-export default function WeeklySessionExercise({ onBack, onSearchSkillClick }) {
+// ─── HTML Parser ────────────────────────────────────────────────────────────
+// Extracts named sections and their content from the HTML description.
+// Sections are detected by heading keywords in <p> or plain text nodes.
+function parseDescriptionHTML(html = '') {
+    if (!html) return [];
+
+    const SECTION_KEYWORDS = [
+        'Time Duration',
+        'Organisation',
+        'Description',
+        'Rules',
+        'Conditions',
+        'How to maintain the tone',
+    ];
+
+    // 1. Normalize <br> to newline, strip all other tags
+    const withNewlines = html
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<li[^>]*>/gi, '\n• ')
+        .replace(/<\/li>/gi, '')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&nbsp;/g, ' ');
+
+    const lines = withNewlines
+        .split('\n')
+        .map(l => l.trim())
+        .filter(Boolean);
+
+    const sections = [];
+    let current = null;
+
+    for (const line of lines) {
+        const matchedKeyword = SECTION_KEYWORDS.find(k =>
+            line.toLowerCase().startsWith(k.toLowerCase())
+        );
+
+        if (matchedKeyword) {
+            if (current) sections.push(current);
+            // Inline value after keyword (e.g. "Time Duration: 10 mins")
+            const inlineValue = line.slice(matchedKeyword.length).replace(/^[:\s]+/, '').trim();
+            current = { title: matchedKeyword, lines: inlineValue ? [inlineValue] : [] };
+        } else if (current) {
+            current.lines.push(line);
+        } else {
+            // Content before any section keyword
+            sections.push({ title: null, lines: [line] });
+        }
+    }
+    if (current) sections.push(current);
+
+    return sections;
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+export default function WeeklySessionExercise({ excercise, onBack, onSearchSkillClick }) {
+
+    console.log('excercise', excercise);
+
+    // Parse imageUrl JSON string array
+    let imageUri = null;
+    try {
+        const parsed = JSON.parse(excercise?.imageUrl);
+        imageUri = Array.isArray(parsed) ? parsed[0] : parsed;
+    } catch {
+        imageUri = excercise?.imageUrl ?? null;
+    }
+
+    const sections = parseDescriptionHTML(excercise?.description);
+
+    // Pull "Time Duration" section out to show in the duration row
+    const durationSection = sections.find(s => s.title === 'Time Duration');
+    const durationValue = durationSection?.lines?.[0] ?? excercise?.duration ?? 'N/A';
+    const contentSections = sections.filter(s => s.title !== 'Time Duration' && s.title !== null);
+
     return (
         <View style={styles.container}>
             {/* Header */}
@@ -10,57 +86,55 @@ export default function WeeklySessionExercise({ onBack, onSearchSkillClick }) {
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#fff" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Small-sided games</Text>
+                    <Text style={styles.headerTitle} numberOfLines={1}>
+                        {excercise?.title ?? 'Exercise'}
+                    </Text>
                     <View style={{ width: 24 }} />
                 </View>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-                {/* Main Image Placeholder */}
+
+                {/* Main Image */}
                 <View style={styles.imageContainer}>
-                    <Image
-                       source={require('../../../assets/images/skill.png')}
-                        style={styles.mainImage}
-                        resizeMode="cover"
-                    />
+                    {imageUri ? (
+                        <Image source={{ uri: imageUri }} style={styles.mainImage} resizeMode="cover" />
+                    ) : (
+                        <View style={[styles.mainImage, styles.imageFallback]}>
+                            <Ionicons name="image-outline" size={48} color="#ccc" />
+                        </View>
+                    )}
                 </View>
 
-                {/* Duration and Search */}
+                {/* Duration + Search Skill */}
                 <View style={styles.durationRow}>
                     <View style={styles.durationTextContainer}>
                         <Text style={styles.durationLabel}>Time Duration: </Text>
-                        <Text style={styles.durationValue}>10 mins</Text>
+                        <Text style={styles.durationValue}>{durationValue}</Text>
                     </View>
                     <TouchableOpacity style={styles.searchButton} onPress={onSearchSkillClick}>
                         <Text style={styles.searchButtonText}>Search a skill</Text>
                     </TouchableOpacity>
                 </View>
 
-                {/* Organisation */}
-                <Text style={styles.sectionTitle}>Organisation</Text>
-                <Text style={styles.paragraph}>Set up two small-sided games. You will need the following:</Text>
-                <View style={styles.bulletList}>
-                    <Text style={styles.bulletItem}>• 4 pop-up goals</Text>
-                    <Text style={styles.bulletItem}>• Bibs to clearly divide teams</Text>
-                    <Text style={styles.bulletItem}>• 4 blue cones to divide the two pitches</Text>
-                    <Text style={styles.bulletItem}>• 5 footballs</Text>
-                </View>
-
-                {/* Description */}
-                <Text style={styles.sectionTitle}>Description</Text>
-                <Text style={styles.paragraph}>
-                    Begin the lesson with two small-sided games.
-                    Organise players based on ability into four teams. If you do not have many students, use one pitch only. Keep an eye on both games, unless you have a support coach working with you.
-                </Text>
-
-                {/* Rules */}
-                <Text style={styles.sectionTitle}>Rules</Text>
-                <Text style={styles.paragraph}>
-                    Before you start the game, quickly reiterate the rules of the game:
-                </Text>
-                <Text style={styles.numberedItem}>1- No slide tackles</Text>
-                <Text style={styles.numberedItem}>2- No hands</Text>
-                <Text style={styles.numberedItem}>3- Have fun</Text>
+                {/* Dynamic Sections */}
+                {contentSections.map((section, idx) => (
+                    <View key={idx}>
+                        {section.title && (
+                            <Text style={styles.sectionTitle}>{section.title}</Text>
+                        )}
+                        {section.lines.map((line, lineIdx) =>
+                            line.startsWith('•') ? (
+                                <Text key={lineIdx} style={styles.bulletItem}>{line}</Text>
+                            ) : /^\d+[-.]/.test(line) ? (
+                                <Text key={lineIdx} style={styles.numberedItem}>{line}</Text>
+                            ) : (
+                                <Text key={lineIdx} style={styles.paragraph}>{line}</Text>
+                            )
+                        )}
+                        <View style={{ height: 8 }} />
+                    </View>
+                ))}
 
                 <View style={{ height: 40 }} />
             </ScrollView>
@@ -87,13 +161,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 16,
     },
-    backButton: {
-        padding: 4,
-    },
+    backButton: { padding: 4 },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#fff',
+        flex: 1,
+        textAlign: 'center',
     },
     content: {
         paddingHorizontal: 16,
@@ -110,6 +184,10 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
     },
+    imageFallback: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     durationRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -122,11 +200,11 @@ const styles = StyleSheet.create({
     durationLabel: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#2563EB', // Blue
+        color: '#2563EB',
     },
     durationValue: {
         fontSize: 16,
-        color: '#3B82F6', // Lighter Blue
+        color: '#3B82F6',
     },
     searchButton: {
         borderWidth: 1.5,
@@ -144,23 +222,20 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#1a1a1a',
-        marginBottom: 12,
+        marginBottom: 8,
         marginTop: 8,
     },
     paragraph: {
         fontSize: 14,
         color: '#6B7280',
         lineHeight: 22,
-        marginBottom: 12,
-    },
-    bulletList: {
-        marginLeft: 8,
-        marginBottom: 20,
+        marginBottom: 4,
     },
     bulletItem: {
         fontSize: 14,
         color: '#6B7280',
         lineHeight: 24,
+        marginLeft: 8,
     },
     numberedItem: {
         fontSize: 14,

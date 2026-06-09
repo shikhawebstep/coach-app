@@ -67,8 +67,13 @@ export default function Classes() {
     const [selectedVenue, setSelectedVenue] = useState(null);
     const [selectedSessionId, setSelectedSessionId] = useState(null);
     const [selectedStudent, setSelectedStudent] = useState(null);
-const [selectedSessionData, setSelectedSessionData] = useState(null);
-const [selectedSessionDate, setSelectedSessionDate] = useState(null);
+    const [selectedSessionData, setSelectedSessionData] = useState(null);
+    const [selectedBirthdaySessionData, setSelectedBirthdaySessionData] = useState(null);
+    const [selectedSessionDate, setSelectedSessionDate] = useState(null);
+    const [selectedBirthdayBooking, setSelectedBirthdayBooking] = useState(null);
+    const [selectedBirthdaySyllabus, setSelectedBirthdaySyllabus] = useState(null);
+    const [weeklyExcercises, setWeeklyExcercises] = useState(null);
+
     useEffect(() => {
         if (params.view) {
             setCurrentView(params.view);
@@ -138,23 +143,23 @@ const [selectedSessionDate, setSelectedSessionDate] = useState(null);
         />;
     }
 
-  if (currentView === 'sessionTrainingDetails') {
-    return <WeeklySessionTrainingDetails
-        sessionId={selectedSessionId}
-        sessionDate={selectedSessionDate}
-        onBack={() => setCurrentView('venueList')}
-        onStudentSelect={(student) => {
-            setSelectedStudent(student);
-            setCurrentView('studentClass');
-        }}
-        onSessionClick={(view) => setCurrentView(view)}
-        onSessionPlanClick={(sessionData) => {        // ← receive sessionData here
-            setSelectedSessionData(sessionData);
-            setCurrentView('syllabusDayDetails');
-        }}
-        sessionTitle="Session"
-    />;
-}
+    if (currentView === 'sessionTrainingDetails') {
+        return <WeeklySessionTrainingDetails
+            sessionId={selectedSessionId}
+            sessionDate={selectedSessionDate}
+            onBack={() => setCurrentView('venueList')}
+            onStudentSelect={(student) => {
+                setSelectedStudent(student);
+                setCurrentView('studentClass');
+            }}
+            onSessionClick={(view) => setCurrentView(view)}
+            onSessionPlanClick={(sessionData) => {        // ← receive sessionData here
+                setSelectedSessionData(sessionData);
+                setCurrentView('syllabusDayDetails');
+            }}
+            sessionTitle="Session"
+        />;
+    }
     if (currentView === 'clubSyllabus') {
         return <ClubSyllabus
             onBack={() => setCurrentView('session')}
@@ -210,44 +215,60 @@ const [selectedSessionDate, setSelectedSessionDate] = useState(null);
         />;
     }
 
-if (currentView === 'venueList') {
-    return <SelectAVenueList
-        venueId={selectedVenue?.id}
-        onBack={() => setCurrentView('venue')}
-        onSessionSelect={(sessionId, sessionDate) => {    // ← receive date too
-            setSelectedSessionId(sessionId);
-            setSelectedSessionDate(sessionDate);          // ← store it
-            setCurrentView('sessionTrainingDetails');
-        }}
-    />;
-}
+    if (currentView === 'venueList') {
+        return <SelectAVenueList
+            venueId={selectedVenue?.id}
+            onBack={() => setCurrentView('venue')}
+            onSessionSelect={(sessionId, sessionDate) => {    // ← receive date too
+                setSelectedSessionId(sessionId);
+                setSelectedSessionDate(sessionDate);          // ← store it
+                setCurrentView('sessionTrainingDetails');
+            }}
+        />;
+    }
+
     if (currentView === 'birthday') {
         return <BirthdayParties
             onBack={() => setCurrentView('dashboard')}
-            onBookingSelect={(id) => setCurrentView('birthdayDetails')}
-        />;
+            onBookingSelect={(booking) => {
+                setSelectedBirthdayBooking(booking)
+                setCurrentView('birthdayDetails')
+            }}
+        />
     }
 
+    // 4. Fix birthdayDetails — pass actual booking object, not the string 'booking'
     if (currentView === 'birthdayDetails') {
         return <BirthdayPartyDetails
+            booking={selectedBirthdayBooking}
             onBack={() => setCurrentView('birthday')}
-            onSyllabusClick={() => setCurrentView('birthdaySyllabus')}
-        />;
+            onSyllabusClick={(booking) => {
+                setSelectedBirthdayBooking(booking);   // ← was setSelectedBirthdayBooking('booking')
+                setCurrentView('birthdaySyllabus');
+            }}
+        />
     }
 
+    // 5. Fix birthdaySyllabus — pass selectedBirthdayBooking (not selectedBirthdaySyllabus)
+    //    Fix onSessionSelect — store exercise in selectedBirthdaySessionData
     if (currentView === 'birthdaySyllabus') {
         return <BirthdaySyllabus
+            booking={selectedBirthdayBooking}          // ← was selectedBirthdaySyllabus
             onBack={() => setCurrentView('birthdayDetails')}
-            onSessionSelect={(id) => setCurrentView('birthdaySessionExercise')}
+            onSessionSelect={(exerciseItem) => {
+                setSelectedBirthdaySessionData(exerciseItem);  // ← was setSelectedBirthdaySyllabus
+                setCurrentView('birthdaySessionExercise');
+            }}
         />;
     }
 
+    // 6. Fix birthdaySessionExercise — selectedBirthdaySessionData is now correctly populated
     if (currentView === 'birthdaySessionExercise') {
         return <BirthdaySessionExercise
+            sessionData={selectedBirthdaySessionData}
             onBack={() => setCurrentView('birthdaySyllabus')}
         />;
     }
-
     if (currentView === 'venue' || currentView === 'weekly') {
         return <SelectAVenue
             onBack={() => setCurrentView('dashboard')}
@@ -282,16 +303,20 @@ if (currentView === 'venueList') {
         />;
     }
 
-  if (currentView === 'syllabusDayDetails') {
-    return <WeeklySyllabusDayDetails
-        onBack={() => setCurrentView('sessionTrainingDetails')}
-        onSessionItemSelect={(id) => setCurrentView('sessionExercise')}
-        sessionPlan={selectedSessionData?.sessionPlan}
-    />;
-}
+    if (currentView === 'syllabusDayDetails') {
+        return <WeeklySyllabusDayDetails
+            onBack={() => setCurrentView('sessionTrainingDetails')}
+            onSessionItemSelect={(excercise) => {
+                setCurrentView('sessionExercise');
+                setWeeklyExcercises(excercise)
+            }}
+            sessionPlan={selectedSessionData?.sessionPlan}
+        />;
+    }
 
     if (currentView === 'sessionExercise') {
         return <WeeklySessionExercise
+            excercise={weeklyExcercises}
             onBack={() => setCurrentView('syllabusDayDetails')}
             onSearchSkillClick={() => setCurrentView('searchSkill')}
         />;

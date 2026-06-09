@@ -42,6 +42,7 @@ export default function WeeklySessionTrainingDetails({ sessionId, onBack, onStud
                             age: `${student.age} Years`,
                             status: student.attendance,
                             rawStudent: student,
+                            booking:booking,
                         });
                     });
                 });

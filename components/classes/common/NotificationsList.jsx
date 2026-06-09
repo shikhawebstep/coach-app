@@ -1,11 +1,31 @@
+import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+// Group flat notifications array into sections by category
+function groupByCategory(notifications = []) {
+    const map = {};
+    for (const n of notifications) {
+        const cat = n.category || 'Other';
+        if (!map[cat]) map[cat] = [];
+        map[cat].push(n);
+    }
+    return Object.entries(map).map(([category, items]) => ({ category, items }));
+}
+
+// Format ISO date → "4 Jun 2026, 07:16"
+function formatDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
 
 export default function NotificationsList({ onNotificationSelect }) {
     const [hideRead, setHideRead] = useState(false);
     const [sections, setSections] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { token } = useAuth();
 
     useEffect(() => {
         fetchNotifications();
@@ -15,24 +35,31 @@ export default function NotificationsList({ onNotificationSelect }) {
         try {
             setLoading(true);
             const response = await fetch(
-                `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/notifications/list`,
-                { method: "GET", redirect: "follow" }
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/notifications/list`,
+                {
+                    method: 'GET',
+                    headers: { Authorization: `Bearer ${token}` },
+                }
             );
             const result = await response.json();
             if (response.ok) {
-                setSections(result?.notifications || []);
+                const flat = result?.data?.customNotifications || [];
+                setSections(groupByCategory(flat));
             }
         } catch (error) {
-            console.error("Failed to fetch notifications:", error);
+            console.error('Failed to fetch notifications:', error);
         } finally {
             setLoading(false);
         }
     };
 
+    // isRead lives inside recipients[0].isRead
+    const isRead = (item) => item.recipients?.[0]?.isRead ?? true;
+
     const visibleSections = hideRead
         ? sections
-            .map(s => ({ ...s, data: s.data.filter(n => n.unread) }))
-            .filter(s => s.data.length > 0)
+            .map(s => ({ ...s, items: s.items.filter(n => !isRead(n)) }))
+            .filter(s => s.items.length > 0)
         : sections;
 
     if (loading) {
@@ -45,6 +72,7 @@ export default function NotificationsList({ onNotificationSelect }) {
 
     return (
         <View style={styles.container}>
+            {/* Header */}
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Notifications</Text>
                 <TouchableOpacity
@@ -52,11 +80,11 @@ export default function NotificationsList({ onNotificationSelect }) {
                     onPress={() => setHideRead(!hideRead)}
                 >
                     <Ionicons
-                        name={hideRead ? "checkbox" : "square-outline"}
+                        name={hideRead ? 'checkbox' : 'square-outline'}
                         size={20}
-                        color={hideRead ? "#000" : "#a0a0a0"}
+                        color={hideRead ? '#000' : '#a0a0a0'}
                     />
-                    <Text style={styles.hideReadText}>Hide read notifications</Text>
+                    <Text style={styles.hideReadText}>Hide read</Text>
                 </TouchableOpacity>
             </View>
 
@@ -67,32 +95,41 @@ export default function NotificationsList({ onNotificationSelect }) {
                     </View>
                 ) : (
                     visibleSections.map((section) => (
-                        <View key={section.id} style={styles.sectionContainer}>
-                            <Text style={styles.sectionTitle}>{section.section}</Text>
-                            {section.data.map(item => (
+                        <View key={section.category} style={styles.sectionContainer}>
+                            <Text style={styles.sectionTitle}>{section.category}</Text>
+                            {section.items.map(item => (
                                 <TouchableOpacity
                                     key={item.id}
                                     style={styles.notificationCard}
-                                    onPress={() => onNotificationSelect?.(item.id)}
+                                    onPress={() => onNotificationSelect?.(item)}
                                 >
-                                    <View style={styles.iconContainer}>
-                                        <Image
-                                            source={{ uri: item.image }}
-                                            style={styles.avatarImage}
-                                        />
-                                    </View>
+                                    {/* Sender avatar */}
+                                    <Image
+                                        source={{ uri: item.createdBy?.profile }}
+                                        style={styles.avatarImage}
+                                    />
+
+                                    {/* Content */}
                                     <View style={styles.contentContainer}>
-                                        <Text style={styles.notificationTitle}>{item.title}</Text>
+                                        <Text style={styles.notificationTitle} numberOfLines={1}>
+                                            {item.title}
+                                        </Text>
                                         <Text style={styles.notificationSubtitle} numberOfLines={2}>
-                                            {item.subtitle}
+                                            {item.description}
+                                        </Text>
+                                        <Text style={styles.notificationDate}>
+                                            {formatDate(item.createdAt)}
                                         </Text>
                                     </View>
-                                    {item.unread && <View style={styles.unreadDot} />}
+
+                                    {/* Unread dot — shown when isRead is false */}
+                                    {!isRead(item) && <View style={styles.unreadDot} />}
                                 </TouchableOpacity>
                             ))}
                         </View>
                     ))
                 )}
+                <View style={{ height: 40 }} />
             </ScrollView>
         </View>
     );
@@ -112,7 +149,6 @@ const styles = StyleSheet.create({
     emptyText: {
         fontSize: 14,
         color: '#6B7280',
-        fontFamily: 'Urbanist_400Regular',
     },
     header: {
         flexDirection: 'row',
@@ -124,8 +160,8 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
+        fontWeight: 'bold',
         color: '#1a1a1a',
-        fontFamily: 'Urbanist_700Bold',
     },
     hideReadContainer: {
         flexDirection: 'row',
@@ -135,7 +171,6 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#666',
         marginLeft: 6,
-        fontFamily: 'Urbanist_400Regular',
     },
     scrollContent: {
         paddingHorizontal: 16,
@@ -146,12 +181,13 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 16,
+        fontWeight: 'bold',
         color: '#1a1a1a',
         marginBottom: 16,
-        fontFamily: 'Urbanist_700Bold',
     },
     notificationCard: {
         flexDirection: 'row',
+        alignItems: 'flex-start',
         backgroundColor: '#fff',
         borderRadius: 16,
         padding: 16,
@@ -165,37 +201,39 @@ const styles = StyleSheet.create({
         borderColor: '#F9FAFB',
         position: 'relative',
     },
-    iconContainer: {
-        marginRight: 16,
-    },
     avatarImage: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-    },
-    unreadDot: {
-        position: 'absolute',
-        top: 12,
-        right: 12,
-        width: 12,
-        height: 12,
-        backgroundColor: '#FF4D4D',
-        borderRadius: 6,
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        marginRight: 12,
+        backgroundColor: '#F3F4F6',
     },
     contentContainer: {
         flex: 1,
-        justifyContent: 'center',
     },
     notificationTitle: {
-        fontSize: 16,
+        fontSize: 15,
+        fontWeight: 'bold',
         color: '#1a1a1a',
         marginBottom: 4,
-        fontFamily: 'Urbanist_700Bold',
     },
     notificationSubtitle: {
         fontSize: 13,
         color: '#6B7280',
         lineHeight: 18,
-        fontFamily: 'Urbanist_400Regular',
+        marginBottom: 4,
+    },
+    notificationDate: {
+        fontSize: 11,
+        color: '#9CA3AF',
+    },
+    unreadDot: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        width: 10,
+        height: 10,
+        backgroundColor: '#FF4D4D',
+        borderRadius: 5,
     },
 });

@@ -1,7 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-export default function BirthdaySessionExercise({ onBack, onSearchSkillClick }) {
+export default function BirthdaySessionExercise({ sessionData, onBack, onSearchSkillClick }) {
+
+    console.log('sessionData', sessionData);
+
+    // Parse imageUrl — stored as JSON string array e.g. '["https://..."]'
+    let imageUri = null;
+    try {
+        const parsed = JSON.parse(sessionData?.imageUrl);
+        imageUri = Array.isArray(parsed) ? parsed[0] : parsed;
+    } catch {
+        imageUri = sessionData?.imageUrl ?? null;
+    }
+
+    // Strip HTML tags from description
+    const cleanDescription = sessionData?.description?.replace(/<[^>]+>/g, '').trim() ?? '';
+
     return (
         <View style={styles.container}>
             {/* Header */}
@@ -10,52 +25,57 @@ export default function BirthdaySessionExercise({ onBack, onSearchSkillClick }) 
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#fff" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Small-sided games</Text>
+                    <Text style={styles.headerTitle} numberOfLines={1}>
+                        {sessionData?.title ?? 'Exercise'}
+                    </Text>
                     <View style={{ width: 24 }} />
                 </View>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-                {/* Main Image Placeholder */}
+
+                {/* Main Image */}
                 <View style={styles.imageContainer}>
-                    <Image
-                       source={require('../../../assets/images/skill.png')}
-                        style={styles.mainImage}
-                        resizeMode="cover"
-                    />
+                    {imageUri ? (
+                        <Image source={{ uri: imageUri }} style={styles.mainImage} resizeMode="cover" />
+                    ) : (
+                        <View style={[styles.mainImage, styles.imageFallback]}>
+                            <Ionicons name="image-outline" size={48} color="#ccc" />
+                        </View>
+                    )}
                 </View>
 
-                {/* Duration and Search */}
+                {/* Duration */}
                 <View style={styles.durationRow}>
                     <View style={styles.durationTextContainer}>
                         <Text style={styles.durationLabel}>Time Duration: </Text>
-                        <Text style={styles.durationValue}>10 mins</Text>
+                        <Text style={styles.durationValue}>{sessionData?.duration ?? 'N/A'}</Text>
                     </View>
                 </View>
 
-                {/* Organisation */}
-                <Text style={styles.sectionTitle}>Organisation</Text>
-                <Text style={styles.paragraph}>Set up two small-sided games. You will need the following:</Text>
-                <View style={styles.bulletList}>
-                    <Text style={styles.bulletItem}>• 4 pop-up goals</Text>
-                    <Text style={styles.bulletItem}>• Bibs to clearly divide teams</Text>
-                    <Text style={styles.bulletItem}>• 4 blue cones to divide the two pitches</Text>
-                    <Text style={styles.bulletItem}>• 5 footballs</Text>
-                </View>
+                {/* Skill of the Day */}
+                {sessionData?.skillOfTheDay ? (
+                    <>
+                        <Text style={styles.sectionTitle}>Skill of the Day</Text>
+                        <Text style={styles.paragraph}>{sessionData.skillOfTheDay}</Text>
+                    </>
+                ) : null}
 
                 {/* Description */}
-                <Text style={styles.sectionTitle}>Description</Text>
-                <Text style={styles.paragraph}>
-                    Begin the lesson with two small-sided games.
-                    Organise players based on ability into four teams. If you do not have many students, use one pitch only. Keep an eye on both games unless you have a support coach working with you.
-                </Text>
+                {cleanDescription ? (
+                    <>
+                        <Text style={styles.sectionTitle}>Description</Text>
+                        <Text style={styles.paragraph}>{cleanDescription}</Text>
+                    </>
+                ) : null}
 
-                {/* Rules */}
-                <Text style={styles.sectionTitle}>Rules</Text>
-                <Text style={styles.paragraph}>
-                    Before you start the game, quickly reiterate the rules of the game:
-                </Text>
-                <Text style={styles.bulletItem}>{'>'} No slide tackles</Text>
+                {/* Level Description */}
+                {sessionData?.levelDescription ? (
+                    <>
+                        <Text style={styles.sectionTitle}>Level Notes</Text>
+                        <Text style={styles.paragraph}>{sessionData.levelDescription}</Text>
+                    </>
+                ) : null}
 
                 <View style={{ height: 40 }} />
             </ScrollView>
@@ -86,9 +106,11 @@ const styles = StyleSheet.create({
         padding: 4,
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#fff',
+        flex: 1,
+        textAlign: 'center',
     },
     content: {
         paddingHorizontal: 16,
@@ -105,6 +127,10 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
     },
+    imageFallback: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     durationRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -117,11 +143,11 @@ const styles = StyleSheet.create({
     durationLabel: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#2563EB', // Blue
+        color: '#2563EB',
     },
     durationValue: {
         fontSize: 16,
-        color: '#3B82F6', // Lighter Blue
+        color: '#3B82F6',
     },
     sectionTitle: {
         fontSize: 18,
@@ -135,14 +161,5 @@ const styles = StyleSheet.create({
         color: '#6B7280',
         lineHeight: 22,
         marginBottom: 12,
-    },
-    bulletList: {
-        marginLeft: 8,
-        marginBottom: 20,
-    },
-    bulletItem: {
-        fontSize: 14,
-        color: '#6B7280',
-        lineHeight: 24,
     },
 });

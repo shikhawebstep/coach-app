@@ -1,7 +1,92 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+// BirthdayPartyDetails.jsx
 
-export default function BirthdayPartyDetails({ onBack, onSyllabusClick, studentName = "John Smith" }) {
+import { useAuth } from '@/context/AuthContext';
+import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
+
+export default function BirthdayPartyDetails({ booking: initialBooking, onBack, onSyllabusClick }) {
+
+    const [booking, setBooking] = useState(initialBooking || null)
+    const [loading, setLoading] = useState(true)
+    const [region, setRegion] = useState(null)
+    const { token } = useAuth()
+
+    useEffect(() => {
+        if (initialBooking?.id) fetchBooking()
+        else setLoading(false)
+    }, [initialBooking?.id])
+
+    useEffect(() => {
+        if (booking?.address) geocodeAddress(booking.address)
+    }, [booking?.address])
+
+    const geocodeAddress = async (addressStr) => {
+        try {
+            const encoded = encodeURIComponent(addressStr)
+            const res = await fetch(
+                `https://maps.googleapis.com/maps/api/geocode/json?address=${encoded}&key=${process.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY}`
+            )
+            const data = await res.json()
+            if (data.results?.[0]) {
+                const { lat, lng } = data.results[0].geometry.location
+                setRegion({
+                    latitude: lat,
+                    longitude: lng,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                })
+            }
+        } catch (e) {
+            console.error('Geocode error:', e)
+        }
+    }
+
+    const fetchBooking = async () => {
+        try {
+            setLoading(true)
+            const response = await fetch(
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/birthday-party/booking/${initialBooking?.id}`,
+                { method: 'GET', headers: { Authorization: `Bearer ${token}` } }
+            )
+            const result = await response.json()
+            if (response.ok && result?.data) setBooking(result.data)
+        } catch (error) {
+            console.error('Failed to fetch booking:', error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const student = booking?.students?.[0]
+    const parent = booking?.parentDetails?.[0]
+    const pkg = booking?.package
+
+    const studentName = student
+        ? `${student.studentFirstName || ''} ${student.studentLastName || ''}`.trim()
+        : '-'
+    const parentName = parent
+        ? `${parent.parentFirstName || ''} ${parent.parentLastName || ''}`.trim()
+        : '-'
+
+    const date = booking?.date
+        ? new Date(booking.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+        : '-'
+    const time = booking?.time || '-'
+    const capacity = pkg?.numberOfChildren ?? booking?.capacity ?? '-'
+    const status = booking?.status || '-'
+    const address = booking?.address || '-'
+    const phone = parent?.phoneNumber || '-'
+
+    if (loading) {
+        return (
+            <View style={styles.centered}>
+                <ActivityIndicator size="large" color="#3B82F6" />
+            </View>
+        )
+    }
+
     return (
         <View style={styles.container}>
             {/* Header */}
@@ -12,12 +97,14 @@ export default function BirthdayPartyDetails({ onBack, onSyllabusClick, studentN
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>{studentName} birthday</Text>
                 </View>
-                <TouchableOpacity style={styles.syllabusButton} onPress={onSyllabusClick}>
+                <TouchableOpacity style={styles.syllabusButton} onPress={() => onSyllabusClick && onSyllabusClick(booking)}
+                >
                     <Text style={styles.syllabusText}>Syllabus</Text>
                 </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+
                 {/* Info Card */}
                 <View style={styles.infoCard}>
                     <View style={styles.infoRow}>
@@ -26,92 +113,126 @@ export default function BirthdayPartyDetails({ onBack, onSyllabusClick, studentN
                                 <Ionicons name="calendar-outline" size={16} color="#666" style={styles.infoIcon} />
                                 <Text style={styles.infoLabel}>Date</Text>
                             </View>
-                            <Text style={styles.infoValue}>Sat 3rd Apr</Text>
+                            <Text style={styles.infoValue}>{date}</Text>
                         </View>
                         <View style={styles.infoItem}>
                             <View style={styles.infoLabelContainer}>
                                 <Ionicons name="time-outline" size={16} color="#666" style={styles.infoIcon} />
                                 <Text style={styles.infoLabel}>Time</Text>
                             </View>
-                            <Text style={styles.infoValue}>9:30am</Text>
+                            <Text style={styles.infoValue}>{time}</Text>
                         </View>
                         <View style={styles.infoItem}>
                             <View style={styles.infoLabelContainer}>
                                 <Ionicons name="person-outline" size={16} color="#666" style={styles.infoIcon} />
                                 <Text style={styles.infoLabel}>Students</Text>
                             </View>
-                            <Text style={styles.infoValue}>20</Text>
+                            <Text style={styles.infoValue}>{capacity}</Text>
                         </View>
                         <View style={styles.infoItemSmall}>
                             <Text style={styles.statusLabel}>Status</Text>
-                            <View style={styles.statusBadge}>
-                                <Text style={styles.statusText}>Pending</Text>
+                            <View style={[
+                                styles.statusBadge,
+                                status === 'active' ? styles.statusActive : styles.statusPending
+                            ]}>
+                                <Text style={[
+                                    styles.statusText,
+                                    status === 'active' && { color: '#fff' }
+                                ]}>
+                                    {status === 'active' ? 'Active' : 'Pending'}
+                                </Text>
                             </View>
                         </View>
                     </View>
-   </View>
-                    {/* Map Placeholder */}
+                </View>
+
+                {/* Map */}
+                {region ? (
                     <View style={styles.mapContainer}>
-                        {/* Could replace with an actual MapView or Image */}
-                        <Image source={require('../../../assets/images/map.png')}
-                            resizeMode="contain" style={styles.mapImage}  />
+                        <MapView
+                            style={styles.mapImage}
+                            initialRegion={region}
+                            scrollEnabled={false}
+                            zoomEnabled={false}
+                        >
+                            <Marker
+                                coordinate={{ latitude: region.latitude, longitude: region.longitude }}
+                                title={studentName}
+                                description={address}
+                            />
+                        </MapView>
                     </View>
-
-                    {/* Location */}
-                    <View style={styles.locationContainer}>
-                        <Ionicons name="location-outline" size={18} color="#666" style={styles.locationIcon} />
-                        <Text style={styles.locationText}>Kings Cross, Grays Inn Road, London WC2H 9HE [Outdoor Park]</Text>
+                ) : (
+                    <View style={[styles.mapContainer, styles.mapFallback]}>
+                        <Ionicons name="map-outline" size={32} color="#9CA3AF" />
+                        <Text style={styles.mapFallbackText}>Loading map...</Text>
                     </View>
-             
+                )}
 
-                {/* Student Information Section */}
+                {/* Location */}
+                <View style={styles.locationContainer}>
+                    <Ionicons name="location-outline" size={18} color="#666" style={styles.locationIcon} />
+                    <Text style={styles.locationText}>{address}</Text>
+                </View>
+
+                {/* Package Info */}
+                {pkg && (
+                    <>
+                        <Text style={styles.sectionTitle}>Package</Text>
+                        <View style={styles.formRow}>
+                            <View style={[styles.formGroup, { flex: 2, marginRight: 16 }]}>
+                                <Text style={styles.inputLabel}>Package Name</Text>
+                                <View style={styles.inputContainer}>
+                                    <TextInput style={styles.input} value={pkg.packageName || '-'} editable={false} />
+                                </View>
+                            </View>
+                            <View style={[styles.formGroup, { flex: 1 }]}>
+                                <Text style={styles.inputLabel}>Duration</Text>
+                                <View style={styles.inputContainer}>
+                                    <TextInput style={styles.input} value={pkg.partyDuration ? `${pkg.partyDuration} min` : '-'} editable={false} />
+                                </View>
+                            </View>
+                        </View>
+                    </>
+                )}
+
+                {/* Student Information */}
                 <Text style={styles.sectionTitle}>Student Information</Text>
-
                 <View style={styles.formRow}>
                     <View style={[styles.formGroup, { flex: 2, marginRight: 16 }]}>
                         <Text style={styles.inputLabel}>Full Name</Text>
                         <View style={styles.inputContainer}>
-                            <TextInput
-                                style={styles.input}
-                                value="John Smith"
-                                editable={false}
-                            />
+                            <TextInput style={styles.input} value={studentName} editable={false} />
                         </View>
                     </View>
                     <View style={[styles.formGroup, { flex: 1 }]}>
                         <Text style={styles.inputLabel}>Age</Text>
                         <View style={styles.inputContainer}>
-                            <TextInput
-                                style={styles.input}
-                                value="7"
-                                editable={false}
-                            />
+                            <TextInput style={styles.input} value={student?.age ? `${student.age}` : '-'} editable={false} />
                         </View>
                     </View>
                 </View>
 
-                {/* Parent Information Section */}
-                <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Parent Information</Text>
+                <View style={styles.formGroup}>
+                    <Text style={styles.inputLabel}>Medical Info</Text>
+                    <View style={styles.inputContainer}>
+                        <TextInput style={styles.input} value={student?.medicalInfo || '-'} editable={false} />
+                    </View>
+                </View>
 
+                {/* Parent Information */}
+                <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Parent Information</Text>
                 <View style={styles.formRow}>
                     <View style={[styles.formGroup, { flex: 1, marginRight: 16 }]}>
                         <Text style={styles.inputLabel}>Full Name</Text>
                         <View style={styles.inputContainer}>
-                            <TextInput
-                                style={styles.input}
-                                value="Bradley Smith"
-                                editable={false}
-                            />
+                            <TextInput style={styles.input} value={parentName} editable={false} />
                         </View>
                     </View>
                     <View style={[styles.formGroup, { flex: 1 }]}>
                         <Text style={styles.inputLabel}>Telephone</Text>
                         <View style={styles.inputContainer}>
-                            <TextInput
-                                style={[styles.input, styles.inputLink]}
-                                value="0791042 3334"
-                                editable={false}
-                            />
+                            <TextInput style={[styles.input, styles.inputLink]} value={phone} editable={false} />
                         </View>
                     </View>
                 </View>
@@ -119,14 +240,12 @@ export default function BirthdayPartyDetails({ onBack, onSyllabusClick, studentN
                 <View style={{ height: 40 }} />
             </ScrollView>
         </View>
-    );
+    )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
+    container: { flex: 1, backgroundColor: '#fff' },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -135,34 +254,12 @@ const styles = StyleSheet.create({
         paddingTop: 16,
         paddingBottom: 24,
     },
-    headerLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1,
-    },
-    backButton: {
-        marginRight: 10,
-    },
-    headerTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
-    },
-    syllabusButton: {
-        backgroundColor: '#1CAB4B', // Green
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 8,
-    },
-    syllabusText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 14,
-    },
-    scrollContent: {
-        paddingHorizontal: 16,
-        paddingBottom: 40,
-    },
+    headerLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+    backButton: { marginRight: 10 },
+    headerTitle: { fontSize: 22, fontWeight: 'bold', color: '#1a1a1a' },
+    syllabusButton: { backgroundColor: '#1CAB4B', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8 },
+    syllabusText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
+    scrollContent: { paddingHorizontal: 16, paddingBottom: 40 },
     infoCard: {
         backgroundColor: '#fff',
         borderRadius: 16,
@@ -176,114 +273,30 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         elevation: 2,
     },
-    infoRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 16,
-    },
-    infoItem: {
-        flex: 1,
-    },
-    infoItemSmall: {
-        marginLeft: 8,
-        alignItems: 'flex-end',
-    },
-    infoLabelContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 4,
-    },
-    infoIcon: {
-        marginRight: 4,
-    },
-    infoLabel: {
-        fontSize: 13,
-        color: '#9CA3AF',
-        fontWeight: '600',
-        marginBottom: 4,
-    },
-    statusLabel: {
-        fontSize: 13,
-        color: '#9CA3AF',
-        fontWeight: '600',
-        marginBottom: 8,
-        marginRight: 4, // Align slightly right to match badge
-    },
-    infoValue: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
-    },
-    statusBadge: {
-        backgroundColor: '#FFD700',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 6,
-    },
-    statusText: {
-        fontSize: 12,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
-    },
-    mapContainer: {
-        height: 140,
-        borderRadius: 12,
-        overflow: 'hidden',
-        marginBottom: 16,
-        backgroundColor: '#F3F4F6',
-    },
-    mapImage: {
-        width: '100%',
-        height: '100%',
-    },
-    locationContainer: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        paddingRight: 16,
-        marginBottom:20,
-    },
-    locationIcon: {
-        marginTop: 2,
-    },
-    locationText: {
-        marginLeft: 8,
-        fontSize: 13,
-        color: '#4B5563',
-        lineHeight: 18,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#4B5563',
-        marginBottom: 16,
-    },
-    formRow: {
-        flexDirection: 'row',
-        marginBottom: 16,
-    },
-    formGroup: {
-        marginBottom: 16,
-    },
-    inputLabel: {
-        fontSize: 15,
-        fontWeight: 'bold',
-        color: '#4B5563',
-        marginBottom: 8,
-    },
-    inputContainer: {
-        borderWidth: 1,
-        borderColor: '#9CA3AF', // Gray border matching the screenshot
-        borderRadius: 8,
-        backgroundColor: '#FAFAFA',
-    },
-    input: {
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        fontSize: 16,
-        color: '#1a1a1a',
-    },
-    inputLink: {
-        color: '#3B82F6', // Blue link color 
-    },
-});
+    infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
+    infoItem: { flex: 1 },
+    infoItemSmall: { marginLeft: 8, alignItems: 'flex-end' },
+    infoLabelContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+    infoIcon: { marginRight: 4 },
+    infoLabel: { fontSize: 13, color: '#9CA3AF', fontWeight: '600', marginBottom: 4 },
+    statusLabel: { fontSize: 13, color: '#9CA3AF', fontWeight: '600', marginBottom: 8 },
+    infoValue: { fontSize: 14, fontWeight: 'bold', color: '#1a1a1a' },
+    statusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+    statusActive: { backgroundColor: '#1CAB4B' },
+    statusPending: { backgroundColor: '#FFD700' },
+    statusText: { fontSize: 12, fontWeight: 'bold', color: '#1a1a1a' },
+    mapContainer: { height: 200, borderRadius: 12, overflow: 'hidden', marginBottom: 16, backgroundColor: '#F3F4F6' },
+    mapImage: { width: '100%', height: '100%' },
+    mapFallback: { justifyContent: 'center', alignItems: 'center', gap: 8 },
+    mapFallbackText: { fontSize: 13, color: '#9CA3AF' },
+    locationContainer: { flexDirection: 'row', alignItems: 'flex-start', paddingRight: 16, marginBottom: 20 },
+    locationIcon: { marginTop: 2 },
+    locationText: { marginLeft: 8, fontSize: 13, color: '#4B5563', lineHeight: 18 },
+    sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#4B5563', marginBottom: 16 },
+    formRow: { flexDirection: 'row', marginBottom: 16 },
+    formGroup: { marginBottom: 16 },
+    inputLabel: { fontSize: 15, fontWeight: 'bold', color: '#4B5563', marginBottom: 8 },
+    inputContainer: { borderWidth: 1, borderColor: '#9CA3AF', borderRadius: 8, backgroundColor: '#FAFAFA' },
+    input: { paddingHorizontal: 16, paddingVertical: 12, fontSize: 16, color: '#1a1a1a' },
+    inputLink: { color: '#3B82F6' },
+})
