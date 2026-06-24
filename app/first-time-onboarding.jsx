@@ -1,3 +1,4 @@
+import { useAuth } from '@/context/AuthContext';
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -17,9 +18,7 @@ import {
 import Svg, { Circle } from "react-native-svg";
 import Header from '../components/layout/Header';
 import OnboardingHeader from "../components/layout/OnboardingHeader";
-
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
 // ─────────────────────────────────────────────
 // THEME COLORS
 // ─────────────────────────────────────────────
@@ -688,21 +687,120 @@ const ContractStep = ({ onNext, onComplete, onBack, isCompleted, styles, COLORS 
 // QUALIFICATIONS STEP
 // ─────────────────────────────────────────────
 
-const QualificationsStep = ({ onNext, onComplete, onBack, isCompleted, styles, COLORS }) => {
-  const [files, setFiles] = useState({});
+const QualificationsStep = ({ onNext, onComplete, onBack, isCompleted, styles, COLORS, token,userId }) => {
+  const [files, setFiles] = useState({});       // { fa_level_1: {name, uri, mimeType}, ... }
   const [notPossess, setNotPossess] = useState({});
   const [notes, setNotes] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(null);
+console.log('userId',userId)
 
-  const pickFile = (id) => {
-    setFiles((prev) => ({ ...prev, [id]: `document_${id}_upload.pdf` }));
+  // Map your UI qualification ids -> API field names
+  const FIELD_MAP = {
+    "1": "fa_level_1",
+    "2": "futsal_level_1_qualification",
+    "3": "first_aid",
+    "4": "others",
   };
+
+const pickFile = async (id) => {
+  try {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: "*/*",
+      copyToCacheDirectory: true,
+    });
+
+    console.log('DocumentPicker result:', result);
+
+    if (result.canceled) return;
+
+    const asset = result.assets[0];
+    setFiles((prev) => ({ ...prev, [id]: asset }));
+    setError(null);
+  } catch (e) {
+    console.error('DocumentPicker error:', e);
+    setError(`Could not open file picker: ${e.message}`);
+  }
+};
 
   const toggleNotPossess = (id) => setNotPossess((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  const handleComplete = () => {
+const handleComplete = async () => {
+  setUploading(true);
+  setError(null);
+  try {
+    const formdata = new FormData();
+    let fileCount = 0;
+
+    QUALIFICATION_TYPES.forEach((qual) => {
+      const fieldName = FIELD_MAP[qual.id];
+      if (!fieldName) return;
+      const file = files[qual.id];
+      if (file && !notPossess[qual.id]) {
+        formdata.append(fieldName, {
+          uri: file.uri,
+          name: file.name || `${fieldName}_upload`,
+          type: file.mimeType || "application/octet-stream",
+        });
+        fileCount++;
+      }
+    });
+
+    if (notes) formdata.append("notes", notes);
+
+    console.log('--- Upload debug ---');
+    console.log('fileCount:', fileCount);
+    console.log('files state:', files);
+    console.log('userId:', userId);
+    console.log('token present:', !!token, token?.slice(0, 20));
+
+    if (fileCount === 0 && !notes) {
+      setError("Please upload at least one document or add notes");
+      setUploading(false);
+      return;
+    }
+
+    const response = await fetch(
+      `https://api.grabbite.com/api/coachPro/account-profile/upload/qualifications/${userId}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formdata,
+      }
+    );
+
+    console.log('response status:', response.status);
+    console.log('response headers:', JSON.stringify([...response.headers.entries()]));
+
+    // Read the body as text FIRST — response.json() will throw and swallow
+    // the actual error body if the server returns HTML/plain-text on failure
+    const rawText = await response.text();
+    console.log('response raw body:', rawText);
+
+    if (!response.ok) {
+      throw new Error(`Upload failed (${response.status}): ${rawText}`);
+    }
+
+    let result;
+    try {
+      result = JSON.parse(rawText);
+    } catch (parseErr) {
+      throw new Error(`Server returned non-JSON: ${rawText.slice(0, 200)}`);
+    }
+
+    console.log('parsed result:', result);
+
     if (onComplete) onComplete();
     else if (onNext) onNext();
-  };
+  } catch (e) {
+    console.error('Upload error full:', e);
+    setError(e.message || "Upload failed");
+  } finally {
+    setUploading(false);
+  }
+};
 
   return (
     <View style={styles.stepContainer}>
@@ -727,25 +825,36 @@ const QualificationsStep = ({ onNext, onComplete, onBack, isCompleted, styles, C
       <ScrollView style={{ flex: 1, padding: 18 }} showsVerticalScrollIndicator={false}>
         <Text style={styles.qualIntro}>Please upload the requested documents below.</Text>
 
-        {QUALIFICATION_TYPES.map((qual) => (
-          <View key={qual.id} style={{ marginBottom: 6 }}>
-            <Text style={styles.qualFieldLabel}>{qual.label}</Text>
-            <TouchableOpacity
-              style={[styles.uploadField, files[qual.id] && styles.uploadFieldFilled]}
-              onPress={() => pickFile(qual.id)}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.uploadFieldText} numberOfLines={1}>{files[qual.id] || ''}</Text>
-              <Image source={require('../assets/images/Upload2.png')} style={styles.uploadIcon} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.notPossessRow} onPress={() => toggleNotPossess(qual.id)}>
-              <Text style={styles.notPossessText}>I do not possess this qualification</Text>
-              <View style={[styles.npCheckbox, notPossess[qual.id] && styles.npCheckboxChecked]}>
-                {notPossess[qual.id] && <Text style={styles.npCheckMark}>✓</Text>}
-              </View>
-            </TouchableOpacity>
-          </View>
-        ))}
+        {error && (
+          <Text style={{ color: COLORS.error, fontSize: 13, marginBottom: 10 }}>{error}</Text>
+        )}
+
+        {QUALIFICATION_TYPES.map((qual) => {
+          const isNotesField = qual.id === "5";
+          if (isNotesField) return null; // render Notes separately below
+          return (
+            <View key={qual.id} style={{ marginBottom: 6 }}>
+              <Text style={styles.qualFieldLabel}>{qual.label}</Text>
+              <TouchableOpacity
+                style={[styles.uploadField, files[qual.id] && styles.uploadFieldFilled]}
+                onPress={() => pickFile(qual.id)}
+                activeOpacity={0.8}
+                disabled={notPossess[qual.id]}
+              >
+                <Text style={styles.uploadFieldText} numberOfLines={1}>
+                  {files[qual.id]?.name || ''}
+                </Text>
+                <Image source={require('../assets/images/Upload2.png')} style={styles.uploadIcon} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.notPossessRow} onPress={() => toggleNotPossess(qual.id)}>
+                <Text style={styles.notPossessText}>I do not possess this qualification</Text>
+                <View style={[styles.npCheckbox, notPossess[qual.id] && styles.npCheckboxChecked]}>
+                  {notPossess[qual.id] && <Text style={styles.npCheckMark}>✓</Text>}
+                </View>
+              </TouchableOpacity>
+            </View>
+          );
+        })}
 
         <Text style={[styles.qualFieldLabel, { marginTop: 8 }]}>Notes</Text>
         <TextInput
@@ -757,9 +866,9 @@ const QualificationsStep = ({ onNext, onComplete, onBack, isCompleted, styles, C
           placeholderTextColor={COLORS.textSecondary}
         />
 
-        <TouchableOpacity style={styles.uploadBtn} onPress={handleComplete}>
+        <TouchableOpacity style={styles.uploadBtn} onPress={handleComplete} disabled={uploading}>
           <Text style={styles.uploadBtnText}>
-            {isCompleted ? "Completed (Go Back)" : "Upload"}
+            {uploading ? "Uploading…" : isCompleted ? "Completed (Go Back)" : "Upload"}
           </Text>
         </TouchableOpacity>
         <View style={{ height: 24 }} />
@@ -851,15 +960,44 @@ const UniformStep = ({ onNext, onComplete, onBack, isCompleted, styles, COLORS }
 // ─────────────────────────────────────────────
 // TRAINING STEP
 // ─────────────────────────────────────────────
-
-const TrainingStep = ({ onComplete, onBack, isCompleted, styles, COLORS }) => {
+const TrainingStep = ({ onComplete, onBack, isCompleted, styles, COLORS, authToken }) => {
   const [view, setView] = useState('list');
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [currentQ, setCurrentQ] = useState(0);
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState({}); // { [qIndex]: selectedOptionText }
   const [showResult, setShowResult] = useState(false);
-  const [completedCourses, setCompletedCourses] = useState([]);
   const [timeLeft, setTimeLeft] = useState(643);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const fetchCourses = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch("https://api.grabbite.com/api/coachpro/courses/listing", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      const rawText = await response.text();
+      if (!response.ok) throw new Error(`Failed to load courses (${response.status}): ${rawText}`);
+
+      const json = JSON.parse(rawText);
+      if (!json.status) throw new Error(json.message || "Failed to load courses");
+
+      setCourses(json.data || []);
+    } catch (e) {
+      console.error('fetchCourses error:', e);
+      setError(e.message || "Failed to load courses");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
 
   useEffect(() => {
     if (view !== 'assessment' || showResult) return;
@@ -870,8 +1008,32 @@ const TrainingStep = ({ onComplete, onBack, isCompleted, styles, COLORS }) => {
   const formatTime = (s) =>
     `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
-  const score = ASSESSMENT_QUESTIONS.filter((q, i) => answers[i] === q.correct).length;
-  const scorePercent = Math.round((score / ASSESSMENT_QUESTIONS.length) * 100);
+  // Flatten every module's uploadFiles into one "videos" list for display
+  const getMediaItems = (course) => {
+    if (!course?.modules) return [];
+    return course.modules.flatMap((mod) =>
+      (mod.uploadFiles || []).map((file) => ({
+        title: file.originalName,
+        duration: file.durationText || '—',
+        isVideo: file.mimeType?.startsWith('video'),
+        thumbnail: { uri: file.url }, // images render directly; videos show url as poster fallback
+        url: file.url,
+        moduleTitle: mod.title,
+      }))
+    );
+  };
+
+  const questions = selectedCourse?.questions || [];
+  const passingValue = selectedCourse?.passingConditionValue ?? 70;
+
+  // Score by comparing selected option TEXT to the answer TEXT (API gives strings, not indices)
+  const score = questions.filter((q, i) => answers[i] === q.answer).length;
+  const scorePercent = questions.length ? Math.round((score / questions.length) * 100) : 0;
+  const passed = scorePercent >= passingValue;
+
+  const filteredCourses = courses.filter((c) =>
+    (c.title || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (view === 'list') return (
     <View style={styles.stepContainer}>
@@ -897,172 +1059,207 @@ const TrainingStep = ({ onComplete, onBack, isCompleted, styles, COLORS }) => {
           style={styles.searchInput}
           placeholder="Search course..."
           placeholderTextColor={COLORS.textSecondary}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
         />
       </View>
 
-      <ScrollView style={{ flex: 1, paddingHorizontal: 12, paddingTop: 8 }}>
-        {TRAINING_COURSES.map((course) => {
-          const status = completedCourses.includes(course.id) || isCompleted ? 'passed' : course.status;
-          return (
-            <TouchableOpacity
-              key={course.id}
-              style={styles.courseListCard}
-              onPress={() => { setSelectedCourse(course); setView('videos'); }}
-              activeOpacity={0.85}
-            >
-              <ImageBackground source={course.thumbnail} style={styles.courseListImage} resizeMode="cover">
-                <View style={styles.courseListOverlay}>
-                  <Text style={styles.courseListTitle}>{course.title}</Text>
-                  <Text style={styles.courseListMeta}>{course.duration}</Text>
-                </View>
-                <View style={styles.courseListBadgeWrap}>
-                  <View style={[
-                    styles.courseBadge,
-                    status === 'passed' ? styles.courseBadgePassed :
-                      status === 'retake' ? styles.courseBadgeRetake :
-                        styles.courseBadgePending,
-                  ]}>
-                    <Text style={styles.courseBadgeText}>
-                      {status === 'passed' ? 'Passed' : status === 'retake' ? 'Retake' : 'Pending'}
+      {loading ? (
+        <Text style={{ color: COLORS.textSecondary, padding: 16 }}>Loading courses…</Text>
+      ) : error ? (
+        <View style={{ padding: 16 }}>
+          <Text style={{ color: COLORS.error, marginBottom: 8 }}>{error}</Text>
+          <TouchableOpacity style={styles.contractBtn} onPress={fetchCourses}>
+            <Text style={styles.contractBtnText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : filteredCourses.length === 0 ? (
+        <Text style={{ color: COLORS.textSecondary, padding: 16 }}>No courses found.</Text>
+      ) : (
+        <ScrollView style={{ flex: 1, paddingHorizontal: 12, paddingTop: 8 }}>
+          {filteredCourses.map((course) => {
+            const media = getMediaItems(course);
+            const firstThumb = media.find((m) => !m.isVideo)?.thumbnail
+              || require('../assets/images/training1.png');
+
+            // Note: API doesn't currently return per-user pass/retake status here.
+            // Treat compulsory + not-yet-attempted as "Pending" until you have a
+            // completion-status endpoint to merge in.
+            const status = 'pending';
+
+            return (
+              <TouchableOpacity
+                key={course.id}
+                style={styles.courseListCard}
+                onPress={() => { setSelectedCourse(course); setView('videos'); }}
+                activeOpacity={0.85}
+              >
+                <ImageBackground source={firstThumb} style={styles.courseListImage} resizeMode="cover">
+                  <View style={styles.courseListOverlay}>
+                    <Text style={styles.courseListTitle}>{course.title}</Text>
+                    <Text style={styles.courseListMeta}>
+                      {media.length} item{media.length !== 1 ? 's' : ''} · {course.totalQuestions} question{course.totalQuestions !== 1 ? 's' : ''}
                     </Text>
                   </View>
-                </View>
-              </ImageBackground>
-            </TouchableOpacity>
-          );
-        })}
-        <View style={{ height: 16 }} />
-      </ScrollView>
+                  <View style={styles.courseListBadgeWrap}>
+                    <View style={[
+                      styles.courseBadge,
+                      status === 'passed' ? styles.courseBadgePassed :
+                        status === 'retake' ? styles.courseBadgeRetake :
+                          styles.courseBadgePending,
+                    ]}>
+                      <Text style={styles.courseBadgeText}>
+                        {status === 'passed' ? 'Passed' : status === 'retake' ? 'Retake' : 'Pending'}
+                      </Text>
+                    </View>
+                  </View>
+                </ImageBackground>
+              </TouchableOpacity>
+            );
+          })}
+          <View style={{ height: 16 }} />
+        </ScrollView>
+      )}
     </View>
   );
 
-  if (view === 'videos') return (
-    <View style={styles.stepContainer}>
-      <View style={styles.contractHeader}>
-        <TouchableOpacity onPress={() => setView('list')}><Text style={styles.backArrow}>←</Text></TouchableOpacity>
-        <Text style={styles.contractHeaderTitle}>{selectedCourse?.title}</Text>
-        <View style={[styles.pendingBadge, isCompleted && { backgroundColor: COLORS.success }]}>
-          <Text style={[styles.pendingBadgeText, isCompleted && { color: "#fff" }]}>
-            {isCompleted ? "Completed" : "Pending"}
-          </Text>
+  if (view === 'videos') {
+    const media = getMediaItems(selectedCourse);
+    return (
+      <View style={styles.stepContainer}>
+        <View style={styles.contractHeader}>
+          <TouchableOpacity onPress={() => setView('list')}><Text style={styles.backArrow}>←</Text></TouchableOpacity>
+          <Text style={styles.contractHeaderTitle}>{selectedCourse?.title}</Text>
+        </View>
+
+        <View style={styles.contractBtnRow}>
+          <TouchableOpacity style={styles.contractBtn} onPress={() => setView('list')}>
+            <Text style={styles.contractBtnText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView style={{ flex: 1 }}>
+          {!!selectedCourse?.description && (
+            <Text style={{ color: COLORS.textSecondary, padding: 14 }}>{selectedCourse.description}</Text>
+          )}
+          <View style={styles.videoGrid}>
+            {media.map((m, i) => (
+              <TouchableOpacity key={i} style={styles.videoGridThumb} activeOpacity={0.85}>
+                <ImageBackground source={m.thumbnail} style={styles.videoGridImage} resizeMode="cover">
+                  <View style={styles.darkOverlay} />
+                  <View style={styles.videoGridOverlay}>
+                    <View style={styles.playBtnSmall}>
+                      <Text style={{ color: '#fff', fontSize: 40 }}>{m.isVideo ? '▶' : '🖼'}</Text>
+                    </View>
+                  </View>
+                  <View style={{ padding: 10 }}>
+                    <Text style={styles.videoGridLabel}>{m.title}</Text>
+                    <Text style={styles.videoGridDur}>{m.duration}</Text>
+                  </View>
+                </ImageBackground>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+
+        <View style={{ padding: 12, backgroundColor: COLORS.contractBg }}>
+          <TouchableOpacity
+            style={styles.primaryBtn}
+            onPress={() => { setView('assessment'); setTimeLeft(643); setCurrentQ(0); setAnswers({}); setShowResult(false); }}
+          >
+            <Text style={styles.primaryBtnText}>Start Assessment</Text>
+          </TouchableOpacity>
         </View>
       </View>
+    );
+  }
 
-      <View style={styles.contractBtnRow}>
-        <TouchableOpacity style={styles.contractBtn} onPress={() => setView('list')}>
-          <Text style={styles.contractBtnText}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
+  if (view === 'assessment' && !showResult) {
+    if (questions.length === 0) {
+      return (
+        <View style={styles.stepContainer}>
+          <Text style={{ padding: 20, color: COLORS.textSecondary }}>No questions available for this course.</Text>
+        </View>
+      );
+    }
+    return (
+      <View style={styles.stepContainer}>
+        <View style={styles.contractHeader}>
+          <TouchableOpacity onPress={() => setView('videos')}><Text style={styles.backArrow}>←</Text></TouchableOpacity>
+          <Text style={styles.contractHeaderTitle}>Assessment</Text>
+        </View>
 
-      <ScrollView style={{ flex: 1 }}>
-        <View style={styles.videoGrid}>
-          {selectedCourse?.videos?.map((v, i) => (
-            <TouchableOpacity key={i} style={styles.videoGridThumb} activeOpacity={0.85}>
-              <ImageBackground source={v.thumbnail} style={styles.videoGridImage} resizeMode="cover">
-                <View style={styles.darkOverlay} />
-                <View style={styles.videoGridOverlay}>
-                  <View style={styles.playBtnSmall}>
-                    <Text style={{ color: '#fff', fontSize: 40 }}>▶</Text>
-                  </View>
-                </View>
-                <View style={{ padding: 10 }}>
-                  <Text style={styles.videoGridLabel}>{v.title}</Text>
-                  <Text style={styles.videoGridDur}>{v.duration}</Text>
-                </View>
-              </ImageBackground>
+        <View style={styles.contractBtnRow}>
+          <TouchableOpacity style={styles.contractBtn} onPress={() => setView('videos')}>
+            <Text style={styles.contractBtnText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.timerBar}>
+          <Text style={styles.timerText}>Time remaining {formatTime(timeLeft)}</Text>
+        </View>
+
+        <View style={{ flex: 1, padding: 14 }}>
+          <Text style={styles.qLabel}>Question {currentQ + 1}/{questions.length}</Text>
+          <Text style={styles.qText}>{questions[currentQ].question}</Text>
+
+          {questions[currentQ].options.map((opt, i) => (
+            <TouchableOpacity
+              key={i}
+              style={[styles.assessOption, answers[currentQ] === opt && styles.assessOptionSelected]}
+              onPress={() => setAnswers((prev) => ({ ...prev, [currentQ]: opt }))}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.assessOptionText, answers[currentQ] === opt && styles.assessOptionTextSelected]}>
+                {opt}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
-      </ScrollView>
 
-      <View style={{ padding: 12, backgroundColor: COLORS.contractBg }}>
-        <TouchableOpacity
-          style={styles.primaryBtn}
-          onPress={() => { setView('assessment'); setTimeLeft(643); setCurrentQ(0); setAnswers({}); setShowResult(false); }}
-        >
-          <Text style={styles.primaryBtnText}>Start Assessment</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
-  if (view === 'assessment' && !showResult) return (
-    <View style={styles.stepContainer}>
-      <View style={styles.contractHeader}>
-        <TouchableOpacity onPress={() => setView('videos')}><Text style={styles.backArrow}>←</Text></TouchableOpacity>
-        <Text style={styles.contractHeaderTitle}>Assessment</Text>
-      </View>
-
-      <View style={styles.contractBtnRow}>
-        <TouchableOpacity style={styles.contractBtn} onPress={() => setView('videos')}>
-          <Text style={styles.contractBtnText}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.timerBar}>
-        <Text style={styles.timerText}>Time remaining {formatTime(timeLeft)}</Text>
-      </View>
-
-      <View style={{ flex: 1, padding: 14 }}>
-        <Text style={styles.qLabel}>Question {currentQ + 1}/{ASSESSMENT_QUESTIONS.length}</Text>
-        <Text style={styles.qText}>{ASSESSMENT_QUESTIONS[currentQ].question}</Text>
-
-        {ASSESSMENT_QUESTIONS[currentQ].options.map((opt, i) => (
+        <View style={{ padding: 14, backgroundColor: COLORS.contractBg }}>
           <TouchableOpacity
-            key={i}
-            style={[styles.assessOption, answers[currentQ] === i && styles.assessOptionSelected]}
-            onPress={() => setAnswers((prev) => ({ ...prev, [currentQ]: i }))}
-            activeOpacity={0.8}
+            style={[styles.primaryBtn, answers[currentQ] === undefined && styles.primaryBtnDisabled]}
+            onPress={answers[currentQ] !== undefined
+              ? () => currentQ < questions.length - 1
+                ? setCurrentQ(currentQ + 1)
+                : setShowResult(true)
+              : null}
           >
-            <Text style={[styles.assessOptionText, answers[currentQ] === i && styles.assessOptionTextSelected]}>
-              {opt}
+            <Text style={styles.primaryBtnText}>
+              {currentQ < questions.length - 1 ? 'Next' : 'Submit'}
             </Text>
           </TouchableOpacity>
-        ))}
+        </View>
       </View>
-
-      <View style={{ padding: 14, backgroundColor: COLORS.contractBg }}>
-        <TouchableOpacity
-          style={[styles.primaryBtn, answers[currentQ] === undefined && styles.primaryBtnDisabled]}
-          onPress={answers[currentQ] !== undefined
-            ? () => currentQ < ASSESSMENT_QUESTIONS.length - 1
-              ? setCurrentQ(currentQ + 1)
-              : setShowResult(true)
-            : null}
-        >
-          <Text style={styles.primaryBtnText}>
-            {currentQ < ASSESSMENT_QUESTIONS.length - 1 ? 'Next' : 'Submit'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    );
+  }
 
   if (view === 'assessment' && showResult) return (
     <View style={[styles.resultContainer]}>
-      <View style={[styles.resultCircle, scorePercent >= 70 ? styles.resultCirclePass : styles.resultCircleFail]}>
-        {scorePercent >= 70 ? (
-          <Image source={require('../assets/images/congrats.png')} style={styles.avatar} resizeMode="cover" />
-        ) : (
-          <Image source={require('../assets/images/failed.png')} style={styles.avatar} resizeMode="cover" />
-        )}
+      <View style={[styles.resultCircle, passed ? styles.resultCirclePass : styles.resultCircleFail]}>
+        <Image
+          source={passed ? require('../assets/images/congrats.png') : require('../assets/images/failed.png')}
+          style={styles.avatar}
+          resizeMode="cover"
+        />
       </View>
-      <Text style={[styles.resultTitle, scorePercent < 70 && styles.resultTitleFail]}>
-        {scorePercent >= 70 ? 'Congratulations!' : 'Almost there!'}
+      <Text style={[styles.resultTitle, !passed && styles.resultTitleFail]}>
+        {passed ? 'Congratulations!' : 'Almost there!'}
       </Text>
       <Text style={styles.resultSub}>
-        {scorePercent >= 70
+        {passed
           ? "You've passed the assessment and completed all onboarding tasks."
-          : `You scored ${score}/${ASSESSMENT_QUESTIONS.length}. You need 70% to pass.`}
+          : `You scored ${score}/${questions.length} (${scorePercent}%). You need ${passingValue}% to pass.`}
       </Text>
       <TouchableOpacity
-        style={[styles.greenBtn, { marginTop: 24 }, scorePercent < 70 && styles.redBtn]}
-        onPress={scorePercent >= 70
+        style={[styles.greenBtn, { marginTop: 24 }, !passed && styles.redBtn]}
+        onPress={passed
           ? onComplete
           : () => { setCurrentQ(0); setAnswers({}); setShowResult(false); }}
       >
         <Text style={styles.primaryBtnText}>
-          {scorePercent >= 70 ? 'Go Back To Courses' : 'Retake Assessment'}
+          {passed ? 'Go Back To Courses' : 'Retake Assessment'}
         </Text>
       </TouchableOpacity>
     </View>
@@ -1070,7 +1267,6 @@ const TrainingStep = ({ onComplete, onBack, isCompleted, styles, COLORS }) => {
 
   return null;
 };
-
 // ─────────────────────────────────────────────
 // MAIN SCREEN
 // ─────────────────────────────────────────────
@@ -1080,6 +1276,7 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
   const scheme = useColorScheme(); // triggers re-render on theme change
   const COLORS = scheme === 'light' ? LIGHT_COLORS : DARK_COLORS;
   const styles = createStyles(COLORS);
+  const { token, userId,  } = useAuth();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [showTaskPanel, setShowTaskPanel] = useState(false);
@@ -1165,6 +1362,8 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
             onComplete={() => handleCompleteTask("2")}
             onBack={handleBackToDashboard}
             {...sharedProps}
+            token={token}
+            userId={userId}
           />
         )}
 
@@ -1183,6 +1382,7 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
             onComplete={() => handleCompleteTask("4")}
             onBack={handleBackToDashboard}
             {...sharedProps}
+            authToken={token}
           />
         )}
       </View>

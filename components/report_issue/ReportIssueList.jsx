@@ -1,22 +1,42 @@
+import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const CATEGORIES = ['Equipment', 'Incident', 'Complaint', 'Coaches', 'Venue', 'Other'];
 
-const REPORTS_DATA = [
-    { id: 1, venue: 'Chelsea', date: '3rd April 2023', time: '10:30-11:30am', category: 'Equipment', status: 'Solved' },
-    { id: 2, venue: 'Chelsea', date: '3rd April 2023', time: '10:30-11:30am', category: 'Equipment', status: 'Solved' },
-    { id: 3, venue: 'Acton', date: '3rd April 2023', time: '10:30-11:30am', category: 'Equipment', status: 'Pending' },
-    { id: 4, venue: 'Chelsea', date: '3rd April 2023', time: '10:30-11:30am', category: 'Equipment', status: 'Solved' },
-    { id: 5, venue: 'Acton', date: '3rd April 2023', time: '10:30-11:30am', category: 'Equipment', status: 'Pending' },
-    { id: 6, venue: 'Tottenham', date: '3rd April 2023', time: '10:30-11:30am', category: 'Equipment', status: 'Solved' },
-    { id: 7, venue: 'Tottenham', date: '3rd April 2023', time: '10:30-11:30am', category: 'Equipment', status: 'Solved' },
-];
-
-export default function ReportIssueList({ onNewReport, onReportSelect }) {
+export default function ReportIssueList({ onNewReport, onReportSelect, onBack }) {
+    const { token } = useAuth();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategories, setSelectedCategories] = useState(['Equipment']);
+    const [reports, setReports] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchReports();
+    }, []);
+
+    const fetchReports = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/report-issue/list`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+            const result = await response.json();
+            if (response.ok) {
+                setReports(result.data || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch reports:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const toggleCategory = (category) => {
         if (selectedCategories.includes(category)) {
@@ -26,11 +46,37 @@ export default function ReportIssueList({ onNewReport, onReportSelect }) {
         }
     };
 
+    const formatDate = (isoString) => {
+        if (!isoString) return '';
+        const d = new Date(isoString);
+        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    };
+
+    const formatTime = (isoString) => {
+        if (!isoString) return '';
+        const d = new Date(isoString);
+        return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true });
+    };
+
+    const filteredReports = reports.filter(report => {
+        const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(report.category);
+        const venueName = report.venue?.name || '';
+        const matchesSearch = venueName.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCategory && matchesSearch;
+    });
+
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>Report an issue</Text>
+                <View style={styles.headerLeft}>
+                    {onBack && (
+                        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+                            <Ionicons name="arrow-back" size={24} color="#000" />
+                        </TouchableOpacity>
+                    )}
+                    <Text style={styles.headerTitle}>Report an issue</Text>
+                </View>
                 <TouchableOpacity style={styles.newReportBtn} onPress={onNewReport}>
                     <Text style={styles.newReportBtnText}>New report</Text>
                 </TouchableOpacity>
@@ -38,7 +84,7 @@ export default function ReportIssueList({ onNewReport, onReportSelect }) {
 
             {/* Search Bar */}
             <View style={styles.searchContainer}>
-                <Ionicons name="search-outline" size={20} color="#a0a0a0" style={styles.searchIcon} />
+                <Ionicons name="search-outline" size={20} color="#797A88" style={styles.searchIcon} />
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Select a venue..."
@@ -66,32 +112,40 @@ export default function ReportIssueList({ onNewReport, onReportSelect }) {
                 ))}
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
-                {REPORTS_DATA.map(report => (
-                    <TouchableOpacity key={report.id} style={styles.card} onPress={() => onReportSelect && onReportSelect(report.id)}>
-                        <View style={styles.col1}>
-                            <Text style={styles.venue}>{report.venue}</Text>
-                        </View>
-
-                        <View style={styles.col2}>
-                            <Text style={styles.dateTime}>{report.date}</Text>
-                            <Text style={styles.dateTime}>{report.time}</Text>
-                        </View>
-
-                        <View style={styles.col3}>
-                            <Text style={styles.category}>{report.category}</Text>
-                        </View>
-
-                        <View style={styles.col4}>
-                            <View style={[styles.statusBadge, report.status === 'Solved' ? styles.solvedBadge : styles.pendingBadge]}>
-                                <Text style={[styles.statusText, report.status === 'Solved' ? styles.solvedText : styles.pendingText]}>{report.status}</Text>
+            {loading ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#3B82F6" />
+                </View>
+            ) : (
+                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
+                    {filteredReports.map(report => (
+                        <TouchableOpacity key={report.id} style={styles.card} onPress={() => onReportSelect && onReportSelect(report.id)}>
+                            <View style={styles.col1}>
+                                <Text style={styles.venue}>{report.venue?.name || 'Unknown'}</Text>
                             </View>
-                            <Ionicons name="chevron-forward" size={16} color="#000" style={styles.chevron} />
-                        </View>
-                    </TouchableOpacity>
-                ))}
-                <View style={{ height: 40 }} />
-            </ScrollView>
+
+                            <View style={styles.col2}>
+                                <Text style={styles.dateTime}>{formatDate(report.createdAt)}</Text>
+                                <Text style={styles.dateTime}>{formatTime(report.createdAt)}</Text>
+                            </View>
+
+                            <View style={styles.col3}>
+                                <Text style={styles.category}>{report.category}</Text>
+                            </View>
+
+                            <View style={styles.col4}>
+                                <View style={[styles.statusBadge, report.status?.toLowerCase() === 'solved' ? styles.solvedBadge : styles.pendingBadge]}>
+                                    <Text style={[styles.statusText, report.status?.toLowerCase() === 'solved' ? styles.solvedText : styles.pendingText]}>
+                                        {report.status ? report.status.charAt(0).toUpperCase() + report.status.slice(1) : ''}
+                                    </Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={16} color="#000" style={styles.chevron} />
+                            </View>
+                        </TouchableOpacity>
+                    ))}
+                    <View style={{ height: 40 }} />
+                </ScrollView>
+            )}
         </View>
     );
 }
@@ -99,7 +153,7 @@ export default function ReportIssueList({ onNewReport, onReportSelect }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#FFFFFF',
     },
     header: {
         flexDirection: 'row',
@@ -108,6 +162,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingTop: 16,
         paddingBottom: 20,
+    },
+    headerLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    backButton: {
+        marginRight: 10,
     },
     headerTitle: {
         fontSize: 24,
@@ -129,10 +190,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginHorizontal: 16,
-        backgroundColor: '#fff',
+        backgroundColor: '#F6F6F7',
         borderWidth: 1,
         borderColor: '#D1D5DB',
-        borderRadius: 8,
+        borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 14,
         marginBottom: 20,
@@ -234,5 +295,10 @@ const styles = StyleSheet.create({
     },
     chevron: {
         marginLeft: 6,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

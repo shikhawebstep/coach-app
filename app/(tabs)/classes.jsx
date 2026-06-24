@@ -38,17 +38,6 @@ import HolidayStudentInformation from '@/components/classes/holiday_camps/Holida
 import HolidaySyllabus from '@/components/classes/holiday_camps/HolidaySyllabus';
 import PrivateClassesBookings from '@/components/classes/private_classes/PrivateClassesBookings';
 import PrivateStudentClassDetails from '@/components/classes/private_classes/PrivateStudentClassDetails';
-import CreateQcReport from '@/components/classes/quality_control/CreateQcReport';
-import MyReports from '@/components/classes/quality_control/MyReports';
-import OtherAreas from '@/components/classes/quality_control/OtherAreas';
-import Questionnaire from '@/components/classes/quality_control/Questionnaire';
-import RecordComments from '@/components/classes/quality_control/RecordComments';
-import ReportSummary from '@/components/classes/quality_control/ReportSummary';
-import IssueReport from '@/components/classes/report_issue/IssueReport';
-import ReportIssueForm from '@/components/classes/report_issue/ReportIssueForm';
-import ReportIssueList from '@/components/classes/report_issue/ReportIssueList';
-import CustomerFeedback from '@/components/classes/venue_health/CustomerFeedback';
-import StudentNumbers from '@/components/classes/venue_health/StudentNumbers';
 import SelectAVenue from '@/components/classes/weekly_classes/SelectAVenue';
 import SelectAVenueList from '@/components/classes/weekly_classes/SelectAVenueList';
 import WeeklySearchSkill from '@/components/classes/weekly_classes/WeeklySearchSkill';
@@ -57,6 +46,7 @@ import WeeklySessionTrainingDetails from '@/components/classes/weekly_classes/We
 import WeeklyStudentClassDetails from '@/components/classes/weekly_classes/WeeklyStudentClassDetails';
 import WeeklyStudentInformation from '@/components/classes/weekly_classes/WeeklyStudentInformation';
 import WeeklySyllabusDayDetails from '@/components/classes/weekly_classes/WeeklySyllabusDayDetails';
+
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -75,7 +65,8 @@ export default function Classes() {
     const [selectedBirthdaySyllabus, setSelectedBirthdaySyllabus] = useState(null);
     const [weeklyExcercises, setWeeklyExcercises] = useState(null);
     const [selectedPrivateBookingId, setSelectedPrivateBookingId] = useState(null);
-
+    const [selectedReportId, setSelectedReportId] = useState(null);
+    console.log('currentView', currentView)
     useEffect(() => {
         if (params.view) {
             setCurrentView(params.view);
@@ -343,10 +334,6 @@ export default function Classes() {
 
 
 
-    if (currentView === 'issueReport') {
-        return <IssueReport onBack={() => setCurrentView('dashboard')} />;
-    }
-
 
 
     if (currentView === 'notificationsList') {
@@ -385,24 +372,12 @@ export default function Classes() {
         />;
     }
 
-    if (currentView === 'reportIssueList') {
-        return <ReportIssueList
-            onNewReport={() => setCurrentView('reportIssueForm')}
-            onReportSelect={() => setCurrentView('issueReport')}
-        />;
-    }
-
-    if (currentView === 'reportIssueForm') {
-        return <ReportIssueForm onBack={() => setCurrentView('reportIssueList')} />;
-    }
 
     if (currentView === 'myResults') {
         return <CoachResults onBack={() => setCurrentView('dashboard')} title="My results" />;
     }
 
-    if (currentView === 'myReports') {
-        return <MyReports onBack={() => setCurrentView('dashboard')} />;
-    }
+
 
     if (currentView === 'musicPlayer') {
         return <MusicPlayer onBack={() => setCurrentView('dashboard')} />;
@@ -431,9 +406,7 @@ export default function Classes() {
         return <WeeklyStudentInformation student={selectedStudent} onBack={() => setCurrentView('sessionTrainingDetails')} />;
     }
 
-    if (currentView === 'createQcReport') {
-        return <CreateQcReport onBack={() => setCurrentView('dashboard')} />;
-    }
+
 
     if (currentView === 'appHomeCategories') {
         return <AppHomeCategories />;
@@ -467,22 +440,6 @@ export default function Classes() {
         />;
     }
 
-    if (currentView === 'reportSummary') {
-        return <ReportSummary onBack={() => setCurrentView('dashboard')} />;
-    }
-
-    if (currentView === 'recordComments') {
-        return <RecordComments onBack={() => setCurrentView('dashboard')} />;
-    }
-
-
-    if (currentView === 'otherAreas') {
-        return <OtherAreas onBack={() => setCurrentView('dashboard')} />;
-    }
-
-    if (currentView === 'questionnaire') {
-        return <Questionnaire onBack={() => setCurrentView('dashboard')} />;
-    }
 
     if (currentView === 'homeDashboard') {
         return <HomeDashboard onBack={() => setCurrentView('dashboard')} />;
@@ -498,9 +455,7 @@ export default function Classes() {
                 return (
                     <>
                         <Text style={styles.sectionTitle}>Club & Others UIs</Text>
-                        <TouchableOpacity style={styles.navButtonBatch6} onPress={() => setCurrentView('issueReport')}>
-                            <Text style={styles.navButtonText}>View Issue Report UI</Text>
-                        </TouchableOpacity>
+
                         <TouchableOpacity style={styles.navButtonBatch7} onPress={() => setCurrentView('notificationsList')}>
                             <Text style={styles.navButtonText}>View Notifications UI</Text>
                         </TouchableOpacity>
@@ -510,12 +465,8 @@ export default function Classes() {
                         <TouchableOpacity style={styles.navButtonBatch7} onPress={() => setCurrentView('practicalAssessments')}>
                             <Text style={styles.navButtonText}>View Practical Assessments UI</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.navButtonBatch7} onPress={() => setCurrentView('reportIssueList')}>
-                            <Text style={styles.navButtonText}>View Report Issue List UI</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.navButtonBatch7} onPress={() => setCurrentView('reportIssueForm')}>
-                            <Text style={styles.navButtonText}>View New Report UI</Text>
-                        </TouchableOpacity>
+
+
                         <TouchableOpacity style={styles.navButtonBatch8} onPress={() => setCurrentView('myResults')}>
                             <Text style={styles.navButtonText}>View My Results UI</Text>
                         </TouchableOpacity>
@@ -537,21 +488,10 @@ export default function Classes() {
                         <TouchableOpacity style={styles.navButtonBatch9} onPress={() => setCurrentView('venuesFilter')}>
                             <Text style={styles.navButtonText}>View Venues Filter UI</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.navButtonBatch10} onPress={() => setCurrentView('createQcReport')}>
-                            <Text style={styles.navButtonText}>View Create QC Report UI</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.navButtonBatch12} onPress={() => setCurrentView('reportSummary')}>
-                            <Text style={styles.navButtonText}>View Report Summary UI</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.navButtonBatch12} onPress={() => setCurrentView('recordComments')}>
-                            <Text style={styles.navButtonText}>View Record Comments UI</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.navButtonBatch12} onPress={() => setCurrentView('otherAreas')}>
-                            <Text style={styles.navButtonText}>View Other Areas UI</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.navButtonBatch12} onPress={() => setCurrentView('questionnaire')}>
-                            <Text style={styles.navButtonText}>View Questionnaire UI</Text>
-                        </TouchableOpacity>
+
+
+
+
                     </>
                 );
             default:

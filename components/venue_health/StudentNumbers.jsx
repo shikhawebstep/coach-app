@@ -1,15 +1,14 @@
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import { ActivityIndicator, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Svg, { Polyline } from 'react-native-svg';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default function StudentNumbers({ onBack }) {
     const { token } = useAuth();
     const [venues, setVenues] = useState([]);
-    const [grandTotal, setGrandTotal] = useState(null);
     const [loading, setLoading] = useState(true);
     const [year, setYear] = useState(2026);
     const [startMonthIndex, setStartMonthIndex] = useState(2); // Default to March (index 2)
@@ -36,11 +35,10 @@ export default function StudentNumbers({ onBack }) {
 
             const response = await fetch(`https://api.grabbite.com/api/coachpro/health-check-venues?year=${year}`, requestOptions);
             const result = await response.json();
-            
+
             if (result.status && result.data) {
                 const fetchedVenues = result.data.venues || [];
                 setVenues(fetchedVenues);
-                setGrandTotal(result.data.grandTotal || null);
                 if (fetchedVenues.length > 0) {
                     setSelectedVenues(new Set(fetchedVenues.map(v => v.venueName)));
                 }
@@ -75,14 +73,53 @@ export default function StudentNumbers({ onBack }) {
 
     const visibleMonths = [0, 1, 2, 3].map(offset => startMonthIndex + offset);
 
-    // SVG Lines for Graph
-    const pinkLine = "M 0,10 C 20,40 30,120 50,110 C 70,100 80,30 100,30 C 120,30 140,80 160,80 C 180,80 190,20 210,25 C 230,30 240,90 260,80 C 280,70 290,10 310,15";
-    const redLine = "M 0,33 C 20,70 30,150 50,140 C 70,130 80,70 100,70 C 120,70 140,110 160,110 C 180,110 190,40 210,45 C 230,50 240,110 260,100 C 280,90 290,30 310,35";
-    const blueLine = "M 0,66 C 20,100 30,190 50,180 C 70,170 80,110 100,105 C 120,100 140,150 160,150 C 180,150 190,80 210,85 C 230,90 240,140 260,130 C 280,120 290,60 310,65";
+    // Dynamic filtering and total calculation
+    const allUniqueVenueNames = venues.length > 0
+        ? Array.from(new Set(venues.map(v => v.venueName)))
+        : [];
 
-    const allUniqueVenueNames = venues.length > 0 
-        ? Array.from(new Set(venues.map(v => v.venueName))) 
-        : ['Acton', 'London bridge', 'Finchley', 'Stonebridge', 'Tottenham', 'Wembley sun'];
+    const filteredVenues = venues.filter(v => selectedVenues.has(v.venueName));
+
+    const calculatedTotal = {
+        monthlyData: Array.from({ length: 12 }, (_, i) => ({ month: i + 1, students: 0 }))
+    };
+    filteredVenues.forEach(v => {
+        v.monthlyData.forEach(m => {
+            const tMonth = calculatedTotal.monthlyData.find(tm => tm.month === m.month);
+            if (tMonth) tMonth.students += m.students;
+        });
+    });
+
+    // Dynamic Graph Logic
+    const colors = ['#EC4899', '#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#14B8A6'];
+    let maxStudents = 0;
+    filteredVenues.forEach(v => {
+        v.monthlyData.forEach(m => {
+            if (m.students > maxStudents) maxStudents = m.students;
+        });
+    });
+    const yMax = Math.max(10, Math.ceil(maxStudents / 10) * 10);
+    const yLabels = [];
+    const step = Math.max(1, Math.round(yMax / 5));
+    for (let i = yMax; i >= 0; i -= step) {
+        yLabels.push(i);
+    }
+
+    const polylines = filteredVenues.map((v, i) => {
+        const points = [];
+        for (let m = 1; m <= 12; m++) {
+            const mData = v.monthlyData.find(md => md.month === m) || { students: 0 };
+            const x = (m - 1) * (310 / 11);
+            const y = 220 - (mData.students / yMax) * 220;
+            points.push(`${x},${y}`);
+        }
+        return {
+            key: v.venueId || v.venueName,
+            points: points.join(' '),
+            color: colors[i % colors.length],
+            venueName: v.venueName
+        };
+    });
 
     const toggleVenueFilter = (venueName) => {
         const newSet = new Set(selectedVenues);
@@ -110,20 +147,43 @@ export default function StudentNumbers({ onBack }) {
 
                 <View style={styles.controlsGrid}>
                     <TouchableOpacity style={styles.iconBtn} onPress={handlePrevYear}>
-                        <Ionicons name="chevron-back" size={20} color="#1a1a1a" />
+                        <Image
+                            source={require('@/assets/images/Arrow - Left Circle.png')}
+                            style={styles.iconImage}
+                            resizeMode="contain"
+                        />
                     </TouchableOpacity>
+
                     <Text style={styles.yearText}>{year}</Text>
+
                     <TouchableOpacity style={styles.iconBtn} onPress={handleNextYear}>
-                        <Ionicons name="chevron-forward" size={20} color="#1a1a1a" />
+                        <Image
+                            source={require('@/assets/images/Arrow - Right Circle.png')}
+                            style={styles.iconImage}
+                            resizeMode="contain"
+                        />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.actionBtn} onPress={() => setIsFilterVisible(true)}>
-                        <Ionicons name="options-outline" size={20} color="#1a1a1a" />
+
+                    <TouchableOpacity
+                        style={styles.actionBtn}
+                        onPress={() => setIsFilterVisible(true)}
+                    >
+                        <Image
+                            source={require('@/assets/images/filter.png')}
+                            style={styles.iconImage}
+                            resizeMode="contain"
+                        />
                     </TouchableOpacity>
-                    <TouchableOpacity 
-                        style={[styles.actionBtn, styles.borderBtn, viewMode === 'graph' && { backgroundColor: '#E5E7EB' }]}
+
+                    <TouchableOpacity
+
                         onPress={() => setViewMode(viewMode === 'table' ? 'graph' : 'table')}
                     >
-                        <Ionicons name="bar-chart-outline" size={20} color="#1a1a1a" />
+                        <Image
+                            source={require('@/assets/images/Chart.png')}
+                            style={styles.iconImage}
+                            resizeMode="contain"
+                        />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -138,9 +198,7 @@ export default function StudentNumbers({ onBack }) {
                     {/* Table Header */}
                     <View style={[styles.row, styles.tableHeader]}>
                         <View style={[styles.colVenueH, { flexDirection: 'row', alignItems: 'center' }]}>
-                            <TouchableOpacity onPress={onBack} style={{ marginRight: 8, padding: 4 }}>
-                                <Ionicons name="arrow-back" size={20} color="#000" />
-                            </TouchableOpacity>
+                           
                             <Text style={styles.headerColText}>Venue</Text>
                         </View>
                         <View style={styles.colCapH}>
@@ -150,14 +208,21 @@ export default function StudentNumbers({ onBack }) {
                             <View key={mIndex} style={[styles.colMonthH, i === 0 || i === 3 ? { flexDirection: 'row', alignItems: 'center' } : null]}>
                                 {i === 0 && (
                                     <TouchableOpacity onPress={handlePrevMonths} disabled={startMonthIndex === 0}>
-                                        <Ionicons name="caret-back" size={12} color={startMonthIndex === 0 ? "#ccc" : "#4B5563"} style={{ marginRight: 4 }} />
-                                    </TouchableOpacity>
+                                        <Image
+                                            source={require('@/assets/images/Arrow - Left 2.png')}
+                                            style={styles.smallIcon}
+                                            resizeMode="contain"
+                                        />                                   
+                                         </TouchableOpacity>
                                 )}
                                 <Text style={styles.headerColText}>{MONTH_NAMES[mIndex]}</Text>
                                 {i === 3 && (
                                     <TouchableOpacity onPress={handleNextMonths} disabled={startMonthIndex === 8}>
-                                        <Ionicons name="caret-forward" size={12} color={startMonthIndex === 8 ? "#ccc" : "#4B5563"} style={{ marginLeft: 4 }} />
-                                    </TouchableOpacity>
+                                        <Image
+                                            source={require('@/assets/images/Arrow - Right 2.png')}
+                                            style={styles.smallIcon}
+                                            resizeMode="contain"
+                                        />                                    </TouchableOpacity>
                                 )}
                             </View>
                         ))}
@@ -165,7 +230,7 @@ export default function StudentNumbers({ onBack }) {
 
                     {/* Table Body */}
                     <ScrollView showsVerticalScrollIndicator={false}>
-                        {venues.map((venue, index) => (
+                        {filteredVenues.map((venue, index) => (
                             <View key={venue.venueId || index} style={styles.row}>
                                 <View style={styles.colVenue}>
                                     <Text style={styles.cellText}>{venue.venueName}</Text>
@@ -186,71 +251,66 @@ export default function StudentNumbers({ onBack }) {
                         ))}
 
                         {/* Total Row */}
-                        {grandTotal && (
-                            <View style={[styles.row, styles.totalRow]}>
-                                <View style={styles.colVenue}><Text style={[styles.cellText, {fontWeight: 'bold'}]}>Total</Text></View>
-                                <View style={styles.colCap}><Text style={styles.textGreen}>-</Text></View>
-                                {visibleMonths.map((mIndex) => {
-                                    const mData = grandTotal.monthlyData.find(m => m.month === mIndex + 1) || { students: 0 };
-                                    return (
-                                        <View key={mIndex} style={[styles.colMonth, styles.bgLightYellow]}>
-                                            <Text style={styles.textYellow}>{mData.students}</Text>
-                                        </View>
-                                    );
-                                })}
-                            </View>
-                        )}
+                        <View style={[styles.row, styles.totalRow]}>
+                            <View style={styles.colVenue}><Text style={[styles.cellText, { fontWeight: 'bold' }]}>Total</Text></View>
+                            <View style={styles.colCap}><Text style={styles.textGreen}>-</Text></View>
+                            {visibleMonths.map((mIndex) => {
+                                const mData = calculatedTotal.monthlyData.find(m => m.month === mIndex + 1) || { students: 0 };
+                                return (
+                                    <View key={mIndex} style={[styles.colMonth, styles.bgLightYellow]}>
+                                        <Text style={styles.textYellow}>{mData.students}</Text>
+                                    </View>
+                                );
+                            })}
+                        </View>
                         <View style={{ height: 40 }} />
                     </ScrollView>
                 </View>
             ) : (
                 <View style={{ flex: 1, paddingHorizontal: 16 }}>
                     {/* Legend */}
-                    <View style={styles.legendContainer}>
-                        <View style={styles.legendItem}>
-                            <View style={[styles.legendDot, { backgroundColor: '#EC4899' }]} />
-                            <Text style={styles.legendText}>Chelsea</Text>
-                        </View>
-                        <View style={styles.legendItem}>
-                            <View style={[styles.legendDot, { backgroundColor: '#EF4444' }]} />
-                            <Text style={styles.legendText}>Acton</Text>
-                        </View>
-                        <View style={styles.legendItem}>
-                            <View style={[styles.legendDot, { backgroundColor: '#3B82F6' }]} />
-                            <Text style={styles.legendText}>London Bridge</Text>
-                        </View>
+                    <View style={[styles.legendContainer, { flexWrap: 'wrap' }]}>
+                        {polylines.map((pl) => (
+                            <View key={pl.key} style={styles.legendItem}>
+                                <View style={[styles.legendDot, { backgroundColor: pl.color }]} />
+                                <Text style={styles.legendText}>{pl.venueName}</Text>
+                            </View>
+                        ))}
+                        {polylines.length === 0 && (
+                            <Text style={styles.legendText}>No venues selected</Text>
+                        )}
                     </View>
 
                     {/* Chart Area */}
                     <View style={styles.chartArea}>
                         {/* Y Axis Labels */}
                         <View style={styles.yAxis}>
-                            <Text style={styles.axisText}>30</Text>
-                            <Text style={styles.axisText}>25</Text>
-                            <Text style={styles.axisText}>20</Text>
-                            <Text style={styles.axisText}>15</Text>
-                            <Text style={styles.axisText}>10</Text>
-                            <Text style={styles.axisText}>5</Text>
-                            <Text style={styles.axisText}>0</Text>
+                            {yLabels.map((yl, idx) => (
+                                <Text key={idx} style={styles.axisText}>{yl}</Text>
+                            ))}
                         </View>
 
                         {/* SVG Line Chart */}
                         <View style={styles.chartPlot}>
                             <Svg width="100%" height={220} viewBox="0 -10 310 220" preserveAspectRatio="none">
-                                <Path d={pinkLine} stroke="#EC4899" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                                <Path d={redLine} stroke="#EF4444" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                                <Path d={blueLine} stroke="#3B82F6" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                {polylines.map((pl) => (
+                                    <Polyline
+                                        key={pl.key}
+                                        points={pl.points}
+                                        stroke={pl.color}
+                                        strokeWidth="2"
+                                        fill="none"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                ))}
                             </Svg>
 
                             {/* X Axis Labels */}
                             <View style={styles.xAxis}>
-                                <Text style={styles.axisTextX}>Jan</Text>
-                                <Text style={styles.axisTextX}>Feb</Text>
-                                <Text style={styles.axisTextX}>Mar</Text>
-                                <Text style={styles.axisTextX}>Apr</Text>
-                                <Text style={styles.axisTextX}>May</Text>
-                                <Text style={styles.axisTextX}>Jun</Text>
-                                <Text style={styles.axisTextX}>Jul</Text>
+                                {MONTH_NAMES.map((m, idx) => (
+                                    <Text key={idx} style={styles.axisTextX}>{m}</Text>
+                                ))}
                             </View>
                         </View>
                     </View>
@@ -275,7 +335,7 @@ export default function StudentNumbers({ onBack }) {
                             </View>
                         </TouchableOpacity>
                         <View style={styles.divider} />
-                        
+
                         {/* Venue List */}
                         {allUniqueVenueNames.map((vName, idx) => {
                             const isSelected = selectedVenues.has(vName);
@@ -325,7 +385,7 @@ const styles = StyleSheet.create({
         padding: 4,
     },
     yearText: {
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: 'bold',
         color: '#1a1a1a',
         marginHorizontal: 8,
@@ -352,13 +412,14 @@ const styles = StyleSheet.create({
     },
     headerColText: {
         fontSize: 12,
+        paddingHorizontal:4,
         fontWeight: 'bold',
         color: '#4B5563',
     },
     colVenueH: {
         flex: 2.2,
-        paddingLeft: 16,
-        justifyContent: 'center',
+        justifyContent: 'start',
+        paddingLeft:15,
     },
     colCapH: {
         flex: 1,
@@ -538,5 +599,13 @@ const styles = StyleSheet.create({
         height: 1,
         backgroundColor: '#F3F4F6',
         marginHorizontal: 20,
+    },
+    iconImage: {
+        width: 25,
+        height: 25,
+    },
+    smallIcon: {
+        width: 8,
+        height: 8,
     },
 });

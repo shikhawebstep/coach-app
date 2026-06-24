@@ -1,8 +1,7 @@
+import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
 
 import {
     Animated,
@@ -50,7 +49,7 @@ const MENU_ITEMS = [
             { id: 'classes/customerFeedback', title: 'Customer Feedback' },
         ],
     },
-    { id: 'classes/reportIssueList', title: 'Report an issue', icon: 'warning-outline' },
+    { id: '/reportIssueList', title: 'Report an issue', icon: 'warning-outline' },
     {
         id: 'quality',
         title: 'Quality Control',
@@ -117,15 +116,18 @@ export default function SideMenu({ visible, onClose, initialTab = 'Menu' }) {
 
  
 
-    const handleNavigation = (route) => {
-        onClose();
-        if (route.startsWith('classes/')) {
-            const view = route.split('/')[1];
-            router.push({ pathname: '/classes', params: { view } });
-        } else {
-            console.log('Navigate to:', route);
-        }
-    };
+  const handleNavigation = (route) => {
+    onClose();
+    if (route.startsWith('classes/')) {
+        const view = route.split('/')[1];
+        router.push({ pathname: '/classes', params: { view } });
+    } else if (route.startsWith('/')) {
+        // Direct route, e.g. '/reportIssueList'
+        router.push(route);
+    } else {
+        console.log('Navigate to:', route);
+    }
+};
 
     return (
         <>

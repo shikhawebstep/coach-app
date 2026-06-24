@@ -1,8 +1,9 @@
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+    Alert,
     FlatList,
     Image,
     ImageBackground,
@@ -28,16 +29,94 @@ const COUNTRIES = [
 
 export default function FillProfile() {
     const router = useRouter();
-    const { completeProfile } = useAuth();
+    const { token, userId, completeProfile } = useAuth();
 
-    const [name, setName] = useState('');
-    const [username, setUsername] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0]);
     const [countryModalVisible, setCountryModalVisible] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const handleContinue = () => {
+    useEffect(() => {
+        if (!token || !userId) return;
+        const myHeaders = new Headers();
+        myHeaders.append('Authorization', `Bearer ${token}`);
+        fetch(`https://api.grabbite.com/api/coachpro/account-profile/${userId}`, {
+            method: 'GET',
+            headers: myHeaders,
+        })
+            .then(r => r.json())
+            .then(result => {
+                if (result.status && result.data) {
+                    const d = result.data;
+                    setFirstName(d.firstName || '');
+                    setLastName(d.lastName || '');
+                    setEmail(d.email || '');
+                    // strip country code prefix from phone if present
+                    const rawPhone = d.phoneNumber || '';
+                    const matched = COUNTRIES.find(c => rawPhone.startsWith(c.code));
+                    if (matched) {
+                        setSelectedCountry(matched);
+                        setPhone(rawPhone.slice(matched.code.length));
+                    } else {
+                        setPhone(rawPhone);
+                    }
+                }
+            })
+            .catch(err => console.error(err));
+    }, [token, userId]);
+
+  const saveProfile = async () => {
+    console.log('here');
+
+    if (!userId || !token) return false;
+
+    try {
+        setLoading(true);
+
+        const formdata = new FormData();
+
+        if (firstName) formdata.append('firstName', firstName);
+        if (lastName) formdata.append('lastName', lastName);
+        if (email) formdata.append('email', email);
+        if (phone) formdata.append('phoneNumber', `${selectedCountry.code}${phone}`);
+
+        const response = await fetch(
+            `https://api.grabbite.com/api/coachPro/account-profile/update/profile/${userId}`,
+            {
+                method: 'PUT',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: formdata,
+                redirect: 'follow',
+            }
+        );
+
+        const result = await response.json();
+
+        console.log('result', result);
+        return result.status;
+    } catch (err) {
+        console.error('FillProfile save error:', err);
+        return false;
+    } finally {
+        setLoading(false);
+    }
+};
+
+    const handleContinue = async () => {
+        if (!firstName || !lastName || !email) {
+            Alert.alert('Required', 'Please fill in your first name, last name, and email.');
+            return;
+        }
+        const ok = await saveProfile();
+        if (!ok) {
+            Alert.alert('Error', 'Failed to save profile. Please try again.');
+            return;
+        }
         completeProfile();
         router.replace('/first-time-onboarding');
     };
@@ -88,25 +167,25 @@ export default function FillProfile() {
                     {/* Form */}
                     <View style={styles.form}>
 
-                        {/* Full Name */}
+                        {/* First Name */}
                         <View style={styles.inputContainer}>
                             <TextInput
                                 style={styles.input}
-                                placeholder="Full Name"
+                                placeholder="First Name"
                                 placeholderTextColor="#8E8E93"
-                                value={name}
-                                onChangeText={setName}
+                                value={firstName}
+                                onChangeText={setFirstName}
                             />
                         </View>
 
-                        {/* Username */}
+                        {/* Last Name */}
                         <View style={styles.inputContainer}>
                             <TextInput
                                 style={styles.input}
-                                placeholder="Username"
+                                placeholder="Last Name"
                                 placeholderTextColor="#8E8E93"
-                                value={username}
-                                onChangeText={setUsername}
+                                value={lastName}
+                                onChangeText={setLastName}
                             />
                         </View>
 
@@ -124,7 +203,7 @@ export default function FillProfile() {
                             <Ionicons name="mail-outline" size={20} color="#8E8E93" />
                         </View>
 
-                        {/* Phone — single white container */}
+                        {/* Phone */}
                         <View style={styles.phoneWrapper}>
                             <TouchableOpacity
                                 style={styles.countryPicker}
@@ -132,6 +211,7 @@ export default function FillProfile() {
                                 activeOpacity={0.8}
                             >
                                 <Text style={styles.flagText}>{selectedCountry.flag}</Text>
+                                <Text style={styles.countryCode}>{selectedCountry.code}</Text>
                                 <Ionicons name="chevron-down" size={14} color="#8E8E93" />
                             </TouchableOpacity>
 
@@ -155,16 +235,20 @@ export default function FillProfile() {
                             style={[styles.button, styles.skipButton]}
                             onPress={handleSkip}
                             activeOpacity={0.8}
+                            disabled={loading}
                         >
                             <Text style={styles.skipButtonText}>Skip</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            style={[styles.button, styles.completeButton]}
+                            style={[styles.button, styles.completeButton, loading && { opacity: 0.7 }]}
                             onPress={handleContinue}
                             activeOpacity={0.8}
+                            disabled={loading}
                         >
-                            <Text style={styles.completeButtonText}>Complete</Text>
+                            <Text style={styles.completeButtonText}>
+                                {loading ? 'Saving...' : 'Complete'}
+                            </Text>
                         </TouchableOpacity>
                     </View>
 
@@ -220,15 +304,8 @@ export default function FillProfile() {
 }
 
 const styles = StyleSheet.create({
-    background: {
-        flex: 1,
-        width: '100%',
-        height: '100%',
-    },
-    container: {
-        flex: 1,
-        backgroundColor: 'transparent',
-    },
+    background: { flex: 1, width: '100%', height: '100%' },
+    container: { flex: 1, backgroundColor: 'transparent' },
     scrollContent: {
         flexGrow: 1,
         paddingHorizontal: 24,
@@ -236,187 +313,58 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
 
-    // Header
-    header: {
-        alignItems: 'center',
-        marginBottom: 24,
-    },
+    header: { alignItems: 'center', marginBottom: 24 },
     title: {
-        fontSize: 32,
-        fontWeight: '800',
-        color: '#fff',
-        marginBottom: 8,
-        fontFamily: 'Urbanist_700Bold',
-        textAlign: 'center',
+        fontSize: 32, fontWeight: '800', color: '#fff',
+        marginBottom: 8, fontFamily: 'Urbanist_700Bold', textAlign: 'center',
     },
     subtitle: {
-        fontSize: 18,
-        color: 'rgba(255,255,255,0.6)',
-        textAlign: 'center',
-        lineHeight: 20,
-        fontFamily: 'Urbanist_400Regular',
+        fontSize: 18, color: 'rgba(255,255,255,0.6)',
+        textAlign: 'center', lineHeight: 20, fontFamily: 'Urbanist_400Regular',
     },
 
-    // Avatar
-    avatarSection: {
-        alignItems: 'center',
-        marginBottom: 28,
-    },
-    avatarRing: {
-        width: 140,
-        height: 140,
-        position: 'relative',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    avatar: {
-        width: 140,
-        height: 140,
-        borderRadius: 45,
-    },
+    avatarSection: { alignItems: 'center', marginBottom: 28 },
+    avatarRing: { width: 140, height: 140, position: 'relative', justifyContent: 'center', alignItems: 'center' },
+    avatar: { width: 140, height: 140, borderRadius: 45 },
     editBadge: {
-        position: 'absolute',
-        bottom: 6,
-        right: 2,
-        width: 26,
-        height: 26,
-        borderRadius: 13,
-        backgroundColor: '#FFC600',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 2,
-        borderColor: '#1e1e22',
+        position: 'absolute', bottom: 6, right: 2, width: 26, height: 26,
+        borderRadius: 13, backgroundColor: '#FFC600', justifyContent: 'center',
+        alignItems: 'center', borderWidth: 2, borderColor: '#1e1e22',
     },
 
-    // Form
-    form: {
-        gap: 25,
-        marginBottom: 28,
-    },
+    form: { gap: 25, marginBottom: 28 },
     inputContainer: {
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        height: 52,
-        paddingHorizontal: 14,
-        flexDirection: 'row',
-        alignItems: 'center',
+        backgroundColor: '#fff', borderRadius: 10, height: 52,
+        paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center',
     },
-    input: {
-        flex: 1,
-        height: '100%',
-        color: '#000',
-        fontSize: 15,
-        fontFamily: 'Urbanist_500Medium',
-    },
+    input: { flex: 1, height: '100%', color: '#000', fontSize: 15, fontFamily: 'Urbanist_500Medium' },
 
-    // Phone row — single white box
     phoneWrapper: {
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        height: 52,
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 14,
+        backgroundColor: '#fff', borderRadius: 10, height: 52,
+        flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14,
     },
-    countryPicker: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        paddingRight: 10,
-    },
-    flagText: {
-        fontSize: 20,
-    },
-    phoneDivider: {
-        width: 1,
-        height: 24,
-        backgroundColor: '#E0E0E0',
-        marginRight: 10,
-    },
-    phoneInput: {
-        flex: 1,
-        height: '100%',
-        color: '#000',
-        fontSize: 15,
-        fontFamily: 'Urbanist_500Medium',
-    },
+    countryPicker: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingRight: 10 },
+    flagText: { fontSize: 20 },
+    countryCode: { fontSize: 14, color: '#333', fontFamily: 'Urbanist_500Medium' },
+    phoneDivider: { width: 1, height: 24, backgroundColor: '#E0E0E0', marginRight: 10 },
+    phoneInput: { flex: 1, height: '100%', color: '#000', fontSize: 15, fontFamily: 'Urbanist_500Medium' },
 
-    // Buttons
-    buttonRow: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-    button: {
-        flex: 1,
-        height: 54,
-        borderRadius: 27,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    skipButton: {
-        backgroundColor: '#4A4A4D',
-    },
-    skipButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontFamily: 'Urbanist_700Bold',
-    },
-    completeButton: {
-        backgroundColor: '#FFC600',
-    },
-    completeButtonText: {
-        color: '#000',
-        fontSize: 16,
-        fontFamily: 'Urbanist_700Bold',
-    },
+    buttonRow: { flexDirection: 'row', gap: 12 },
+    button: { flex: 1, height: 54, borderRadius: 27, justifyContent: 'center', alignItems: 'center' },
+    skipButton: { backgroundColor: '#4A4A4D' },
+    skipButtonText: { color: '#fff', fontSize: 16, fontFamily: 'Urbanist_700Bold' },
+    completeButton: { backgroundColor: '#FFC600' },
+    completeButtonText: { color: '#000', fontSize: 16, fontFamily: 'Urbanist_700Bold' },
 
-    // Modal
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        justifyContent: 'flex-end',
-    },
-    modalContent: {
-        backgroundColor: '#1E1E22',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        padding: 20,
-        maxHeight: '50%',
-    },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+    modalContent: { backgroundColor: '#1E1E22', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: '50%' },
     modalHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#2C2C32',
-        paddingBottom: 12,
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        marginBottom: 16, borderBottomWidth: 1, borderBottomColor: '#2C2C32', paddingBottom: 12,
     },
-    modalTitle: {
-        color: '#fff',
-        fontSize: 17,
-        fontWeight: '700',
-        fontFamily: 'Urbanist_700Bold',
-    },
-    modalItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 14,
-        borderBottomWidth: 1,
-        borderBottomColor: '#2C2C32',
-    },
-    modalItemSelected: {
-        borderBottomColor: '#FFC600',
-    },
-    countryRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10,
-    },
-    countryName: {
-        color: '#fff',
-        fontSize: 15,
-        fontFamily: 'Urbanist_500Medium',
-    },
+    modalTitle: { color: '#fff', fontSize: 17, fontWeight: '700', fontFamily: 'Urbanist_700Bold' },
+    modalItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#2C2C32' },
+    modalItemSelected: { borderBottomColor: '#FFC600' },
+    countryRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    countryName: { color: '#fff', fontSize: 15, fontFamily: 'Urbanist_500Medium' },
 });
