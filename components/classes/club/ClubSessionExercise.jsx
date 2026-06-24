@@ -1,18 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView,ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function ClubSessionExercise({ onBack, onSearchSkillClick, title = "Small-sided games" }) {
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.greenHeaderContainer}>
-                <View style={styles.greenHeader}>
+             <ImageBackground
+                    source={require('@/assets/images/greenoverlay.png')}
+                    style={styles.greenHeader}
+                    imageStyle={{ borderRadius: 20, }}
+                >
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#fff" />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>{title}</Text>
                     <View style={{ width: 24 }} />
-                </View>
+                </ImageBackground>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>

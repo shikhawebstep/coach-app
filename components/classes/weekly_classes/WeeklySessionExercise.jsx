@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // ─── HTML Parser ────────────────────────────────────────────────────────────
 // Extracts named sections and their content from the HTML description.
@@ -82,7 +82,11 @@ export default function WeeklySessionExercise({ excercise, onBack, onSearchSkill
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.greenHeaderContainer}>
-                <View style={styles.greenHeader}>
+                <ImageBackground
+                    source={require('@/assets/images/greenoverlay.png')}
+                    style={styles.greenHeader}
+                    imageStyle={{ borderRadius: 20, }}
+                >
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#fff" />
                     </TouchableOpacity>
@@ -90,7 +94,7 @@ export default function WeeklySessionExercise({ excercise, onBack, onSearchSkill
                         {excercise?.title ?? 'Exercise'}
                     </Text>
                     <View style={{ width: 24 }} />
-                </View>
+                </ImageBackground>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>

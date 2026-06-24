@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function BirthdaySyllabus({ booking, onBack, onSessionSelect }) {
     const syllabus = booking?.syllabus ?? [];
@@ -15,7 +15,7 @@ export default function BirthdaySyllabus({ booking, onBack, onSessionSelect }) {
         syllabus.flatMap(s => Object.keys(s.levels ?? {}))
     )];
 
-    console.log('bookingsyllabus',booking)
+    console.log('bookingsyllabus', booking)
 
     const [activeGroup, setActiveGroup] = useState(packageGroups[0] ?? '');
     const [activeLevel, setActiveLevel] = useState(allLevels[0] ?? '');
@@ -36,13 +36,17 @@ export default function BirthdaySyllabus({ booking, onBack, onSessionSelect }) {
         <View style={styles.container}>
             {/* Green Header */}
             <View style={styles.greenHeaderContainer}>
-                <View style={styles.greenHeader}>
+                <ImageBackground
+                    source={require('@/assets/images/greenoverlay.png')}
+                    style={styles.greenHeader}
+                    imageStyle={{ borderRadius: 20, }}
+                >
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#fff" />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Syllabus</Text>
                     <View style={{ width: 24 }} />
-                </View>
+                </ImageBackground>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>

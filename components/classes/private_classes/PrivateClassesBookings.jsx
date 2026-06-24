@@ -1,24 +1,76 @@
+import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-
-const BOOKINGS_DATA = [
-    { id: 1, name: 'John Smith', date: '3rd April 2023', time: '10:30-11:30am', count: '1/5', status: 'Completed' },
-    { id: 2, name: 'John Smith', date: '3rd April 2023', time: '10:30-11:30am', count: '2/5', status: 'Completed' },
-    { id: 3, name: 'John Smith', date: '3rd April 2023', time: '10:30-11:30am', count: '2/5', status: 'Completed' },
-    { id: 4, name: 'John Smith', date: '3rd April 2023', time: '10:30-11:30am', count: '4/5', status: 'Pending' },
-    { id: 5, name: 'John Smith', date: '3rd April 2023', time: '10:30-11:30am', count: '3/5', status: 'Pending' },
-    { id: 6, name: 'Mark Gates', date: '3rd April 2023', time: '10:30-11:30am', count: '3/5', status: 'Completed' },
-    { id: 7, name: 'Mark Gates', date: '3rd April 2023', time: '10:30-11:30am', count: '4/5', status: 'Completed' },
-    { id: 8, name: 'Mark Gates', date: '3rd April 2023', time: '10:30-11:30am', count: '1/5', status: 'Pending' },
-];
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function PrivateClassesBookings({ onBack, onStudentSelect }) {
     const [searchQuery, setSearchQuery] = useState('');
+    const [bookings, setBookings] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const { token } = useAuth();
 
-    const filteredBookings = BOOKINGS_DATA.filter((booking) =>
-        booking.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    useEffect(() => {
+        fetchBookings();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const fetchBookings = async () => {
+        try {
+            setLoading(true);
+            const myHeaders = new Headers();
+            myHeaders.append("Authorization", `Bearer ${token}`);
+            const requestOptions = {
+                method: "GET",
+                headers: myHeaders,
+                redirect: "follow"
+            };
+            const response = await fetch("https://api.grabbite.com/api/coachpro/one-to-one/bookings", requestOptions);
+            const result = await response.json();
+            if (response.ok) {
+                setBookings(result?.data || []);
+            }
+        } catch (error) {
+            console.error("Failed to fetch bookings:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getStudentNames = (booking) => {
+        if (booking.students && booking.students.length > 0) {
+            return booking.students.map(s => `${s.studentFirstName || ''} ${s.studentLastName || ''}`.trim()).join(', ');
+        }
+        return booking.lead?.childName || booking.lead?.parentName || 'No Student';
+    };
+
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '-';
+        try {
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                const date = new Date(parts[0], parts[1] - 1, parts[2]);
+                return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            }
+            return dateStr;
+        } catch {
+            return dateStr;
+        }
+    };
+
+    const filteredBookings = bookings.filter((booking) => {
+        const studentNames = getStudentNames(booking).toLowerCase();
+        const parentName = booking.lead?.parentName?.toLowerCase() || '';
+        const q = searchQuery.toLowerCase();
+        return studentNames.includes(q) || parentName.includes(q);
+    });
+
+    if (loading) {
+        return (
+            <View style={styles.centered}>
+                <ActivityIndicator size="large" color="#3B82F6" />
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
@@ -52,36 +104,45 @@ export default function PrivateClassesBookings({ onBack, onStudentSelect }) {
                 {filteredBookings.length > 0 ? (
                     <>
                         <Text style={styles.listTitle}>Your private students</Text>
-                        {filteredBookings.map((booking) => (
-                            <TouchableOpacity
-                                key={booking.id}
-                                style={styles.card}
-                                onPress={() => onStudentSelect && onStudentSelect(booking.id)}
-                            >
-                                <View style={styles.cardInfo}>
-                                    <Text style={styles.cardTitle}>{booking.name}</Text>
-                                </View>
-                                <View style={styles.cardDetails}>
-                                    <Text style={styles.cardText}>{booking.date}</Text>
-                                    <Text style={styles.cardText}>{booking.time}</Text>
-                                </View>
-                                <View style={styles.cardCount}>
-                                    <Text style={styles.countText}>{booking.count}</Text>
-                                </View>
-                                <View style={styles.cardStatusContainer}>
-                                    <View style={[
-                                        styles.statusBadge,
-                                        booking.status === 'Completed' ? styles.statusCompleted : styles.statusPending
-                                    ]}>
-                                        <Text style={[
-                                            styles.statusText,
-                                            booking.status === 'Completed' ? styles.statusTextWhite : styles.statusTextBlack
-                                        ]}>{booking.status}</Text>
+                        {filteredBookings.map((booking) => {
+                            const studentNames = getStudentNames(booking);
+                            const displayDate = formatDate(booking.date);
+                            const displayTime = booking.time || '-';
+                            const displayCountText = booking.totalStudents || booking.students?.length || 0;
+                            const statusStr = booking.status ? booking.status.charAt(0).toUpperCase() + booking.status.slice(1) : 'Pending';
+                            const isActiveOrCompleted = booking.status === 'active' || booking.status === 'Completed';
+
+                            return (
+                                <TouchableOpacity
+                                    key={booking.id}
+                                    style={styles.card}
+                                    onPress={() => onStudentSelect && onStudentSelect(booking.id)}
+                                >
+                                    <View style={styles.cardInfo}>
+                                        <Text style={styles.cardTitle} numberOfLines={2}>{studentNames}</Text>
                                     </View>
-                                    <Ionicons name="chevron-forward" size={20} color="#000" style={styles.chevron} />
-                                </View>
-                            </TouchableOpacity>
-                        ))}
+                                    <View style={styles.cardDetails}>
+                                        <Text style={styles.cardText}>{displayDate}</Text>
+                                        <Text style={styles.cardText}>{displayTime}</Text>
+                                    </View>
+                                    <View style={styles.cardCount}>
+                                        <Text style={styles.countText}>{displayCountText}</Text>
+                                    </View>
+                                    <View style={styles.cardStatusContainer}>
+                                        <View style={[
+                                            styles.statusBadge,
+                                            isActiveOrCompleted ? styles.statusCompleted : styles.statusPending
+                                        ]}>
+                                            <Text style={[
+                                                styles.statusText,
+                                                isActiveOrCompleted ? styles.statusTextWhite : styles.statusTextBlack
+                                            ]}>{statusStr}</Text>
+                                        </View>
+                                        <Ionicons name="chevron-forward" size={20} color="#000" style={styles.chevron} />
+                                    </View>
+                                </TouchableOpacity>
+                            );
+                        })}
                     </>
                 ) : (
                     <View style={styles.emptyContainer}>
@@ -91,7 +152,7 @@ export default function PrivateClassesBookings({ onBack, onStudentSelect }) {
                             resizeMode="contain"
                         />
                         <Text style={styles.emptyTitle}>No Bookings</Text>
-                        <Text style={styles.emptySubtitle}>You don't have any bookings at this time</Text>
+                        <Text style={styles.emptySubtitle}>{"You don't have any bookings at this time"}</Text>
                     </View>
                 )}
                 <View style={{ height: 40 }} />
@@ -251,5 +312,11 @@ const styles = StyleSheet.create({
         color: '#666',
         textAlign: 'center',
         paddingHorizontal: 40,
+    },
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff',
     },
 });

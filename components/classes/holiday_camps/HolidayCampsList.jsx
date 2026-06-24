@@ -1,14 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-
-const CAMPS_DATA = [
-    { id: 1, title: 'Chelsea Summer camp', date: '3rd April 2023', time: '10:30-11:30am', duration: '4 days', status: 'Pending' },
-    { id: 2, title: 'Chelsea Summer camp', date: '3rd April 2023', time: '10:30-11:30am', duration: '4 days', status: 'Pending' },
-    { id: 3, title: 'Acton Summer camp', date: '3rd April 2023', time: '10:30-11:30am', duration: '4 days', status: 'Pending' },
-    { id: 4, title: 'Acton Summer camp', date: '3rd April 2023', time: '10:30-11:30am', duration: '4 days', status: 'Pending' },
-];
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function HolidayCampsList({ onBack, onCampSelect }) {
     const [searchQuery, setSearchQuery] = useState('');
@@ -33,14 +26,16 @@ export default function HolidayCampsList({ onBack, onCampSelect }) {
             const result = await response.json();
             if (response.ok) setData(result?.data || []);
         } catch (error) {
-            console.error('Failed to fetch bookings:', error);
+            console.error('Failed to fetch venues:', error);
         } finally {
             setLoading(false);
         }
     };
-    const filteredCamps = CAMPS_DATA.filter((camp) =>
-        camp.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+
+ const filteredVenues = data.filter((venue) =>
+    venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    venue.area.toLowerCase().includes(searchQuery.toLowerCase())
+);
 
     return (
         <View style={styles.container}>
@@ -49,7 +44,7 @@ export default function HolidayCampsList({ onBack, onCampSelect }) {
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Holiday camps</Text>
+                <Text style={styles.headerTitle}>Holiday Camps</Text>
             </View>
 
             {/* Search Bar */}
@@ -57,40 +52,54 @@ export default function HolidayCampsList({ onBack, onCampSelect }) {
                 <Ionicons name="search-outline" size={20} color="#a0a0a0" style={styles.searchIcon} />
                 <TextInput
                     style={styles.searchInput}
-                    placeholder="Select a venue..."
+                    placeholder="Search by venue or area..."
                     placeholderTextColor="#a0a0a0"
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
+                {searchQuery.length > 0 && (
+                    <TouchableOpacity onPress={() => setSearchQuery('')}>
+                        <Ionicons name="close-circle" size={18} color="#a0a0a0" />
+                    </TouchableOpacity>
+                )}
             </View>
 
             {/* List */}
             <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
-                <Text style={styles.listTitle}>Camps</Text>
-                {filteredCamps.map((camp) => (
-                    <TouchableOpacity
-                        key={camp.id}
+                <Text style={styles.listTitle}>Venues</Text>
+
+                {loading ? (
+                    <ActivityIndicator size="large" color="#1CAB4B" style={{ marginTop: 40 }} />
+                ) : filteredVenues.length === 0 ? (
+                    <Text style={styles.emptyText}>No venues found.</Text>
+                ) : (
+                    filteredVenues.map((venue) => (
+                      <TouchableOpacity
+                        key={venue.id}
                         style={styles.card}
-                        onPress={() => onCampSelect(camp.id)}
+                        onPress={() => onCampSelect(venue.id)}
                     >
                         <View style={styles.cardInfo}>
-                            <Text style={styles.cardTitle}>{camp.title}</Text>
+                            <Text style={styles.cardTitle}>{venue.name}</Text>
                         </View>
                         <View style={styles.cardDetails}>
-                            <Text style={styles.cardText}>{camp.date}</Text>
-                            <Text style={styles.cardText}>{camp.time}</Text>
+                            <Text style={styles.cardText}>{venue?.date || '-'}</Text>
+                            <Text style={styles.cardText}>{venue?.Time || '-'}</Text>
                         </View>
                         <View style={styles.cardDuration}>
-                            <Text style={styles.durationText}>{camp.duration}</Text>
+                            <Text style={styles.durationText}>{venue?.duration || '-'}</Text>
                         </View>
                         <View style={styles.cardStatusContainer}>
-                            <View style={[styles.statusBadge, camp.status === 'Pending' ? styles.statusPending : {}]}>
-                                <Text style={styles.statusText}>{camp.status}</Text>
+                            <View style={[styles.statusBadge, venue?.status === 'Pending' ? styles.statusPending : styles.statusPending ]}>
+                                <Text style={styles.statusText}>{venue?.status || 'Pending'}</Text>
                             </View>
                             <Ionicons name="chevron-forward" size={20} color="#000" style={styles.chevron} />
                         </View>
                     </TouchableOpacity>
-                ))}
+                    ))
+                )}
+
+                <View style={{ height: 40 }} />
             </ScrollView>
         </View>
     );

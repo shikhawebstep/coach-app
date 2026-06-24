@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, ImageBackground,StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function GameDetails({ onBack }) {
     return (
@@ -8,13 +8,17 @@ export default function GameDetails({ onBack }) {
 
                 {/* Green Header Area */}
                 <View style={styles.greenHeaderContainer}>
-                    <View style={styles.greenHeader}>
+                 <ImageBackground
+                    source={require('@/assets/images/greenoverlay.png')}
+                    style={styles.greenHeader}
+                    imageStyle={{ borderRadius: 20, }}
+                >
                         <TouchableOpacity onPress={onBack} style={styles.backButton}>
                             <Ionicons name="arrow-back" size={24} color="#fff" />
                         </TouchableOpacity>
                         <Text style={styles.headerTitle}>Small-sided games</Text>
                         <View style={{ width: 24 }} /> {/* Spacer */}
-                    </View>
+                    </ImageBackground>
                 </View>
 
                 {/* Banner Image */}

@@ -42,7 +42,7 @@ export default function WeeklySessionTrainingDetails({ sessionId, onBack, onStud
                             age: `${student.age} Years`,
                             status: student.attendance,
                             rawStudent: student,
-                            booking:booking,
+                            booking: booking,
                         });
                     });
                 });
@@ -56,17 +56,17 @@ export default function WeeklySessionTrainingDetails({ sessionId, onBack, onStud
             setLoading(false);
         }
     };
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    const day = date.getDate();
-    const suffix = day % 10 === 1 && day !== 11 ? 'st'
-        : day % 10 === 2 && day !== 12 ? 'nd'
-        : day % 10 === 3 && day !== 13 ? 'rd'
-        : 'th';
-    const month = date.toLocaleString('en-GB', { month: 'long' });
-    const year = date.getFullYear();
-    return `${day}${suffix} ${month} ${year}`;
-};
+    const formatDate = (dateStr) => {
+        const date = new Date(dateStr);
+        const day = date.getDate();
+        const suffix = day % 10 === 1 && day !== 11 ? 'st'
+            : day % 10 === 2 && day !== 12 ? 'nd'
+                : day % 10 === 3 && day !== 13 ? 'rd'
+                    : 'th';
+        const month = date.toLocaleString('en-GB', { month: 'long' });
+        const year = date.getFullYear();
+        return `${day}${suffix} ${month} ${year}`;
+    };
 
     const handleAttendance = async (studentId, status) => {
         // Save previous state for rollback
@@ -154,8 +154,18 @@ export default function WeeklySessionTrainingDetails({ sessionId, onBack, onStud
                         </View>
                         <View style={styles.infoItemSmall}>
                             <Text style={styles.infoLabel}>Status</Text>
-                            <View style={styles.statusBadge}>
-                                <Text style={styles.statusText}>{sessionData?.status || 'Pending'}</Text>
+                            <View style={[
+                                styles.statusBadge,
+                                sessionData?.status === 'completed' && styles.statusBadgeCompleted,
+                                sessionData?.status === 'pending' && styles.statusBadgePending,
+                            ]}>
+                                <Text style={[
+                                    styles.statusText,
+                                    sessionData?.status === 'completed' && styles.statusTextCompleted,
+                                    sessionData?.status === 'pending' && styles.statusTextPending,
+                                ]}>
+                                    {sessionData?.status || 'Pending'}
+                                </Text>
                             </View>
                         </View>
                     </View>
@@ -458,7 +468,7 @@ const styles = StyleSheet.create({
     btnNotAttendedActive: {
         backgroundColor: '#E53E3E',
         borderColor: '#E53E3E',
-        color:'#fff',
+        color: '#fff',
     },
     btnNotAttendedInactive: {
         backgroundColor: '#fff',
@@ -516,4 +526,27 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#fff',
     },
+    statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+},
+statusBadgeCompleted: {
+    backgroundColor: '#1CAB4B',
+},
+statusBadgePending: {
+    backgroundColor: '#D97706',
+},
+statusText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    textTransform:'capitalize'
+},
+statusTextCompleted: {
+    color: '#F0FFF4',
+},
+statusTextPending: {
+    color: '#FFFBEB',
+},
 });

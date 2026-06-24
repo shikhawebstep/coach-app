@@ -1,14 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { ResizeMode, Video } from 'expo-av';
 import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 const LEVEL_KEYS = ['beginner', 'intermediate', 'advanced', 'pro'];
 
 const LEVEL_LABELS = {
     beginner: 'Beginners (4–5)',
     intermediate: 'Intermediate (6–7)',
-    advanced: 'Advanced',
-    pro: 'Pro',
+    advanced: 'Advanced (8-9)',
+    pro: 'Pro (10-12)',
 };
 
 export default function WeeklySyllabusDayDetails({ onBack, onSessionItemSelect, sessionPlan }) {
@@ -25,9 +26,6 @@ export default function WeeklySyllabusDayDetails({ onBack, onSessionItemSelect, 
     const bannerUrl = sessionPlan?.[bannerKey];
     const videoUrl = sessionPlan?.[videoKey];
 
-
-    console.log('sessionPlan', sessionPlan)
-
     const parseImageUrls = (imageUrlStr) => {
         try {
             return JSON.parse(imageUrlStr) || [];
@@ -41,6 +39,10 @@ export default function WeeklySyllabusDayDetails({ onBack, onSessionItemSelect, 
         return sum + (match ? parseInt(match[1]) : 0);
     }, 0);
 
+    const displayDuration = totalDuration >= 60
+        ? `${Math.floor(totalDuration / 60)} ${Math.floor(totalDuration / 60) === 1 ? 'Hour' : 'Hours'}`
+        : `${totalDuration} mins`;
+
     if (!sessionPlan) {
         return (
             <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -53,24 +55,25 @@ export default function WeeklySyllabusDayDetails({ onBack, onSessionItemSelect, 
         <View style={styles.container}>
             <ScrollView showsVerticalScrollIndicator={false}>
 
-                {/* ── Green Rounded Header ── */}
-                <View style={styles.headerWrap}>
-                    <View style={styles.greenHeader}>
+                {/* ── Green Full-Width Header ── */}
+                <View style={{ padding: 20 }}>
+
+                    <ImageBackground
+                        source={require('@/assets/images/greenoverlay.png')}
+                        style={styles.greenHeader}
+                        imageStyle={{ borderRadius: 20, }}
+                    >
                         <TouchableOpacity onPress={onBack} style={styles.backButton}>
                             <Ionicons name="arrow-back" size={22} color="#fff" />
                         </TouchableOpacity>
                         <Text style={styles.headerTitle}>Syllabus</Text>
                         <View style={{ width: 22 }} />
-                    </View>
+                    </ImageBackground>
                 </View>
 
                 {/* ── Level Pill Tabs ── */}
                 {availableLevels.length > 0 && (
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.tabsRow}
-                    >
+                    <View style={styles.tabsContainer}>
                         {availableLevels.map(level => (
                             <TouchableOpacity
                                 key={level}
@@ -83,12 +86,11 @@ export default function WeeklySyllabusDayDetails({ onBack, onSessionItemSelect, 
                                 </Text>
                             </TouchableOpacity>
                         ))}
-                    </ScrollView>
+                    </View>
                 )}
 
                 <View style={styles.body}>
 
-                    {/* ── Banner Image ── */}
                     {/* ── Banner Image / Video ── */}
                     <View style={styles.bannerWrap}>
                         {bannerUrl ? (
@@ -122,7 +124,6 @@ export default function WeeklySyllabusDayDetails({ onBack, onSessionItemSelect, 
                         </View>
                     )}
 
-                    {/* ── Player Photo (full-width) ── */}
                     {/* ── Player Video / Photo ── */}
                     {videoUrl ? (
                         <View style={styles.playerPhotoWrap}>
@@ -150,7 +151,7 @@ export default function WeeklySyllabusDayDetails({ onBack, onSessionItemSelect, 
                                 <Text style={styles.sessionTitle}>Session Plan</Text>
                                 <View style={styles.durationPill}>
                                     <Ionicons name="time-outline" size={13} color="#6B7280" />
-                                    <Text style={styles.durationText}>{totalDuration} mins</Text>
+                                    <Text style={styles.durationText}>{displayDuration}</Text>
                                 </View>
                             </View>
                             <TouchableOpacity style={styles.downloadBtn}>
@@ -171,13 +172,12 @@ export default function WeeklySyllabusDayDetails({ onBack, onSessionItemSelect, 
                                     onPress={() => onSessionItemSelect && onSessionItemSelect(exercise)}
                                     activeOpacity={0.85}
                                 >
-                                    {/* Thumbnail — green field style */}
+                                    {/* Thumbnail */}
                                     <View style={styles.thumbWrap}>
                                         {imageUri ? (
                                             <Image source={{ uri: imageUri }} style={styles.thumbImg} resizeMode="cover" />
                                         ) : (
                                             <View style={styles.fieldThumb}>
-                                                {/* Mimics the green football field miniature */}
                                                 <View style={styles.fieldCenter}>
                                                     <View style={styles.fieldCircle} />
                                                     <View style={styles.fieldLine} />
@@ -215,19 +215,14 @@ const styles = StyleSheet.create({
     },
 
     /* ── Header ── */
-    headerWrap: {
-        paddingHorizontal: 14,
-        paddingTop: 14,
-        marginBottom: 14,
-    },
     greenHeader: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         backgroundColor: '#22c55e',
-        borderRadius: 14,
+        borderRadius: 15,
         paddingHorizontal: 16,
-        paddingVertical: 16,
+        padding: 18,
     },
     backButton: {
         padding: 2,
@@ -240,34 +235,41 @@ const styles = StyleSheet.create({
     },
 
     /* ── Level Tabs ── */
-    tabsRow: {
-        paddingHorizontal: 14,
-        gap: 8,
+    tabsContainer: {
+        flexDirection: 'row',
+        backgroundColor: '#F3F4F6',
+        borderRadius: 20,
+        gap: 10,
+        marginHorizontal: 14,
+        marginTop: 16,
         marginBottom: 18,
+        padding: 8,
+        overflow: 'scroll',
     },
     tab: {
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 50,
-        borderWidth: 1.5,
+        flex: 1,
+        paddingVertical: 10,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     tabActive: {
-        backgroundColor: '#22c55e',
-        borderColor: '#22c55e',
+        backgroundColor: '#3B82F6',
     },
     tabInactive: {
-        backgroundColor: '#fff',
-        borderColor: '#22c55e',
+        backgroundColor: 'transparent',
     },
     tabText: {
         fontSize: 13,
+        textAlign: 'center',
         fontWeight: '600',
+
     },
     tabTextActive: {
         color: '#fff',
     },
     tabTextInactive: {
-        color: '#22c55e',
+        color: '#1a1a1a',
     },
 
     /* ── Body ── */
@@ -278,7 +280,7 @@ const styles = StyleSheet.create({
     /* ── Banner ── */
     bannerWrap: {
         width: '100%',
-        height: 110,
+        height: 160,
         borderRadius: 12,
         overflow: 'hidden',
         marginBottom: 20,
@@ -336,7 +338,7 @@ const styles = StyleSheet.create({
     /* ── Player Photo ── */
     playerPhotoWrap: {
         width: '100%',
-        height: 220,
+        height: 280,
         borderRadius: 12,
         overflow: 'hidden',
         marginBottom: 22,
@@ -407,8 +409,6 @@ const styles = StyleSheet.create({
         marginBottom: 18,
         alignItems: 'flex-start',
     },
-
-    /* Thumbnail — green football field */
     thumbWrap: {
         width: 120,
         height: 80,
@@ -468,8 +468,6 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1.5,
         borderColor: 'rgba(255,255,255,0.7)',
     },
-
-    /* Exercise text */
     exerciseInfo: {
         flex: 1,
         paddingTop: 2,

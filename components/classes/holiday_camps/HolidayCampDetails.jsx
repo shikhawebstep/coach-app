@@ -1,23 +1,92 @@
+import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import HolidayAddTrialist from './HolidayAddTrialist';
 
-const STUDENTS_DATA = [
-    { id: 1, name: 'John Smith', age: '7 Years', status: 'attended' },
-    { id: 2, name: 'John Smith', age: '7 Years', status: null },
-    { id: 3, name: 'John Smith', age: '7 Years', status: null },
-    { id: 4, name: 'John Smith', age: '7 Years', status: 'not_attended' },
-];
-
-export default function HolidayCampDetails({ onBack, onSyllabusClick, onStudentSelect }) {
+export default function HolidayCampDetails({ id, onBack, onSyllabusClick, onStudentSelect }) {
     const [activeTab, setActiveTab] = useState('Day 1');
-    const [students, setStudents] = useState(STUDENTS_DATA);
+    const [students, setStudents] = useState([]);
     const [showAddTrialist, setShowAddTrialist] = useState(false);
+    const [data, setData] = useState({});
+    const [loading, setLoading] = useState(true);
+    const { token } = useAuth();
 
-    const handleAttendance = (id, status) => {
-        setStudents(prev => prev.map(s => s.id === id ? { ...s, status } : s));
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/holiday-camp/${id}/detail`,
+                {
+                    method: 'GET',
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            const result = await response.json();
+            if (response.ok) setData(result?.data || {});
+        } catch (error) {
+            console.error('Failed to fetch venue detail:', error);
+        } finally {
+            setLoading(false);
+        }
     };
+
+
+
+const handleAttendance = async (studentId, status) => {
+    console.log('🟡 handleAttendance called', { studentId, status });
+
+    try {
+        const url = `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/holiday-camp/session/${id}/attendance/${studentId}`;
+        console.log('📡 Making PATCH request to:', url);
+        console.log('📦 Request body:', { attendance: status });
+
+        const response = await fetch(url, {
+            method: 'PATCH',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ attendance: status }),
+        });
+
+        console.log('📬 Response received:', { status: response.status, ok: response.ok });
+
+        if (response.ok) {
+            console.log('✅ Attendance updated successfully, calling fetchData()');
+            fetchData();
+        } else {
+            const errorText = await response.text();
+            console.error('❌ Server error response:', { status: response.status, errorText });
+        }
+    } catch (error) {
+        console.error('❌ Network error updating attendance:', error.message);
+        console.error('🔍 Full error:', error);
+    }
+
+    console.log('🏁 handleAttendance complete');
+};
+    // Derived values
+    const camp = data?.holidayCamps?.[0];
+    const campDates = camp?.holidayCampDates?.[0];
+    const sessionsMap = campDates?.sessionsMap ?? [];
+    const schedule = data?.classSchedules?.[0];
+
+    const dayTabs = sessionsMap.map((s, i) => ({
+        label: `Day ${i + 1}`,
+        sessionDate: s.sessionDate,
+        sessionPlan: s.sessionPlan,
+    }));
+
+    const activeSession = dayTabs.find(d => d.label === activeTab);
+
+    const activeExercises = activeSession?.sessionPlan
+        ? Object.values(activeSession.sessionPlan.levels).flat().flatMap(entry => entry.sessionExercises ?? [])
+        : [];
 
     if (showAddTrialist) {
         return <HolidayAddTrialist onBack={() => setShowAddTrialist(false)} />;
@@ -39,6 +108,7 @@ export default function HolidayCampDetails({ onBack, onSyllabusClick, onStudentS
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+
                 {/* Info Card */}
                 <View style={styles.infoCard}>
                     <View style={styles.infoRow}>
@@ -47,134 +117,121 @@ export default function HolidayCampDetails({ onBack, onSyllabusClick, onStudentS
                                 <Ionicons name="calendar-outline" size={16} color="#666" style={styles.infoIcon} />
                                 <Text style={styles.infoLabel}>Date</Text>
                             </View>
-                            <Text style={styles.infoValue}>Sat 3rd Apr</Text>
+                            <Text style={styles.infoValue}>{campDates?.startDate ?? 'N/A'}</Text>
                         </View>
                         <View style={styles.infoItem}>
                             <View style={styles.infoLabelContainer}>
                                 <Ionicons name="time-outline" size={16} color="#666" style={styles.infoIcon} />
                                 <Text style={styles.infoLabel}>Time</Text>
                             </View>
-                            <Text style={styles.infoValue}>9:30am</Text>
+                            <Text style={styles.infoValue}>
+                                {schedule ? `${schedule.startTime} - ${schedule.endTime}` : 'N/A'}
+                            </Text>
                         </View>
                         <View style={styles.infoItem}>
                             <View style={styles.infoLabelContainer}>
                                 <Ionicons name="person-outline" size={16} color="#666" style={styles.infoIcon} />
                                 <Text style={styles.infoLabel}>Students</Text>
                             </View>
-                            <Text style={styles.infoValue}>24</Text>
+                            <Text style={styles.infoValue}>
+                                {schedule ? `${schedule.capacity}/${schedule.totalCapacity}` : 'N/A'}
+                            </Text>
                         </View>
                         <View style={styles.infoItem}>
                             <Text style={styles.infoLabel}>Status</Text>
                             <View style={styles.statusBadge}>
-                                <Text style={styles.statusText}>Pending</Text>
+                                <Text style={styles.statusText}>{schedule?.status ?? 'N/A'}</Text>
                             </View>
                         </View>
                     </View>
+                </View>
 
-                    </View>
-                    {/* Map Placeholder */}
-                    <View style={styles.mapContainer}>
-                        {/* Could replace with an actual MapView or Image */}
-                        <View style={styles.mapContainer}>
-                            <Image
-                                source={require('../../../assets/images/map.png')}
-                                style={styles.mapImage}
-                                resizeMode="cover"
-                            />
-                        </View>                   
-                         </View>
+                {/* Map */}
+                <View style={styles.mapContainer}>
+                    <Image
+                        source={require('../../../assets/images/map.png')}
+                        style={styles.mapImage}
+                        resizeMode="cover"
+                    />
+                </View>
 
-                    {/* Location */}
-                    <View style={styles.locationContainer}>
-                        <Ionicons name="location-outline" size={18} color="#666" />
-                        <Text style={styles.locationText}>Kings Cross, Grays Inn Road, London WC2H 9HE [Outdoor Park]</Text>
-                    </View>
+                {/* Location */}
+                <View style={styles.locationContainer}>
+                    <Ionicons name="location-outline" size={18} color="#666" />
+                    <Text style={styles.locationText}>{data?.address ?? 'N/A'}</Text>
+                </View>
 
-                {/* Tabs */}
+                {/* Day Tabs */}
                 <View style={styles.tabsContainer}>
-                    {['Day 1', 'Day 2', 'Day 3'].map(tab => (
+                    {dayTabs.map(tab => (
                         <TouchableOpacity
-                            key={tab}
-                            style={[styles.tab, activeTab === tab && styles.activeTab]}
-                            onPress={() => setActiveTab(tab)}
+                            key={tab.label}
+                            style={[styles.tab, activeTab === tab.label && styles.activeTab]}
+                            onPress={() => setActiveTab(tab.label)}
                         >
-                            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
+                            <Text style={[styles.tabText, activeTab === tab.label && styles.activeTabText]}>
+                                {tab.label}
+                            </Text>
                         </TouchableOpacity>
                     ))}
                 </View>
 
-                {/* Students List */}
+                {/* Exercises List */}
                 <View style={styles.studentsList}>
-                    {students.map((student, index) => (
-                        <TouchableOpacity
-                            key={student.id}
-                            style={styles.studentCard}
-                            onPress={() => onStudentSelect && onStudentSelect(student.id)}
-                        >
-                            <Text style={styles.studentIndex}>{index + 1}</Text>
-                            <View style={styles.studentInfo}>
-                                <Text style={styles.studentName}>{student.name}</Text>
-                                <Text style={styles.studentAge}>{student.age}</Text>
-                            </View>
-                            <View style={styles.attendanceButtons}>
+                    {activeExercises.length === 0 ? (
+                        <Text style={{ color: '#9CA3AF', textAlign: 'center', marginTop: 16 }}>
+                            No exercises for this day.
+                        </Text>
+                    ) : (
+                        activeExercises.map((exercise, index) => {
+                            const attendance = students.find(s => s.id === exercise.id);
+                            return (
                                 <TouchableOpacity
-                                    style={[
-                                        styles.attendanceBtn,
-                                        student.status === 'attended' ? styles.btnAttendedActive : styles.btnAttendedInactive
-                                    ]}
-                                    onPress={() => handleAttendance(student.id, 'attended')}
+                                    key={`${exercise.id}-${index}`}
+                                    style={styles.studentCard}
+                                    onPress={() => onStudentSelect && onStudentSelect(exercise)}
                                 >
-                                    <Ionicons
-                                        name="checkmark"
-                                        size={18}
-                                        color={student.status === 'attended' ? '#fff' : '#000'}
-                                        style={styles.btnIcon}
-                                    />
-                                    <Text style={[
-                                        styles.btnText,
-                                        student.status === 'attended' ? styles.btnTextWhite : styles.btnTextBlack
-                                    ]}>
-                                        Attended
-                                    </Text>
+                                    <Text style={styles.studentIndex}>{index + 1}</Text>
+                                    <View style={styles.studentInfo}>
+                                        <Text style={styles.studentName}>{exercise.title}</Text>
+                                        <Text style={styles.studentAge}>{exercise.duration}</Text>
+                                    </View>
+                                    <View style={styles.attendanceButtons}>
+                                        <TouchableOpacity
+                                            style={[styles.attendanceBtn, attendance?.status === 'attended' ? styles.btnAttendedActive : styles.btnAttendedInactive]}
+                                            onPress={() => handleAttendance(exercise.id, 'attended')}
+                                        >
+                                            <Ionicons
+                                                name="checkmark"
+                                                size={18}
+                                                color={attendance?.status === 'attended' ? '#fff' : '#000'}
+                                                style={styles.btnIcon}
+                                            />
+                                            <Text style={[styles.btnText, attendance?.status === 'attended' ? styles.btnTextWhite : styles.btnTextBlack]}>
+                                                Attended
+                                            </Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={[styles.attendanceBtn, attendance?.status === 'not attended' ? styles.btnNotAttendedActive : styles.btnNotAttendedInactive]}
+                                            onPress={() => handleAttendance(exercise.id, 'not attended')}
+                                        >
+                                            <Ionicons
+                                                name="close"
+                                                size={18}
+                                                color={attendance?.status === 'not attended' ? '#fff' : '#E53E3E'}
+                                                style={styles.btnIcon}
+                                            />
+                                            <Text style={[styles.btnText, attendance?.status === 'not attended' ? styles.btnTextWhite : styles.btnTextRed]}>
+                                                Not Attended
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    style={[
-                                        styles.attendanceBtn,
-                                        student.status === 'not_attended' ? styles.btnNotAttendedActive : styles.btnNotAttendedInactive
-                                    ]}
-                                    onPress={() => handleAttendance(student.id, 'not_attended')}
-                                >
-                                    <Ionicons
-                                        name="close"
-                                        size={18}
-                                        color={student.status === 'not_attended' ? '#fff' : '#E53E3E'}
-                                        style={styles.btnIcon}
-                                    />
-                                    <Text style={[
-                                        styles.btnText,
-                                        student.status === 'not_attended' ? styles.btnTextWhite : styles.btnTextRed
-                                    ]}>
-                                        Not Attended
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                        </TouchableOpacity>
-                    ))}
+                            );
+                        })
+                    )}
                 </View>
 
-                {/* <TouchableOpacity
-                    style={styles.addTrialistButton}
-                    onPress={() => setShowAddTrialist(true)}
-                >
-                    <Ionicons name="add" size={24} color="#3B82F6" style={styles.addIcon} />
-                    <Text style={styles.addTrialistText}>Add walk by trialist</Text>
-                </TouchableOpacity>
-
-                
-                <TouchableOpacity style={styles.confirmButton}>
-                    <Text style={styles.confirmButtonText}>Confirm</Text>
-                </TouchableOpacity> */}
             </ScrollView>
         </View>
     );
@@ -286,7 +343,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingRight: 16,
-        marginBottom:20,
+        marginBottom: 20,
     },
     locationText: {
         marginLeft: 8,

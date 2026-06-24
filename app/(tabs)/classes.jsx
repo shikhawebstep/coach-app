@@ -66,6 +66,7 @@ export default function Classes() {
     const [currentView, setCurrentView] = useState(params.view || 'dashboard');
     const [selectedVenue, setSelectedVenue] = useState(null);
     const [selectedSessionId, setSelectedSessionId] = useState(null);
+    const [selectedVenuenId, setSelectedVenuenId] = useState(null);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [selectedSessionData, setSelectedSessionData] = useState(null);
     const [selectedBirthdaySessionData, setSelectedBirthdaySessionData] = useState(null);
@@ -73,6 +74,7 @@ export default function Classes() {
     const [selectedBirthdayBooking, setSelectedBirthdayBooking] = useState(null);
     const [selectedBirthdaySyllabus, setSelectedBirthdaySyllabus] = useState(null);
     const [weeklyExcercises, setWeeklyExcercises] = useState(null);
+    const [selectedPrivateBookingId, setSelectedPrivateBookingId] = useState(null);
 
     useEffect(() => {
         if (params.view) {
@@ -83,12 +85,17 @@ export default function Classes() {
     if (currentView === 'camps' || currentView === 'holiday') {
         return <HolidayCampsList
             onBack={() => setCurrentView('dashboard')}
-            onCampSelect={() => setCurrentView('campDetails')}
+            onCampSelect={(id) => {
+                setCurrentView('campDetails');
+                setSelectedVenuenId(id)
+
+            }}
         />;
     }
 
     if (currentView === 'campDetails') {
         return <HolidayCampDetails
+            id={selectedVenuenId}
             onBack={() => setCurrentView('camps')}
             onSyllabusClick={() => setCurrentView('holidaySyllabus')}
             onStudentSelect={(id) => setCurrentView('holidayStudentClass')}
@@ -116,12 +123,16 @@ export default function Classes() {
     if (currentView === 'private') {
         return <PrivateClassesBookings
             onBack={() => setCurrentView('dashboard')}
-            onStudentSelect={(id) => setCurrentView('privateStudentClass')}
+            onStudentSelect={(id) => {
+                setSelectedPrivateBookingId(id);
+                setCurrentView('privateStudentClass');
+            }}
         />;
     }
 
     if (currentView === 'privateStudentClass') {
         return <PrivateStudentClassDetails
+            bookingId={selectedPrivateBookingId}
             onBack={() => setCurrentView('private')}
             onNotesClick={() => setCurrentView('notes')}
         />;

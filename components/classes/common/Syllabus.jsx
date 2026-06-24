@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const SESSION_ITEMS = [
     {
         id: 1,
@@ -40,13 +40,17 @@ export default function Syllabus({ onBack, onSessionSelect }) {
         <View style={styles.container}>
             {/* Green Header */}
             <View style={styles.greenHeaderContainer}>
-                <View style={styles.greenHeader}>
+                <ImageBackground
+                    source={require('@/assets/images/greenoverlay.png')}
+                    style={styles.greenHeader}
+                    imageStyle={{ borderRadius: 20, }}
+                >
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#fff" />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Syllabus</Text>
                     <View style={{ width: 24 }} /> {/* Spacer to center title */}
-                </View>
+                </ImageBackground>
             </View>
 
             {/* Package Tabs */}
