@@ -1,4 +1,5 @@
 import { useAuth } from '@/context/AuthContext';
+import * as DocumentPicker from 'expo-document-picker';
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {

@@ -137,15 +137,15 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     backButton: { marginRight: 4 },
-    headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#1a1a1a' },
+    headerTitle: { fontSize: 20,  color: '#1a1a1a', fontFamily: 'Urbanist_700Bold' },
     divider: { height: 1, backgroundColor: '#F0F0F0', marginBottom: 16 },
     scrollContent: { paddingHorizontal: 16, paddingBottom: 40 },
-    sectionTitle: { fontSize: 15, fontWeight: '600', color: '#1a1a1a', marginBottom: 12, marginTop: 4 },
+    sectionTitle: { fontSize: 15, color: '#1a1a1a', marginBottom: 12, marginTop: 4, fontFamily: 'Urbanist_600SemiBold' },
     rowGroup: { flexDirection: 'row', marginBottom: 16, gap: 32 },
     col: { flex: 1 },
     fieldGroup: { marginBottom: 16 },
-    fieldLabel: { fontSize: 13, color: '#9CA3AF', marginBottom: 4 },
-    fieldValue: { fontSize: 14, color: '#1a1a1a', fontWeight: '500' },
+    fieldLabel: { fontSize: 13, color: '#9CA3AF', marginBottom: 4, fontFamily: 'Urbanist_400Regular' },
+    fieldValue: { fontSize: 14, color: '#1a1a1a', fontFamily: 'Urbanist_600SemiBold' },
     phone: { color: '#3B82F6' },
     notesInput: {
         borderWidth: 1,
@@ -158,6 +158,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#FAFAFA',
         marginTop: 6,
         marginBottom: 32,
+        fontFamily: 'Urbanist_400Regular',
     },
     buttonRow: { flexDirection: 'row', gap: 12 },
     cancelBtn: {
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         alignItems: 'center',
     },
-    cancelText: { color: '#3B82F6', fontWeight: '600', fontSize: 15 },
+    cancelText: { color: '#3B82F6', fontSize: 15, fontFamily: 'Urbanist_600SemiBold' },
     saveBtn: {
         flex: 1,
         backgroundColor: '#3B82F6',
@@ -176,5 +177,5 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         alignItems: 'center',
     },
-    saveText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+    saveText: { color: '#fff', fontSize: 15, fontFamily: 'Urbanist_600SemiBold' },
 })

@@ -2,9 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, ImageBackground, Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
-import ProfileModal from './ProfileModal';
-import NotificationsList from '../classes/common/NotificationsList';
 import NotificationDetails from '../classes/common/NotificationDetails';
+import NotificationsList from '../classes/common/NotificationsList';
+import ProfileModal from './ProfileModal';
 
 export default function Header({ title, showBack = false, onMenuPress }) {
     const router = useRouter();
@@ -53,8 +53,10 @@ export default function Header({ title, showBack = false, onMenuPress }) {
 
                     <View style={styles.rightContainer}>
                         <TouchableOpacity style={styles.iconButton} onPress={handleNotificationPress}>
-                            <Ionicons name="notifications-outline" size={26} color="#fff" />
-                            <View style={styles.badge} />
+                            <Image
+                                source={require('../../assets/images/Notification.png')}
+                                style={{ width: 32, height: 32 }}
+                            />                            <View style={styles.badge} />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.profileButton} onPress={() => setIsProfileVisible(true)}>
 
@@ -101,7 +103,10 @@ export default function Header({ title, showBack = false, onMenuPress }) {
 
                             <View style={styles.rightContainer}>
                                 <TouchableOpacity style={styles.iconButton} onPress={() => setIsNotificationsVisible(false)}>
-                                    <Ionicons name="notifications-outline" size={26} color="#fff" />
+                                    <Image
+                                        source={require('../../assets/images/Notification.png')}
+                                        style={{ width: 32, height: 32 }}
+                                    />
                                     <View style={styles.badge} />
                                 </TouchableOpacity>
                                 <TouchableOpacity style={styles.profileButton} onPress={() => { setIsNotificationsVisible(false); setIsProfileVisible(true); }}>
@@ -137,7 +142,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 16,
         paddingTop: 30, // Status bar padding
-        paddingBottom: 10,
+        paddingBottom: 0,
         borderBottomWidth: 1,
         borderBottomColor: '#333',
     },

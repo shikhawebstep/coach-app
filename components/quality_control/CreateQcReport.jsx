@@ -63,18 +63,23 @@ function DropdownModal({ visible, options, onSelect, onClose, title }) {
 }
 const dd = StyleSheet.create({
     overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'flex-end' },
-    sheet: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, paddingBottom: 40 },
+    sheet: { backgroundColor:"#FAFAFA", borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, paddingBottom: 40 },
     sheetTitle: { fontSize: 16, fontWeight: 'bold', color: '#1a1a1a', marginBottom: 16 },
     option: { paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
     optionText: { fontSize: 16, color: '#1a1a1a' },
 });
 
 // ─── Screen: My Reports ───────────────────────────────────────────────────────
-function MyReportsScreen({ onCreateNew }) {
+function MyReportsScreen({ onCreateNew, onBack }) {
     const [search, setSearch] = useState('');
     return (
         <View style={s.container}>
             <View style={s.header}>
+                {onBack && (
+                    <TouchableOpacity onPress={onBack} style={s.backBtn}>
+                        <Ionicons name="arrow-back" size={22} color="#1a1a1a" />
+                    </TouchableOpacity>
+                )}
                 <Text style={s.headerTitle}>My reports</Text>
             </View>
             <View style={s.searchContainer}>
@@ -130,9 +135,9 @@ function CreateQcReport({ onBack, onStart }) {
     return (
         <View style={s.container}>
             <View style={s.header}>
-                <TouchableOpacity onPress={onBack} style={s.backBtn}>
+                {/* <TouchableOpacity onPress={onBack} style={s.backBtn}>
                     <Ionicons name="arrow-back" size={22} color="#1a1a1a" />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 <Text style={s.headerTitle}>Create a QC Report</Text>
             </View>
             <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10 }}>
@@ -176,11 +181,11 @@ function QuestionnaireScreen({ onBack, questionIndex, answers, onAnswer, onNext 
 
     return (
         <View style={s.container}>
-            <View style={s.header}>
+            {/* <View style={s.header}>
                 <TouchableOpacity onPress={onBack} style={s.backBtn}>
                     <Ionicons name="arrow-back" size={22} color="#1a1a1a" />
                 </TouchableOpacity>
-            </View>
+            </View> */}
             <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 40 }}>
                 <Text style={s.progressText}>Question {questionIndex + 1}/{TOTAL_QUESTIONS}</Text>
                 <Text style={s.questionText}>{q.text}</Text>
@@ -220,9 +225,9 @@ function OtherAreasScreen({ onBack, onNext }) {
     return (
         <View style={s.container}>
             <View style={s.header}>
-                <TouchableOpacity onPress={onBack} style={s.backBtn}>
+                {/* <TouchableOpacity onPress={onBack} style={s.backBtn}>
                     <Ionicons name="arrow-back" size={22} color="#1a1a1a" />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 <Text style={s.headerTitle}>Other areas</Text>
             </View>
             <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}>
@@ -237,8 +242,7 @@ function OtherAreasScreen({ onBack, onNext }) {
                             style={s.textArea}
                             multiline
                             textAlignVertical="top"
-                            placeholder="Type here..."
-                            placeholderTextColor="#9ca3af"
+                            placeholderTextColor="#9E9FAA"
                             value={value}
                             onChangeText={setter}
                         />
@@ -259,9 +263,9 @@ function SummaryScreen({ onBack, answers, onNext }) {
     return (
         <View style={s.container}>
             <View style={s.header}>
-                <TouchableOpacity onPress={onBack} style={s.backBtn}>
+                {/* <TouchableOpacity onPress={onBack} style={s.backBtn}>
                     <Ionicons name="arrow-back" size={22} color="#1a1a1a" />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 <Text style={s.headerTitle}>Summary</Text>
             </View>
             <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}>
@@ -307,11 +311,11 @@ function RecordCommentsScreen({ onBack, onComplete }) {
 
     return (
         <View style={s.container}>
-            <View style={s.header}>
+            {/* <View style={s.header}>
                 <TouchableOpacity onPress={onBack} style={s.backBtn}>
                     <Ionicons name="arrow-back" size={22} color="#1a1a1a" />
                 </TouchableOpacity>
-            </View>
+            </View> */}
             <Text style={s.recordTitle}>Record final comments</Text>
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Text style={s.timer}>{fmt(seconds)}</Text>
@@ -355,7 +359,7 @@ function CongratsScreen({ onGoHome }) {
 }
 
 // ─── Root Orchestrator ────────────────────────────────────────────────────────
-export default function QcReportFlow() {
+export default function QcReportFlow({ onBack }) {
     // screens: 'myReports' | 'create' | 'question' | 'otherAreas' | 'summary' | 'record' | 'congrats'
     const [screen, setScreen] = useState('create');
     const [questionIndex, setQuestionIndex] = useState(0);
@@ -380,7 +384,15 @@ export default function QcReportFlow() {
     };
 
     switch (screen) {
-   
+     
+        case 'myReports':
+            return (
+                <MyReportsScreen
+                    onCreateNew={() => setScreen('create')}
+                    onBack={onBack}
+                />
+            );
+
         case 'create':
             return (
                 <CreateQcReport
@@ -426,7 +438,7 @@ export default function QcReportFlow() {
             );
 
         case 'congrats':
-            return <CongratsScreen onGoHome={() => setScreen('reports')} />;
+            return <CongratsScreen onGoHome={() => setScreen('myReports')} />;
 
         default:
             return null;
@@ -438,93 +450,81 @@ const s = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff' },
     header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 16, paddingBottom: 20, gap: 10 },
     backBtn: { marginRight: 2 },
-    headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#1a1a1a' },
+    headerTitle: { fontSize: 24, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a' },
     bottomContainer: { paddingHorizontal: 20, paddingBottom: 40, paddingTop: 10, backgroundColor: '#fff' },
 
     primaryBtn: { backgroundColor: '#2F5FE5', paddingVertical: 18, borderRadius: 30, alignItems: 'center' },
     sBtn: { backgroundColor: '#1BAC4B', paddingVertical: 18, borderRadius: 30, alignItems: 'center' },
     primaryBtnDisabled: { backgroundColor: '#93C5FD' },
-    primaryBtnText: { fontSize: 16, color: '#fff', fontWeight: 'bold' },
+    primaryBtnText: { fontSize: 16, fontFamily: 'Urbanist_700Bold', color: '#fff' },
 
-    // Search
     searchContainer: {
         flexDirection: 'row', alignItems: 'center', marginHorizontal: 16,
-        borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12,
+        borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12,backgroundColor:"#FAFAFA",
         paddingHorizontal: 16, paddingVertical: 14, marginBottom: 24,
     },
-    searchInput: { flex: 1, fontSize: 16, color: '#000' },
+    searchInput: { flex: 1, fontSize: 16, fontFamily: 'Urbanist_400Regular', color: '#000' },
 
-    // Report list card
     reportCard: {
-        flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff',
+        flexDirection: 'row', alignItems: 'center', backgroundColor:"#FAFAFA",
         borderRadius: 16, paddingVertical: 16, paddingHorizontal: 16, marginBottom: 14,
         shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05,
         shadowRadius: 8, elevation: 2,
     },
-    reportName: { fontSize: 14, fontWeight: 'bold', color: '#1a1a1a' },
-    reportMeta: { fontSize: 12, color: '#6B7280', lineHeight: 18 },
-    reportVenue: { fontSize: 13, fontWeight: 'bold', color: '#1a1a1a' },
+    reportName: { fontSize: 14, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a' },
+    reportMeta: { fontSize: 12, fontFamily: 'Urbanist_400Regular', color: '#6B7280', lineHeight: 18 },
+    reportVenue: { fontSize: 13, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a' },
     scoreBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6 },
-    scoreText: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
+    scoreText: { fontFamily: 'Urbanist_700Bold', color: '#fff', fontSize: 12 },
 
-    // Create report dropdowns
     dropdown: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
         borderWidth: 1, borderColor: '#6B7280', borderRadius: 12,
         paddingHorizontal: 16, paddingVertical: 18, marginBottom: 20,
     },
-    dropdownText: { fontSize: 16, color: '#1a1a1a', fontWeight: '500' },
-    placeholderText: { color: '#6B7280', fontWeight: 'normal' },
+    dropdownText: { fontSize: 16, fontFamily: 'Urbanist_500Medium', color: '#1a1a1a' },
+    placeholderText: { color: '#6B7280', fontFamily: 'Urbanist_400Regular' },
     iconCircle: {
         width: 28, height: 28, borderRadius: 14, borderWidth: 1.5,
         borderColor: '#1a1a1a', alignItems: 'center', justifyContent: 'center',
     },
 
-    // Questionnaire
-    progressText: { fontSize: 14, fontWeight: 'bold', color: '#3B82F6', marginBottom: 8 },
-    questionText: { fontSize: 22, fontWeight: 'bold', color: '#1a1a1a', marginBottom: 32 },
+    progressText: { fontSize: 14, fontFamily: 'Urbanist_700Bold', color: '#3B82F6', marginVertical: 8 },
+    questionText: { fontSize: 24, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a', marginBottom: 32 },
     optionBtn: {
         paddingVertical: 18, borderRadius: 12, borderWidth: 1.5,
-        alignItems: 'center', borderColor: '#9CA3AF', backgroundColor: '#fff',
+        alignItems: 'center', borderColor: '#9E9FAA', backgroundColor:"#FAFAFA",
     },
     optionBtnSelected: { borderColor: '#3B82F6' },
-    optionText: { fontSize: 16, fontWeight: 'bold', color: '#1a1a1a' },
+    optionText: { fontSize: 16, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a' },
     optionTextSelected: { color: '#3B82F6' },
 
-    // Other areas
-    areaLabel: { fontSize: 14, color: '#3B82F6', fontWeight: 'bold', marginBottom: 8 },
+    areaLabel: { fontSize: 16, fontFamily: 'Urbanist_700Bold', color: '#3B82F6', marginBottom: 8 },
     textArea: {
-        borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 12,
-        height: 120, padding: 16, fontSize: 15, color: '#1a1a1a',
+        borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 12,backgroundColor:'#FAFAFA',
+        height: 120, padding: 20, fontSize: 15, fontFamily: 'Urbanist_400Regular', color: '#1a1a1a',
     },
 
-    // Summary
-    summaryQuestion: { fontSize: 15, color: '#374151', fontWeight: '500', marginBottom: 10 },
+    summaryQuestion: { fontSize: 16, fontFamily: 'Urbanist_500Medium', color: '#374151', marginBottom: 10 },
     radioOuter: {
         width: 20, height: 20, borderRadius: 10, borderWidth: 2,
         borderColor: '#D1D5DB', justifyContent: 'center', alignItems: 'center', marginRight: 6,
     },
     radioOuterSelected: { borderColor: '#3B82F6' },
     radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#3B82F6' },
-    radioLabel: { fontSize: 14, color: '#4B5563' },
+    radioLabel: { fontSize: 14, fontFamily: 'Urbanist_400Regular', color: '#4B5563' },
 
-    // Record comments
-    recordTitle: { fontSize: 22, fontWeight: 'bold', color: '#1a1a1a', textAlign: 'center', marginTop: 8 },
-    timer: { fontSize: 56, color: '#9CA3AF', fontWeight: '300', marginBottom: 60 },
+    recordTitle: { fontSize: 24, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a', textAlign: 'center', marginTop: 18 },
+    timer: { fontSize: 56, fontFamily: 'Urbanist_700Bold', color: '#9E9FAA', marginBottom: 60 },
     micOuter: { width: 200, height: 200, borderRadius: 100, backgroundColor: '#93C5FD', justifyContent: 'center', alignItems: 'center' },
     micMid: { width: 156, height: 156, borderRadius: 78, backgroundColor: '#60A5FA', justifyContent: 'center', alignItems: 'center' },
     micInner: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#3B82F6', justifyContent: 'center', alignItems: 'center' },
 
-    // Congrats
     congratsCard: {
-        backgroundColor: '#fff', borderRadius: 24, padding: 28, width: '100%',
-        alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1, shadowRadius: 16, elevation: 6,
+        backgroundColor:"#FAFAFA", borderRadius: 24, padding: 28, width: '100%',
+        alignItems: 'center', shadowColor: '#000',
     },
-    congratsTitle: { fontSize: 22, fontWeight: 'bold', color: '#1BAC4B', marginTop: 8 },
-    congratsSub: { fontSize: 14,fontWeight:'medium', color: '#6B7280', marginTop: 4 },
-    avatar:{
-        width:130,
-        height:130,
-    }
+    congratsTitle: { fontSize: 24, fontFamily: 'Urbanist_700Bold', color: '#1BAC4B', marginTop: 8 },
+    congratsSub: { fontSize: 16, fontFamily: 'Urbanist_700Bold', color: '#212121', marginTop: 14 },
+    avatar: { width: 160, height: 160 },
 });

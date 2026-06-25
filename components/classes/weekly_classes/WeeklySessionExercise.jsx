@@ -168,10 +168,10 @@ const styles = StyleSheet.create({
     backButton: { padding: 4 },
     headerTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
         color: '#fff',
         flex: 1,
         textAlign: 'center',
+        fontFamily: 'Urbanist_700Bold',
     },
     content: {
         paddingHorizontal: 16,
@@ -203,12 +203,13 @@ const styles = StyleSheet.create({
     },
     durationLabel: {
         fontSize: 16,
-        fontWeight: 'bold',
         color: '#2563EB',
+        fontFamily: 'Urbanist_700Bold',
     },
     durationValue: {
         fontSize: 16,
         color: '#3B82F6',
+        fontFamily: 'Urbanist_400Regular',
     },
     searchButton: {
         borderWidth: 1.5,
@@ -219,32 +220,35 @@ const styles = StyleSheet.create({
     },
     searchButtonText: {
         color: '#2563EB',
-        fontWeight: 'bold',
         fontSize: 15,
+        fontFamily: 'Urbanist_700Bold',
     },
     sectionTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
         color: '#1a1a1a',
         marginBottom: 8,
         marginTop: 8,
+        fontFamily: 'Urbanist_700Bold',
     },
     paragraph: {
         fontSize: 14,
         color: '#6B7280',
         lineHeight: 22,
         marginBottom: 4,
+        fontFamily: 'Urbanist_400Regular',
     },
     bulletItem: {
         fontSize: 14,
         color: '#6B7280',
         lineHeight: 24,
         marginLeft: 8,
+        fontFamily: 'Urbanist_400Regular',
     },
     numberedItem: {
         fontSize: 14,
         color: '#6B7280',
         lineHeight: 24,
         marginLeft: 8,
+        fontFamily: 'Urbanist_400Regular',
     },
 });

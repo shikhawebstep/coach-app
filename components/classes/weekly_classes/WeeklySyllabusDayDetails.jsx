@@ -72,22 +72,38 @@ export default function WeeklySyllabusDayDetails({ onBack, onSessionItemSelect, 
                 </View>
 
                 {/* ── Level Pill Tabs ── */}
-                {availableLevels.length > 0 && (
-                    <View style={styles.tabsContainer}>
-                        {availableLevels.map(level => (
-                            <TouchableOpacity
-                                key={level}
-                                style={[styles.tab, activeTab === level ? styles.tabActive : styles.tabInactive]}
-                                onPress={() => setActiveTab(level)}
-                                activeOpacity={0.8}
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.tabsContainer}
+                >
+                    {availableLevels.map(level => (
+                        <TouchableOpacity
+                            key={level}
+                            style={[
+                                styles.tab,
+                                activeTab === level
+                                    ? styles.tabActive
+                                    : styles.tabInactive
+                            ]}
+                            onPress={() => setActiveTab(level)}
+                            activeOpacity={0.8}
+                        >
+                            <Text
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                                style={[
+                                    styles.tabText,
+                                    activeTab === level
+                                        ? styles.tabTextActive
+                                        : styles.tabTextInactive
+                                ]}
                             >
-                                <Text style={[styles.tabText, activeTab === level ? styles.tabTextActive : styles.tabTextInactive]}>
-                                    {LEVEL_LABELS[level]}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                )}
+                                {LEVEL_LABELS[level]}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
 
                 <View style={styles.body}>
 
@@ -229,49 +245,49 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 20,
-        fontWeight: '700',
         color: '#fff',
         letterSpacing: 0.3,
+        fontFamily: 'Urbanist_700Bold',
     },
 
     /* ── Level Tabs ── */
     tabsContainer: {
-        flexDirection: 'row',
-        backgroundColor: '#F3F4F6',
-        borderRadius: 20,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
         gap: 10,
-        marginHorizontal: 14,
-        marginTop: 16,
-        marginBottom: 18,
-        padding: 8,
-        overflow: 'scroll',
     },
+
     tab: {
-        flex: 1,
+        minWidth: 120,
+        paddingHorizontal: 16,
         paddingVertical: 10,
         borderRadius: 20,
         justifyContent: 'center',
         alignItems: 'center',
+        flexShrink: 0,
     },
+
     tabActive: {
         backgroundColor: '#3B82F6',
     },
+
     tabInactive: {
-        backgroundColor: 'transparent',
+        backgroundColor: '#F3F4F6',
     },
+
     tabText: {
         fontSize: 13,
+        fontFamily: 'Urbanist_600SemiBold',
         textAlign: 'center',
-        fontWeight: '600',
-
     },
+
     tabTextActive: {
         color: '#fff',
     },
+
     tabTextInactive: {
         color: '#1a1a1a',
     },
-
     /* ── Body ── */
     body: {
         paddingHorizontal: 14,
@@ -300,9 +316,9 @@ const styles = StyleSheet.create({
     },
     bannerPlaceholderText: {
         fontSize: 22,
-        fontWeight: '900',
         color: '#15803d',
         letterSpacing: 1,
+        fontFamily: 'Urbanist_700Bold',
     },
 
     /* ── Skill Section ── */
@@ -311,9 +327,9 @@ const styles = StyleSheet.create({
     },
     skillOfDayLabel: {
         fontSize: 17,
-        fontWeight: '800',
         color: '#111827',
         marginBottom: 4,
+        fontFamily: 'Urbanist_700Bold',
     },
     skillNameRow: {
         flexDirection: 'row',
@@ -324,7 +340,7 @@ const styles = StyleSheet.create({
     skillName: {
         fontSize: 15,
         color: '#374151',
-        fontWeight: '500',
+        fontFamily: 'Urbanist_600SemiBold',
     },
     soundBtn: {
         padding: 2,
@@ -333,6 +349,7 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#6B7280',
         lineHeight: 19,
+        fontFamily: 'Urbanist_400Regular',
     },
 
     /* ── Player Photo ── */
@@ -357,7 +374,7 @@ const styles = StyleSheet.create({
     playerName: {
         fontSize: 14,
         color: '#6B7280',
-        fontWeight: '600',
+        fontFamily: 'Urbanist_600SemiBold',
     },
 
     /* ── Session Plan Header ── */
@@ -374,8 +391,8 @@ const styles = StyleSheet.create({
     },
     sessionTitle: {
         fontSize: 17,
-        fontWeight: '800',
         color: '#111827',
+        fontFamily: 'Urbanist_700Bold',
     },
     durationPill: {
         flexDirection: 'row',
@@ -389,7 +406,7 @@ const styles = StyleSheet.create({
     durationText: {
         fontSize: 12,
         color: '#6B7280',
-        fontWeight: '500',
+        fontFamily: 'Urbanist_600SemiBold',
     },
     downloadBtn: {
         width: 34,
@@ -474,20 +491,21 @@ const styles = StyleSheet.create({
     },
     exTitle: {
         fontSize: 13,
-        fontWeight: '700',
         color: '#111827',
         marginBottom: 4,
         lineHeight: 18,
+        fontFamily: 'Urbanist_700Bold',
     },
     exDesc: {
         fontSize: 11.5,
         color: '#6B7280',
         lineHeight: 16,
         marginBottom: 6,
+        fontFamily: 'Urbanist_400Regular',
     },
     exDuration: {
         fontSize: 11.5,
-        fontWeight: '700',
         color: '#374151',
+        fontFamily: 'Urbanist_700Bold',
     },
 });

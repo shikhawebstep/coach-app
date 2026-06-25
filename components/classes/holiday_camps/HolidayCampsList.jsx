@@ -32,11 +32,13 @@ export default function HolidayCampsList({ onBack, onCampSelect }) {
         }
     };
 
- const filteredVenues = data.filter((venue) =>
-    venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    venue.area.toLowerCase().includes(searchQuery.toLowerCase())
-);
+    const filteredVenues = data.filter((venue) =>
+        venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        venue.area.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
+
+    console.log('data', data)
     return (
         <View style={styles.container}>
             {/* Header */}
@@ -73,30 +75,46 @@ export default function HolidayCampsList({ onBack, onCampSelect }) {
                 ) : filteredVenues.length === 0 ? (
                     <Text style={styles.emptyText}>No venues found.</Text>
                 ) : (
-                    filteredVenues.map((venue) => (
-                      <TouchableOpacity
-                        key={venue.id}
-                        style={styles.card}
-                        onPress={() => onCampSelect(venue.id)}
-                    >
-                        <View style={styles.cardInfo}>
-                            <Text style={styles.cardTitle}>{venue.name}</Text>
-                        </View>
-                        <View style={styles.cardDetails}>
-                            <Text style={styles.cardText}>{venue?.date || '-'}</Text>
-                            <Text style={styles.cardText}>{venue?.Time || '-'}</Text>
-                        </View>
-                        <View style={styles.cardDuration}>
-                            <Text style={styles.durationText}>{venue?.duration || '-'}</Text>
-                        </View>
-                        <View style={styles.cardStatusContainer}>
-                            <View style={[styles.statusBadge, venue?.status === 'Pending' ? styles.statusPending : styles.statusPending ]}>
-                                <Text style={styles.statusText}>{venue?.status || 'Pending'}</Text>
-                            </View>
-                            <Ionicons name="chevron-forward" size={20} color="#000" style={styles.chevron} />
-                        </View>
-                    </TouchableOpacity>
-                    ))
+                    filteredVenues.map((venue) => {
+                        const campDate = venue.holidayCamps?.[0]?.holidayCampDates?.[0];
+                        const schedule = venue.classSchedules?.[0];
+                        const totalDays = campDate?.totalDays;
+
+                        const formatDate = (dateStr) => {
+                            if (!dateStr) return '-';
+                            const date = new Date(dateStr);
+                            return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+                        };
+
+                        const timeRange = schedule
+                            ? `${schedule.startTime} - ${schedule.endTime}`
+                            : '-';
+
+                        return (
+                            <TouchableOpacity
+                                key={venue.id}
+                                style={styles.card}
+                                onPress={() => onCampSelect(venue.id)}
+                            >
+                                <View style={styles.cardInfo}>
+                                    <Text style={styles.cardTitle}>{venue.name}</Text>
+                                </View>
+                                <View style={styles.cardDetails}>
+                                    <Text style={styles.cardText}>{formatDate(campDate?.startDate)}</Text>
+                                    <Text style={styles.cardText}>{timeRange}</Text>
+                                </View>
+                                <View style={styles.cardDuration}>
+                                    <Text style={styles.durationText}>{totalDays ? `${totalDays} Days` : '-'}</Text>
+                                </View>
+                                <View style={styles.cardStatusContainer}>
+                                    <View style={[styles.statusBadge, styles.statusPending]}>
+                                        <Text style={styles.statusText}>Pending</Text>
+                                    </View>
+                                    <Ionicons name="chevron-forward" size={20} color="#000" style={styles.chevron} />
+                                </View>
+                            </TouchableOpacity>
+                        );
+                    })
                 )}
 
                 <View style={{ height: 40 }} />
@@ -122,7 +140,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     searchContainer: {
@@ -143,6 +161,7 @@ const styles = StyleSheet.create({
     searchInput: {
         flex: 1,
         fontSize: 16,
+        fontFamily: 'Urbanist_400Regular',
         color: '#000',
     },
     listContainer: {
@@ -151,7 +170,7 @@ const styles = StyleSheet.create({
     },
     listTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         marginBottom: 16,
         color: '#1a1a1a',
     },
@@ -177,7 +196,7 @@ const styles = StyleSheet.create({
     },
     cardTitle: {
         fontSize: 14,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
         lineHeight: 20,
     },
@@ -187,6 +206,7 @@ const styles = StyleSheet.create({
     },
     cardText: {
         fontSize: 13,
+        fontFamily: 'Urbanist_400Regular',
         color: '#666',
         lineHeight: 18,
     },
@@ -197,7 +217,7 @@ const styles = StyleSheet.create({
     },
     durationText: {
         fontSize: 13,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     cardStatusContainer: {
@@ -215,7 +235,7 @@ const styles = StyleSheet.create({
     },
     statusText: {
         fontSize: 13,
-        fontWeight: '600',
+        fontFamily: 'Urbanist_600SemiBold',
         color: '#1a1a1a',
     },
     chevron: {

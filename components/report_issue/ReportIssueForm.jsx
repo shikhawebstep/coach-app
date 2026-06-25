@@ -131,20 +131,19 @@ export default function ReportIssueForm({ onBack }) {
                 <Text style={styles.headerTitle}>New report</Text>
             </View>
 
-            <ScrollView 
-                showsVerticalScrollIndicator={false} 
+            <ScrollView
+                showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.content}
                 keyboardShouldPersistTaps="handled"
             >
                 {/* Search Bar & Dropdown */}
-                <Text style={styles.label}>Venue</Text>
                 <View style={{ zIndex: 10, position: 'relative' }}>
                     <View style={styles.searchContainer}>
-                        <Ionicons name="search-outline" size={20} color="#a0a0a0" style={styles.searchIcon} />
+                        <Ionicons name="search-outline" size={20} color="#797A88" style={styles.searchIcon} />
                         <TextInput
                             style={styles.searchInput}
                             placeholder="Select a venue..."
-                            placeholderTextColor="#a0a0a0"
+                            placeholderTextColor="#797A88"
                             value={searchQuery}
                             onChangeText={handleSearchChange}
                             onFocus={() => setIsDropdownVisible(true)}
@@ -170,7 +169,6 @@ export default function ReportIssueForm({ onBack }) {
                 </View>
 
                 {/* Filters */}
-                <Text style={styles.label}>Category</Text>
                 <View style={styles.filtersContainer}>
                     {CATEGORIES.map(category => (
                         <TouchableOpacity
@@ -178,18 +176,27 @@ export default function ReportIssueForm({ onBack }) {
                             style={styles.checkboxItem}
                             onPress={() => toggleCategory(category)}
                         >
-                            <Ionicons
-                                name={selectedCategory === category ? "checkbox" : "square-outline"}
-                                size={24}
-                                color={selectedCategory === category ? "#3B82F6" : "#A1A1AA"}
-                            />
+                            <View style={{
+                                width: 24,
+                                height: 24,
+                                borderRadius: 6,
+                                borderWidth: 2,
+                                borderColor: selectedCategory === category ? "#3B82F6" : "#A1A1AA",
+                                backgroundColor: selectedCategory === category ? "#3B82F6" : "transparent",
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}>
+                                {selectedCategory === category && (
+                                    <Ionicons name="checkmark" size={16} color="#fff" />
+                                )}
+                            </View>
                             <Text style={styles.checkboxText}>{category}</Text>
                         </TouchableOpacity>
                     ))}
                 </View>
 
                 {/* Title Input */}
-                <Text style={styles.label}>Title</Text>
+                {/* <Text style={styles.label}>Title</Text>
                 <View style={styles.titleInputContainer}>
                     <TextInput
                         style={styles.titleInput}
@@ -198,7 +205,7 @@ export default function ReportIssueForm({ onBack }) {
                         value={title}
                         onChangeText={setTitle}
                     />
-                </View>
+                </View> */}
 
                 {/* Report Issue Textarea */}
                 <Text style={styles.label}>Report issue</Text>
@@ -213,8 +220,8 @@ export default function ReportIssueForm({ onBack }) {
                 </View>
 
                 {/* Submit Button */}
-                <TouchableOpacity 
-                    style={[styles.submitButton, submitting && styles.submitButtonDisabled]} 
+                <TouchableOpacity
+                    style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
                     onPress={handleSubmit}
                     disabled={submitting}
                 >
@@ -246,8 +253,8 @@ const styles = StyleSheet.create({
         marginRight: 12,
     },
     headerTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
+        fontSize: 26,
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     content: {
@@ -256,12 +263,12 @@ const styles = StyleSheet.create({
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: '#F6F6F7',
         borderWidth: 1,
-        borderColor: '#D1D5DB',
-        borderRadius: 8,
+        borderColor: '#9E9FAA',
+        borderRadius: 12,
         paddingHorizontal: 16,
-        paddingVertical: 14,
+        paddingVertical: 10,
         marginBottom: 20,
     },
     searchIcon: {
@@ -270,6 +277,7 @@ const styles = StyleSheet.create({
     searchInput: {
         flex: 1,
         fontSize: 16,
+        fontFamily: 'Urbanist_400Regular',
         color: '#000',
     },
     dropdown: {
@@ -279,8 +287,8 @@ const styles = StyleSheet.create({
         right: 0,
         backgroundColor: '#fff',
         borderWidth: 1,
-        borderColor: '#D1D5DB',
-        borderRadius: 8,
+        borderColor: '#9E9FAA',
+        borderRadius: 10,
         maxHeight: 200,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -297,11 +305,12 @@ const styles = StyleSheet.create({
     },
     dropdownItemText: {
         fontSize: 16,
+        fontFamily: 'Urbanist_500Medium',
         color: '#1f2937',
-        fontWeight: '500',
     },
     dropdownItemSub: {
         fontSize: 12,
+        fontFamily: 'Urbanist_400Regular',
         color: '#6b7280',
         marginTop: 2,
     },
@@ -319,45 +328,50 @@ const styles = StyleSheet.create({
     checkboxText: {
         marginLeft: 8,
         fontSize: 14,
-        color: '#4B5563',
+        fontFamily: 'Urbanist_700Bold',
+        color: '#5F5F6D',
     },
     label: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#6B7280',
+        fontSize: 14,
+        fontFamily: 'Urbanist_700Bold',
+        color: '#797A88',
         marginBottom: 8,
     },
     titleInputContainer: {
         borderWidth: 1,
-        borderColor: '#D1D5DB',
-        borderRadius: 8,
-        backgroundColor: '#fff',
+        borderColor: '#9E9FAA',
+        borderRadius: 12,
+        backgroundColor: '#F6F6F7',
         marginBottom: 20,
         paddingHorizontal: 16,
         paddingVertical: 14,
     },
     titleInput: {
         fontSize: 16,
+        fontFamily: 'Urbanist_400Regular',
         color: '#1a1a1a',
     },
     textAreaContainer: {
         borderWidth: 1,
-        borderColor: '#D1D5DB',
-        borderRadius: 8,
-        backgroundColor: '#fff',
-        marginBottom: 24,
+        borderColor: '#9E9FAA',
+        borderRadius: 12,
+        backgroundColor: '#F6F6F7',
+        marginBottom: 20,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
         height: 180,
     },
     textArea: {
         paddingHorizontal: 16,
         paddingTop: 14,
         fontSize: 16,
+        fontFamily: 'Urbanist_400Regular',
         color: '#1a1a1a',
         flex: 1,
     },
     submitButton: {
-        backgroundColor: '#2563EB',
-        paddingVertical: 16,
+        backgroundColor: '#2F5FE5',
+        paddingVertical: 22,
         borderRadius: 30,
         alignItems: 'center',
         justifyContent: 'center',
@@ -368,6 +382,6 @@ const styles = StyleSheet.create({
     submitButtonText: {
         color: '#fff',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
 });

@@ -144,12 +144,14 @@ export default function PrivateStudentClassDetails({ bookingId, onBack, onNotesC
 
     const calendarDays = generateCalendarGrid();
 
-    const getStudentNames = (bookingData) => {
-        if (bookingData?.students && bookingData.students.length > 0) {
-            return bookingData.students.map(s => `${s.studentFirstName || ''} ${s.studentLastName || ''}`.trim()).join(', ');
-        }
-        return bookingData?.lead?.childName || bookingData?.lead?.parentName || 'No Name';
-    };
+  const getStudentNames = (bookingData) => {
+    if (bookingData?.students?.length > 0) {
+        const student = bookingData.students[0];
+        return `${student.studentFirstName || ''} ${student.studentLastName || ''}`.trim();
+    }
+
+    return bookingData?.lead?.childName || bookingData?.lead?.parentName || 'No Name';
+};
 
     const formatDate = (dateStr) => {
         if (!dateStr) return '-';
@@ -466,7 +468,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 22,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     headerRight: {
@@ -482,7 +484,7 @@ const styles = StyleSheet.create({
     },
     u5Text: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 12,
     },
     statusBadgeCompleted: {
@@ -493,7 +495,7 @@ const styles = StyleSheet.create({
     },
     statusTextWhite: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 12,
     },
     scrollContent: {
@@ -532,23 +534,24 @@ const styles = StyleSheet.create({
     },
     infoLabel: {
         fontSize: 13,
+        fontFamily: 'Urbanist_400Regular',
         color: '#666',
         marginBottom: 4,
     },
     infoValue: {
         fontSize: 14,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     changeDateBtn: {
-        backgroundColor: '#FF4C4C', // Red color
+        backgroundColor: '#FF4C4C',
         paddingHorizontal: 12,
         paddingVertical: 8,
         borderRadius: 8,
     },
     changeDateText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 13,
     },
     mapContainer: {
@@ -566,17 +569,18 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingRight: 16,
-        marginBottom:20,
+        marginBottom: 20,
     },
     locationText: {
         marginLeft: 8,
         fontSize: 13,
+        fontFamily: 'Urbanist_400Regular',
         color: '#4B5563',
         lineHeight: 18,
     },
     sectionTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#4B5563',
         marginBottom: 16,
     },
@@ -589,13 +593,13 @@ const styles = StyleSheet.create({
     },
     inputLabel: {
         fontSize: 15,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#4B5563',
         marginBottom: 8,
     },
     inputContainer: {
         borderWidth: 1,
-        borderColor: '#9CA3AF', // Gray border matching the screenshot
+        borderColor: '#9CA3AF',
         borderRadius: 8,
         backgroundColor: '#FAFAFA',
     },
@@ -603,6 +607,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 12,
         fontSize: 16,
+        fontFamily: 'Urbanist_400Regular',
         color: '#1a1a1a',
     },
     textAreaContainer: {
@@ -623,7 +628,7 @@ const styles = StyleSheet.create({
     },
     viewNotesBtnText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 16,
         marginRight: 8,
     },
@@ -641,7 +646,7 @@ const styles = StyleSheet.create({
     },
     statusTextBlack: {
         color: '#1a1a1a',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 12,
     },
     modalOverlay: {
@@ -671,7 +676,7 @@ const styles = StyleSheet.create({
     },
     modalTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     modalCloseBtn: {
@@ -686,7 +691,7 @@ const styles = StyleSheet.create({
     },
     monthText: {
         fontSize: 16,
-        fontWeight: '600',
+        fontFamily: 'Urbanist_600SemiBold',
         color: '#4B5563',
         minWidth: 140,
         textAlign: 'center',
@@ -710,7 +715,7 @@ const styles = StyleSheet.create({
         width: 36,
         textAlign: 'center',
         fontSize: 13,
-        fontWeight: '500',
+        fontFamily: 'Urbanist_500Medium',
         color: '#9CA3AF',
     },
     daysGrid: {
@@ -736,16 +741,16 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     dayTextContainerSelected: {
-        backgroundColor: '#2b66e3', // Matches Royal Blue in screenshot
+        backgroundColor: '#2b66e3',
     },
     dayText: {
         fontSize: 14,
-        fontWeight: '500',
+        fontFamily: 'Urbanist_500Medium',
         color: '#1a1a1a',
     },
     dayTextSelected: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
     modalSelectBtn: {
         backgroundColor: '#2b66e3',
@@ -759,6 +764,6 @@ const styles = StyleSheet.create({
     modalSelectBtnText: {
         color: '#fff',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
 });

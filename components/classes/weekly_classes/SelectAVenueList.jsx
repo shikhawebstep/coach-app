@@ -17,6 +17,8 @@ export default function SelectAVenueList({ venueId, onBack, onSessionSelect }) {
         else setLoading(false);
     }, [venueId]);
 
+    console.log('termsByClass', termsByClass)
+
     const fetchClasses = async () => {
         try {
             setLoading(true);
@@ -72,72 +74,79 @@ export default function SelectAVenueList({ venueId, onBack, onSessionSelect }) {
         setActiveTermTab(terms.length > 0 ? terms[0].termId : null);
     };
 
-   const renderList = () => {
-    if (loading) return <ActivityIndicator size="large" color="#3B82F6" style={{ marginTop: 40 }} />;
+    const renderList = () => {
+        if (loading) return <ActivityIndicator size="large" color="#3B82F6" style={{ marginTop: 40 }} />;
+        const formatTimeRange = (startTime, endTime) => {
+            if (!startTime || !endTime) return '';
+            // strip "AM"/"PM" from the start time, keep it on the end time
+            const startStripped = startTime.replace(/\s*(AM|PM)$/i, '');
+            return `${startStripped} - ${endTime}`;
+        };
+        const terms = termsByClass[activeClassTab] || [];
+        const activeTerm = terms.find(t => t.termId === activeTermTab);
+        const sessions = activeTerm?.sessions || [];
 
-    const terms = termsByClass[activeClassTab] || [];
-    const activeTerm = terms.find(t => t.termId === activeTermTab);
-    const sessions = activeTerm?.sessions || [];
+        const activeClass = classes.find(c => c.id === activeClassTab); // ← add this
+        const timeLabel = activeClass
+            ? formatTimeRange(activeClass.startTime, activeClass.endTime)
+            : '';
 
-    const activeClass = classes.find(c => c.id === activeClassTab); // ← add this
-    const timeLabel = activeClass
-        ? `${activeClass.startTime} - ${activeClass.endTime}`
-        : '';
+        const displaySessions = sessions.filter(s =>
+            !searchQuery || s.sessionPlan?.groupName?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
 
-    const displaySessions = sessions.filter(s =>
-        !searchQuery || s.sessionPlan?.groupName?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+        if (displaySessions.length === 0) {
+            return <Text style={{ textAlign: 'center', marginTop: 20, color: '#666' }}>No sessions found.</Text>;
+        }
+        const formatDate = (dateStr) => {
+            const [year, month, day] = dateStr.split('-').map(Number);
+            const suffix = day % 10 === 1 && day !== 11 ? 'st'
+                : day % 10 === 2 && day !== 12 ? 'nd'
+                    : day % 10 === 3 && day !== 13 ? 'rd'
+                        : 'th';
+            const monthName = new Date(year, month - 1, day).toLocaleString('en-GB', { month: 'short' });
+            return `${day}${suffix} ${monthName} ${year}`;
+        };
 
-    if (displaySessions.length === 0) {
-        return <Text style={{ textAlign: 'center', marginTop: 20, color: '#666' }}>No sessions found.</Text>;
-    }
-    const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    const day = date.getDate();
-    const suffix = day % 10 === 1 && day !== 11 ? 'st'
-        : day % 10 === 2 && day !== 12 ? 'nd'
-        : day % 10 === 3 && day !== 13 ? 'rd'
-        : 'th';
-    const month = date.toLocaleString('en-GB', { month: 'long' });
-    const year = date.getFullYear();
-    return `${day}${suffix} ${month} ${year}`;
-};
 
-    return (
-        <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
-            {displaySessions.map((item, index) => {
-                const isCompleted = item.sessionPlan?.status === 'completed';
-                const sessionName = item.sessionPlan?.groupName || `Session ${index + 1}`;
-                return (
-                    <TouchableOpacity
-                        key={item.sessionPlan?.mapId ?? index}
-                        style={styles.card}
-                        onPress={() => onSessionSelect(item.sessionPlan?.mapId)}
-                    >
-                        <View style={styles.cardInfo}>
-                            <Text style={styles.cardTitle} numberOfLines={1}>Session {index + 1}</Text>
-                        </View>
-                        <View style={styles.cardDetails}>
-                            <Text style={styles.cardText}>{formatDate(item.sessionDate)}</Text>
-                            <Text style={styles.cardText}>{timeLabel}</Text>  {/* ← add this */}
-                        </View>
-                        <View style={styles.cardInfo}>
-                            <Text style={styles.cardTitle} numberOfLines={1}>{sessionName}</Text>
-                        </View>
-                        <View style={styles.cardStatusContainer}>
-                            <View style={[styles.statusBadge, isCompleted ? styles.statusCompleted : styles.statusPending]}>
-                                <Text style={[styles.statusText, isCompleted ? styles.statusTextWhite : styles.statusTextBlack]}>
-                                    {isCompleted ? 'Completed' : 'Pending'}
-                                </Text>
+        return (
+            <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
+                {displaySessions.map((item, index) => {
+                    const isCompleted = item.sessionPlan?.status === 'completed';
+                    const playerName = item.sessionPlan?.player || '—';
+                    return (
+                        <TouchableOpacity
+                            key={item.sessionPlan?.mapId ?? index}
+                            style={styles.card}
+                            onPress={() => onSessionSelect(item.sessionPlan?.mapId)}
+                        >
+                            <View style={styles.colSession}>
+                                <Text style={styles.sessionLabel}>Session {index + 1}</Text>
                             </View>
-                            <Ionicons name="chevron-forward" size={20} color="#000" style={styles.chevron} />
-                        </View>
-                    </TouchableOpacity>
-                );
-            })}
-        </ScrollView>
-    );
-};
+
+                            <View style={styles.colDate}>
+                                <Text style={styles.cardText}>{formatDate(item.sessionDate)}</Text>
+                                <Text style={styles.cardText}>{timeLabel}</Text>
+                            </View>
+
+                            <View style={styles.colPlayer}>
+                                <Text style={styles.playerText} numberOfLines={1}>{item?.sessionPlan?.groupName}</Text>
+                            </View>
+
+                            <View style={styles.colStatus}>
+                                <View style={[styles.statusBadge, isCompleted ? styles.statusCompleted : styles.statusPending]}>
+                                    <Text style={[styles.statusText, isCompleted ? styles.statusTextWhite : styles.statusTextBlack]}>
+                                        {isCompleted ? 'Completed' : 'Pending'}
+                                    </Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={18} color="#9CA3AF" style={styles.chevron} />
+                            </View>
+                        </TouchableOpacity>
+                    );
+                })}
+            </ScrollView>
+        );
+    };
 
     const currentTerms = termsByClass[activeClassTab] || [];
 
@@ -172,14 +181,14 @@ export default function SelectAVenueList({ venueId, onBack, onSessionSelect }) {
             {!loading && classes.length > 0 && (
                 <View style={styles.tabsWrapper}>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsContainer}>
-                        {classes.map((cls,i) => (
+                        {classes.map((cls, i) => (
                             <TouchableOpacity
                                 key={cls.id}
                                 style={[styles.tab, activeClassTab === cls.id ? styles.activeTab : styles.inactiveTab]}
                                 onPress={() => handleClassTabPress(cls.id)}
                             >
                                 <Text style={[styles.tabText, activeClassTab === cls.id ? styles.activeTabText : styles.inactiveTabText]}>
-                                   Class {i+1}: {cls.className}
+                                    Class {i + 1}: {cls.className}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -227,16 +236,16 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         marginHorizontal: 16,
-        backgroundColor: '#F8F9FB',
+        backgroundColor: '#F6F6F7',
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: '#9E9FAA',
         borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 12,
@@ -251,6 +260,7 @@ const styles = StyleSheet.create({
     searchInput: {
         flex: 1,
         fontSize: 16,
+        fontFamily: 'Urbanist_400Regular',
         color: '#000',
     },
     clearIcon: {
@@ -264,27 +274,27 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     tab: {
-        paddingVertical: 10,
-        paddingHorizontal: 20,
+        paddingVertical: 13,
+        paddingHorizontal: 16,
         borderRadius: 30,
-        borderWidth: 1.5,
-    },
-    activeTab: {
-        backgroundColor: '#fff',
-        borderColor: '#1D4ED8', // Darker blue
+        borderWidth: 2,
     },
     inactiveTab: {
-        backgroundColor: '#3B82F6', // Lighter blue back
-        borderColor: '#3B82F6',
+        backgroundColor: '#fff',
+        borderColor: '#0E35AD',
+    },
+    activeTab: {
+        backgroundColor: '#3B82F6',
+        borderColor: '#0E35AD',
     },
     tabText: {
-        fontSize: 15,
-        fontWeight: 'bold',
-    },
-    activeTabText: {
-        color: '#1D4ED8',
+        fontSize: 16,
+        fontFamily: 'Urbanist_700Bold',
     },
     inactiveTabText: {
+        color: '#0E35AD',
+    },
+    activeTabText: {
         color: '#fff',
     },
     listContainer: {
@@ -296,34 +306,56 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#fff',
         borderRadius: 16,
-        paddingVertical: 16,
+        paddingVertical: 18,
         paddingHorizontal: 16,
         marginBottom: 12,
-        borderWidth: 1,
-        borderColor: '#F0F0F0',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: 0.06,
         shadowRadius: 8,
         elevation: 2,
     },
+    colSession: {
+        width: 78,
+    },
+    sessionLabel: {
+        fontSize: 14,
+        fontFamily: 'Urbanist_700Bold',
+        color: '#1a1a1a',
+    },
+    colDate: {
+        width: 100,
+    },
+    cardText: {
+        fontSize: 12,
+        fontFamily: 'Urbanist_400Regular',
+        color: '#666',
+        lineHeight: 18,
+    },
+    colPlayer: {
+        flex: 1,
+        paddingRight: 8,
+    },
+    playerText: {
+        fontSize: 14,
+        fontFamily: 'Urbanist_600SemiBold',
+        color: '#1a1a1a',
+    },
+    colStatus: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     cardInfo: {
-        width: 70,
-        marginRight: 8,
+        flex: 1,
     },
     cardTitle: {
-        fontSize: 14,
-        fontWeight: 'bold',
+        fontSize: 12,
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     cardDetails: {
         flex: 1,
         marginRight: 8,
-    },
-    cardText: {
-        fontSize: 13,
-        color: '#666',
-        lineHeight: 18,
     },
     cardBlock: {
         width: 50,
@@ -332,7 +364,7 @@ const styles = StyleSheet.create({
     },
     blockText: {
         fontSize: 13,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
         textAlign: 'center',
     },
@@ -347,14 +379,14 @@ const styles = StyleSheet.create({
         marginRight: 8,
     },
     statusCompleted: {
-        backgroundColor: '#1CAB4B', // Green
+        backgroundColor: '#1CAB4B',
     },
     statusPending: {
-        backgroundColor: '#FFD700', // Yellow
+        backgroundColor: '#FFD700',
     },
     statusText: {
         fontSize: 12,
-        fontWeight: '600',
+        fontFamily: 'Urbanist_600SemiBold',
     },
     statusTextWhite: {
         color: '#fff',
@@ -364,7 +396,7 @@ const styles = StyleSheet.create({
     },
     chevron: {
         marginLeft: 4,
-    }, 
+    },
     termTab: {
         paddingVertical: 6,
         paddingHorizontal: 16,
@@ -382,7 +414,7 @@ const styles = StyleSheet.create({
     },
     termTabText: {
         fontSize: 13,
-        fontWeight: '500',
+        fontFamily: 'Urbanist_500Medium',
     },
     activeTermTabText: {
         color: '#3B82F6',

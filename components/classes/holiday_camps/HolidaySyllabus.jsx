@@ -1,49 +1,43 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Image,ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-const SESSION_ITEMS = [
-    {
-        id: 1,
-        title: 'Small-sided games',
-        desc: 'This skills tutorial will help you understand how to perform the Penguin.',
-        time: '10 mins',
-        image: require('../../../assets/images/skill.png')
-    },
-    {
-        id: 2,
-        title: 'Introduction (Head coach)',
-        desc: 'This skills tutorial will help you understand how to perform the Penguin.',
-        time: '2 mins',
-        image: require('../../../assets/images/skill.png')
-    },
-    {
-        id: 3,
-        title: 'Warm up activity',
-        desc: 'This skills tutorial will help you understand how to perform the Penguin.',
-        time: '10 mins',
-        image: require('../../../assets/images/skill.png')
-    },
-    {
-        id: 4,
-        title: 'Technical exercise',
-        desc: 'This skills tutorial will help you understand how to perform the Penguin.',
-        time: '12 mins',
-        image: require('../../../assets/images/skill.png')
-    },
-];
+import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-export default function HolidaySyllabus({ onBack, onSessionSelect }) {
-    const [activeAgeGroup, setActiveAgeGroup] = useState('Beginners (4-5)');
-    const [activeDay, setActiveDay] = useState('Day 1');
+export default function HolidaySyllabus({venueId,onBack, onSessionSelect,syllabus  }) {
+    // syllabus = full data object from HolidayCampDetails (pass it down)
+
+    console.log('venueId',venueId)
+
+    const camp = syllabus?.holidayCamps?.[0];
+    const campDates = camp?.holidayCampDates?.[0];
+    const sessionsMap = campDates?.sessionsMap ?? [];
+
+    const dayTabs = sessionsMap.map((s, i) => `Day ${i + 1}`);
+    const [activeDay, setActiveDay] = useState(dayTabs[0] || 'Day 1');
+
+    const activeSession = sessionsMap[dayTabs.indexOf(activeDay)];
+    const sessionPlan = activeSession?.sessionPlan;
+
+    const levelKeys = sessionPlan ? Object.keys(sessionPlan.levels) : [];
+    const [activeAgeGroup, setActiveAgeGroup] = useState(levelKeys[0] || '');
+
+    // Update activeAgeGroup when day changes if needed
+    const currentLevelKeys = sessionPlan ? Object.keys(sessionPlan.levels) : [];
+    const activeLevelData = sessionPlan?.levels?.[activeAgeGroup]?.[0];
+    const exercises = activeLevelData?.sessionExercises ?? [];
+
+    const videoKey = `${activeAgeGroup}_video`;
+    const videoUrl = sessionPlan?.[videoKey];
+
+    const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 
     return (
         <View style={styles.container}>
             {/* Green Header */}
             <View style={styles.greenHeaderContainer}>
-             <ImageBackground
+                <ImageBackground
                     source={require('@/assets/images/greenoverlay.png')}
                     style={styles.greenHeader}
-                    imageStyle={{ borderRadius: 20, }}
+                    imageStyle={{ borderRadius: 20 }}
                 >
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#fff" />
@@ -53,28 +47,36 @@ export default function HolidaySyllabus({ onBack, onSessionSelect }) {
                 </ImageBackground>
             </View>
 
-            {/* Age Group Pils */}
+            {/* Age Group Pills — dynamic from levels keys */}
             <View style={styles.ageGroupsWrapper}>
                 <View style={styles.ageGroups}>
-                    {['Beginners (4-5)', 'Intermediate (6-7)'].map(age => (
+                    {currentLevelKeys.map(level => (
                         <TouchableOpacity
-                            key={age}
-                            style={[styles.agePill, activeAgeGroup === age ? styles.activeAgePill : styles.inactiveAgePill]}
-                            onPress={() => setActiveAgeGroup(age)}
+                            key={level}
+                            style={[styles.agePill, activeAgeGroup === level ? styles.activeAgePill : styles.inactiveAgePill]}
+                            onPress={() => setActiveAgeGroup(level)}
                         >
-                            <Text style={[styles.agePillText, activeAgeGroup === age ? styles.activeAgePillText : styles.inactiveAgePillText]}>{age}</Text>
+                            <Text style={[styles.agePillText, activeAgeGroup === level ? styles.activeAgePillText : styles.inactiveAgePillText]}>
+                                {capitalize(level)}
+                            </Text>
                         </TouchableOpacity>
                     ))}
                 </View>
             </View>
 
-            {/* Day Tabs */}
+            {/* Day Tabs — dynamic */}
             <View style={styles.tabsContainer}>
-                {['Day 1', 'Day 2', 'Day 3'].map(tab => (
+                {dayTabs.map(tab => (
                     <TouchableOpacity
                         key={tab}
                         style={[styles.tab, activeDay === tab && styles.activeTab]}
-                        onPress={() => setActiveDay(tab)}
+                        onPress={() => {
+                            setActiveDay(tab);
+                            // reset age group to first available for new day
+                            const newSession = sessionsMap[dayTabs.indexOf(tab)];
+                            const newLevels = newSession?.sessionPlan ? Object.keys(newSession.sessionPlan.levels) : [];
+                            if (newLevels.length) setActiveAgeGroup(newLevels[0]);
+                        }}
                     >
                         <Text style={[styles.tabText, activeDay === tab && styles.activeTabText]}>{tab}</Text>
                     </TouchableOpacity>
@@ -82,52 +84,66 @@ export default function HolidaySyllabus({ onBack, onSessionSelect }) {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-                {/* Banner Section */}
-                <View style={styles.bannerContainer}>
-                    <Image
-                        source={require('../../../assets/images/pele.png')}
-                        style={styles.bannerImage}
-                    />                </View>
+                {/* Banner */}
+                {sessionPlan?.banner ? (
+                    <View style={styles.bannerContainer}>
+                        <Image source={{ uri: sessionPlan.banner }} style={styles.bannerImage} />
+                    </View>
+                ) : null}
 
                 {/* Skill of the Day */}
-                <View style={styles.skillSection}>
-                    <Text style={styles.skillTitle}>Skill Of The Day</Text>
-                    <View style={styles.skillHeader}>
-                        <Text style={styles.skillName}>The Penguin</Text>
-                        <TouchableOpacity>
-                            <Ionicons name="volume-medium-outline" size={20} color="#3B82F6" />
-                        </TouchableOpacity>
-                    </View>
-                    <Text style={styles.skillDesc}>In todays lesson, students will learn to perform the Penguin.</Text>
-                </View>
-
-                {/* Video Placeholder */}
-                <View style={styles.videoPlaceholder}>
-                    <Image
-                        source={require('../../../assets/images/session.png')}
-                        style={styles.videoImage}
-                    />                   
-                     <View style={styles.playOverlay}>
-                        <Ionicons name="play" size={40} color="#fff" />
-                    </View>
-                </View>
-
-                {/* Session List */}
-                {SESSION_ITEMS.map(item => (
-                    <TouchableOpacity
-                        key={item.id}
-                        style={styles.sessionCard}
-                        onPress={() => onSessionSelect && onSessionSelect(item.id)}
-                    >
-                        <View style={styles.imagePlaceholder}>
-                            <Image source={item.image} style={styles.cardImage} resizeMode="cover" />                        </View>
-                        <View style={styles.cardContent}>
-                            <Text style={styles.cardTitle}>{item.title}</Text>
-                            <Text style={styles.cardDesc} numberOfLines={3}>{item.desc}</Text>
-                            <Text style={styles.cardTime}>{item.time}</Text>
+                {activeLevelData && (
+                    <View style={styles.skillSection}>
+                        <Text style={styles.skillTitle}>Skill Of The Day</Text>
+                        <View style={styles.skillHeader}>
+                            <Text style={styles.skillName}>{activeLevelData.skillOfTheDay}</Text>
+                            <TouchableOpacity>
+                                <Ionicons name="volume-medium-outline" size={20} color="#3B82F6" />
+                            </TouchableOpacity>
                         </View>
-                    </TouchableOpacity>
-                ))}
+                        <Text style={styles.skillDesc}>{activeLevelData.description}</Text>
+                    </View>
+                )}
+
+                {/* Video */}
+                {videoUrl && (
+                    <View style={styles.videoPlaceholder}>
+                        <View style={styles.playOverlay}>
+                            <Ionicons name="play-circle" size={60} color="#fff" />
+                        </View>
+                    </View>
+                )}
+
+                {/* Session Exercises */}
+                {exercises.map((exercise, index) => {
+                    const imageUrls = (() => {
+                        try { return JSON.parse(exercise.imageUrl); } catch { return []; }
+                    })();
+                    const imageUri = imageUrls[0];
+
+                    return (
+                        <TouchableOpacity
+                            key={`${exercise.id}-${index}`}
+                            style={styles.sessionCard}
+                            onPress={() => onSessionSelect && onSessionSelect(exercise)}
+                        >
+                            <View style={styles.imagePlaceholder}>
+                                {imageUri ? (
+                                    <Image source={{ uri: imageUri }} style={styles.cardImage} resizeMode="cover" />
+                                ) : (
+                                    <View style={[styles.cardImage, { backgroundColor: '#E5E7EB' }]} />
+                                )}
+                            </View>
+                            <View style={styles.cardContent}>
+                                <Text style={styles.cardTitle}>{exercise.title}</Text>
+                                <Text style={styles.cardDesc} numberOfLines={3}>
+                                    {exercise.description?.replace(/<[^>]+>/g, '') ?? ''}
+                                </Text>
+                                <Text style={styles.cardTime}>{exercise.duration}</Text>
+                            </View>
+                        </TouchableOpacity>
+                    );
+                })}
             </ScrollView>
         </View>
     );
@@ -157,7 +173,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#fff',
     },
     ageGroupsWrapper: {
@@ -185,7 +201,7 @@ const styles = StyleSheet.create({
     },
     agePillText: {
         fontSize: 14,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
     activeAgePillText: {
         color: '#fff',
@@ -212,7 +228,7 @@ const styles = StyleSheet.create({
     },
     tabText: {
         fontSize: 15,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#4B5563',
     },
     activeTabText: {
@@ -237,7 +253,7 @@ const styles = StyleSheet.create({
     },
     skillTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
         marginBottom: 8,
     },
@@ -248,11 +264,13 @@ const styles = StyleSheet.create({
     },
     skillName: {
         fontSize: 16,
+        fontFamily: 'Urbanist_400Regular',
         color: '#666',
         marginRight: 8,
     },
     skillDesc: {
         fontSize: 14,
+        fontFamily: 'Urbanist_400Regular',
         color: '#666',
         lineHeight: 20,
     },
@@ -262,7 +280,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         backgroundColor: '#000',
         position: 'relative',
-        marginBottom:30,
+        marginBottom: 30,
     },
     videoImage: {
         width: '100%',
@@ -298,19 +316,20 @@ const styles = StyleSheet.create({
     },
     cardTitle: {
         fontSize: 15,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
         marginBottom: 4,
     },
     cardDesc: {
         fontSize: 13,
+        fontFamily: 'Urbanist_400Regular',
         color: '#6B7280',
         lineHeight: 18,
         marginBottom: 8,
     },
     cardTime: {
         fontSize: 13,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
 });

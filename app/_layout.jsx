@@ -9,12 +9,12 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
 import { useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
+import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { RootSiblingParent } from 'react-native-root-siblings';
 
 export const unstable_settings = {
@@ -67,6 +67,9 @@ function RootLayoutNav() {
                 <Stack.Screen name="create-new-password" options={{ headerShown: false }} />
                 <Stack.Screen name="fill-profile" options={{ headerShown: false }} />
                 <Stack.Screen name="first-time-onboarding" options={{ headerShown: false }} />
+                <Stack.Screen name="training" options={{ headerShown: false }} />
+                <Stack.Screen name="reportIssueList" options={{ headerShown: false }} />
+                
                 <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
             </Stack>
             <StatusBar style="auto" />

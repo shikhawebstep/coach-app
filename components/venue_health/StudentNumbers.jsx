@@ -143,7 +143,14 @@ export default function StudentNumbers({ onBack }) {
         <View style={styles.container}>
             {/* Header / Controls */}
             <View style={styles.headerRow}>
-                <Text style={styles.headerTitle}>Student numbers</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {onBack && (
+                        <TouchableOpacity onPress={onBack} style={{ marginRight: 12 }}>
+                            <Ionicons name="arrow-back" size={24} color="#000" />
+                        </TouchableOpacity>
+                    )}
+                    <Text style={styles.headerTitle}>Student numbers</Text>
+                </View>
 
                 <View style={styles.controlsGrid}>
                     <TouchableOpacity style={styles.iconBtn} onPress={handlePrevYear}>
@@ -374,7 +381,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     controlsGrid: {
@@ -386,7 +393,7 @@ const styles = StyleSheet.create({
     },
     yearText: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
         marginHorizontal: 8,
     },
@@ -412,14 +419,14 @@ const styles = StyleSheet.create({
     },
     headerColText: {
         fontSize: 12,
-        paddingHorizontal:4,
-        fontWeight: 'bold',
+        paddingHorizontal: 4,
+        fontFamily: 'Urbanist_700Bold',
         color: '#4B5563',
     },
     colVenueH: {
         flex: 2.2,
         justifyContent: 'start',
-        paddingLeft:15,
+        paddingLeft: 15,
     },
     colCapH: {
         flex: 1,
@@ -450,25 +457,26 @@ const styles = StyleSheet.create({
     },
     cellText: {
         fontSize: 13,
+        fontFamily: 'Urbanist_400Regular',
         color: '#1a1a1a',
     },
     cellValue: {
         fontSize: 13,
-        fontWeight: '600',
+        fontFamily: 'Urbanist_700Bold',
     },
     textGreen: {
         color: '#1CAB4B',
-        fontWeight: '600',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 13,
     },
     textRed: {
         color: '#EF4444',
-        fontWeight: '600',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 13,
     },
     textYellow: {
         color: '#F59E0B',
-        fontWeight: '600',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 13,
     },
     bgLightGreen: {
@@ -486,7 +494,6 @@ const styles = StyleSheet.create({
         borderBottomWidth: 0,
         backgroundColor: '#fff',
     },
-    // Chart and Modal Styles
     legendContainer: {
         flexDirection: 'row',
         marginTop: 20,
@@ -506,6 +513,7 @@ const styles = StyleSheet.create({
     },
     legendText: {
         fontSize: 13,
+        fontFamily: 'Urbanist_400Regular',
         color: '#4B5563',
     },
     chartArea: {
@@ -522,8 +530,8 @@ const styles = StyleSheet.create({
     },
     axisText: {
         fontSize: 12,
+        fontFamily: 'Urbanist_700Bold',
         color: '#4B5563',
-        fontWeight: 'bold',
     },
     chartPlot: {
         flex: 1,
@@ -542,8 +550,8 @@ const styles = StyleSheet.create({
     },
     axisTextX: {
         fontSize: 12,
+        fontFamily: 'Urbanist_700Bold',
         color: '#4B5563',
-        fontWeight: 'bold',
         flex: 1,
         textAlign: 'center',
     },
@@ -555,7 +563,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
-        paddingTop: 60, // Adjust for top notch
+        paddingTop: 60,
         paddingBottom: 20,
         borderBottomWidth: 1,
         borderColor: '#E5E7EB',
@@ -565,7 +573,7 @@ const styles = StyleSheet.create({
     },
     modalTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     modalContent: {
@@ -580,6 +588,7 @@ const styles = StyleSheet.create({
     },
     filterText: {
         fontSize: 16,
+        fontFamily: 'Urbanist_400Regular',
         color: '#1a1a1a',
     },
     checkbox: {

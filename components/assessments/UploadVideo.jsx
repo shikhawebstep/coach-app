@@ -1,15 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function UploadVideo({ onBack, onNext }) {
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={onBack} style={styles.backButton}>
+                {/* <TouchableOpacity onPress={onBack} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#000" />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 <Text style={styles.headerTitle}>Upload video</Text>
             </View>
 
@@ -45,6 +44,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingTop: 16,
+        justifyContent:'center',
         paddingBottom: 24,
     },
     backButton: {
@@ -52,8 +52,10 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
         color: '#1a1a1a',
+        marginVertical: 24,
+        fontFamily: 'Urbanist_700Bold',
+        textAlign: 'center'
     },
     centerContent: {
         flex: 1,
@@ -108,7 +110,7 @@ const styles = StyleSheet.create({
     },
     nextButtonText: {
         color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
+        fontSize: 18,
+        fontFamily: 'Urbanist_700Bold',
     },
 });

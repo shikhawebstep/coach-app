@@ -83,16 +83,16 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         marginHorizontal: 16,
-        backgroundColor: '#fff',
+        backgroundColor: '#F6F6F7',
         borderWidth: 1,
-        borderColor: '#E5E7EB', // Lighter grey border
+        borderColor: '#9E9FAA',
         borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 14,
@@ -104,6 +104,7 @@ const styles = StyleSheet.create({
     searchInput: {
         flex: 1,
         fontSize: 16,
+        fontFamily: 'Urbanist_400Regular',
         color: '#000',
     },
     listContent: {
@@ -129,8 +130,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     nameText: {
-        fontSize: 14,
-        fontWeight: 'bold',
+        fontSize: 12,
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     colDateTime: {
@@ -138,6 +139,7 @@ const styles = StyleSheet.create({
     },
     dateTimeText: {
         fontSize: 12,
+        fontFamily: 'Urbanist_400Regular',
         color: '#6B7280',
         lineHeight: 18,
     },
@@ -145,8 +147,9 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     venueText: {
-        fontSize: 13,
-        fontWeight: 'bold',
+        textAlign:'center',
+        fontSize: 12,
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     colScore: {
@@ -162,7 +165,7 @@ const styles = StyleSheet.create({
     },
     scoreText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 12,
     },
     chevron: {

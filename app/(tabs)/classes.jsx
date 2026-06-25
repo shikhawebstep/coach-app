@@ -46,6 +46,10 @@ import WeeklySessionTrainingDetails from '@/components/classes/weekly_classes/We
 import WeeklyStudentClassDetails from '@/components/classes/weekly_classes/WeeklyStudentClassDetails';
 import WeeklyStudentInformation from '@/components/classes/weekly_classes/WeeklyStudentInformation';
 import WeeklySyllabusDayDetails from '@/components/classes/weekly_classes/WeeklySyllabusDayDetails';
+import QcReportFlow from '@/components/quality_control/CreateQcReport';
+import MyReports from '@/components/quality_control/MyReports';
+import CustomerFeedback from '@/components/venue_health/CustomerFeedback';
+import StudentNumbers from '@/components/venue_health/StudentNumbers';
 
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -61,6 +65,7 @@ export default function Classes() {
     const [selectedSessionData, setSelectedSessionData] = useState(null);
     const [selectedBirthdaySessionData, setSelectedBirthdaySessionData] = useState(null);
     const [selectedSessionDate, setSelectedSessionDate] = useState(null);
+    const [syllabusDetails, setSyllabusDetails] = useState(null);
     const [selectedBirthdayBooking, setSelectedBirthdayBooking] = useState(null);
     const [selectedBirthdaySyllabus, setSelectedBirthdaySyllabus] = useState(null);
     const [weeklyExcercises, setWeeklyExcercises] = useState(null);
@@ -88,24 +93,38 @@ export default function Classes() {
         return <HolidayCampDetails
             id={selectedVenuenId}
             onBack={() => setCurrentView('camps')}
-            onSyllabusClick={() => setCurrentView('holidaySyllabus')}
-            onStudentSelect={(id) => setCurrentView('holidayStudentClass')}
+            onSyllabusClick={(data) =>{ 
+                setCurrentView('holidaySyllabus');
+                setSyllabusDetails(data)
+            }}
+            onStudentSelect={(student) => {
+                setSelectedStudent(student);         // ← store it
+                setCurrentView('holidayStudentClass');
+            }}
         />;
     }
 
+    // classes.js
     if (currentView === 'holidaySyllabus') {
         return <HolidaySyllabus
+            venueId={selectedVenuenId}          // ← pass so it can fetch
             onBack={() => setCurrentView('campDetails')}
-            onSessionSelect={() => setCurrentView('holidaySessionExercise')}
+            onSessionSelect={(exercise) => {
+                setWeeklyExcercises(exercise);
+                setCurrentView('holidaySessionExercise');
+            }}
+            syllabus={syllabusDetails}
         />;
     }
 
     if (currentView === 'holidaySessionExercise') {
         return <HolidaySessionExercise
+            exercise={weeklyExcercises}         // ← pass it down
             onBack={() => setCurrentView('holidaySyllabus')}
             onSearchSkillClick={() => setCurrentView('holidaySearchSkill')}
         />;
     }
+
 
     if (currentView === 'holidaySearchSkill') {
         return <HolidaySearchSkill onBack={() => setCurrentView('holidaySessionExercise')} />;
@@ -390,6 +409,14 @@ export default function Classes() {
 
     if (currentView === 'studentNumbers') {
         return <StudentNumbers onBack={() => setCurrentView('dashboard')} />;
+    }
+
+    if (currentView === 'createQcReport') {
+        return <QcReportFlow onBack={() => setCurrentView('dashboard')} />;
+    }
+
+    if (currentView === 'myReports') {
+        return <MyReports onBack={() => setCurrentView('dashboard')} />;
     }
 
     if (currentView === 'assessmentResults') {

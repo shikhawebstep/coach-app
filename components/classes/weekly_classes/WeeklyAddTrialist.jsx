@@ -98,8 +98,9 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
+        
         color: '#1a1a1a',
+        fontFamily: 'Urbanist_700Bold',
     },
     scrollContent: {
         paddingHorizontal: 16,
@@ -117,6 +118,7 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         fontSize: 16,
         color: '#1a1a1a',
+        fontFamily: 'Urbanist_400Regular',
     },
     textAreaContainer: {
         borderWidth: 1,
@@ -132,6 +134,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#1a1a1a',
         flex: 1,
+        fontFamily: 'Urbanist_400Regular',
     },
     buttonRow: {
         flexDirection: 'row',
@@ -151,7 +154,7 @@ const styles = StyleSheet.create({
     cancelButtonText: {
         color: '#3B82F6',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
     addButton: {
         flex: 1,
@@ -164,6 +167,6 @@ const styles = StyleSheet.create({
     addButtonText: {
         color: '#fff',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
 });

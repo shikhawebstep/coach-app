@@ -37,39 +37,39 @@ export default function HolidayCampDetails({ id, onBack, onSyllabusClick, onStud
 
 
 
-const handleAttendance = async (studentId, status) => {
-    console.log('🟡 handleAttendance called', { studentId, status });
+    const handleAttendance = async (studentId, status) => {
+        console.log('🟡 handleAttendance called', { studentId, status });
 
-    try {
-        const url = `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/holiday-camp/session/${id}/attendance/${studentId}`;
-        console.log('📡 Making PATCH request to:', url);
-        console.log('📦 Request body:', { attendance: status });
+        try {
+            const url = `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/holiday-camp/session/${id}/attendance/${studentId}`;
+            console.log('📡 Making PATCH request to:', url);
+            console.log('📦 Request body:', { attendance: status });
 
-        const response = await fetch(url, {
-            method: 'PATCH',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ attendance: status }),
-        });
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ attendance: status }),
+            });
 
-        console.log('📬 Response received:', { status: response.status, ok: response.ok });
+            console.log('📬 Response received:', { status: response.status, ok: response.ok });
 
-        if (response.ok) {
-            console.log('✅ Attendance updated successfully, calling fetchData()');
-            fetchData();
-        } else {
-            const errorText = await response.text();
-            console.error('❌ Server error response:', { status: response.status, errorText });
+            if (response.ok) {
+                console.log('✅ Attendance updated successfully, calling fetchData()');
+                fetchData();
+            } else {
+                const errorText = await response.text();
+                console.error('❌ Server error response:', { status: response.status, errorText });
+            }
+        } catch (error) {
+            console.error('❌ Network error updating attendance:', error.message);
+            console.error('🔍 Full error:', error);
         }
-    } catch (error) {
-        console.error('❌ Network error updating attendance:', error.message);
-        console.error('🔍 Full error:', error);
-    }
 
-    console.log('🏁 handleAttendance complete');
-};
+        console.log('🏁 handleAttendance complete');
+    };
     // Derived values
     const camp = data?.holidayCamps?.[0];
     const campDates = camp?.holidayCampDates?.[0];
@@ -102,7 +102,7 @@ const handleAttendance = async (studentId, status) => {
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Holiday camps</Text>
                 </View>
-                <TouchableOpacity style={styles.syllabusButton} onPress={onSyllabusClick}>
+                <TouchableOpacity style={styles.syllabusButton} onPress={() => onSyllabusClick(data)}>
                     <Text style={styles.syllabusText}>Syllabus</Text>
                 </TouchableOpacity>
             </View>
@@ -259,19 +259,21 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
+        
         color: '#1a1a1a',
+        fontFamily: 'Urbanist_700Bold',
     },
     syllabusButton: {
-        backgroundColor: '#1CAB4B', // Green
+        backgroundColor: '#1CAB4B',
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 8,
     },
     syllabusText: {
         color: '#fff',
-        fontWeight: 'bold',
+        
         fontSize: 14,
+        fontFamily: 'Urbanist_700Bold',
     },
     scrollContent: {
         paddingHorizontal: 16,
@@ -310,11 +312,13 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#666',
         marginBottom: 4,
+        fontFamily: 'Urbanist_400Regular',
     },
     infoValue: {
         fontSize: 14,
-        fontWeight: 'bold',
+        
         color: '#1a1a1a',
+        fontFamily: 'Urbanist_700Bold',
     },
     statusBadge: {
         backgroundColor: '#FFD700',
@@ -325,8 +329,9 @@ const styles = StyleSheet.create({
     },
     statusText: {
         fontSize: 12,
-        fontWeight: 'bold',
+        
         color: '#1a1a1a',
+        fontFamily: 'Urbanist_700Bold',
     },
     mapContainer: {
         height: 140,
@@ -350,6 +355,7 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#4B5563',
         lineHeight: 18,
+        fontFamily: 'Urbanist_400Regular',
     },
     tabsContainer: {
         flexDirection: 'row',
@@ -365,12 +371,13 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     activeTab: {
-        backgroundColor: '#3B82F6', // Blue
+        backgroundColor: '#3B82F6',
     },
     tabText: {
         fontSize: 15,
-        fontWeight: 'bold',
+        
         color: '#4B5563',
+        fontFamily: 'Urbanist_700Bold',
     },
     activeTabText: {
         color: '#fff',
@@ -387,6 +394,7 @@ const styles = StyleSheet.create({
         width: 24,
         fontSize: 14,
         color: '#666',
+        fontFamily: 'Urbanist_400Regular',
     },
     studentInfo: {
         flex: 1,
@@ -395,14 +403,16 @@ const styles = StyleSheet.create({
     },
     studentName: {
         fontSize: 12,
-        fontWeight: 'bold',
+        
         color: '#1a1a1a',
         width: 80,
+        fontFamily: 'Urbanist_700Bold',
     },
     studentAge: {
         fontSize: 12,
         color: '#666',
         marginLeft: 8,
+        fontFamily: 'Urbanist_400Regular',
     },
     attendanceButtons: {
         flexDirection: 'row',
@@ -437,7 +447,8 @@ const styles = StyleSheet.create({
     },
     btnText: {
         fontSize: 12,
-        fontWeight: 'bold',
+        
+        fontFamily: 'Urbanist_700Bold',
     },
     btnTextWhite: {
         color: '#fff',
@@ -465,8 +476,9 @@ const styles = StyleSheet.create({
     },
     addTrialistText: {
         fontSize: 16,
-        fontWeight: 'bold',
+        
         color: '#3B82F6',
+        fontFamily: 'Urbanist_700Bold',
     },
     confirmButton: {
         backgroundColor: '#3B82F6',
@@ -477,7 +489,8 @@ const styles = StyleSheet.create({
     },
     confirmButtonText: {
         fontSize: 16,
-        fontWeight: 'bold',
+        
         color: '#fff',
+        fontFamily: 'Urbanist_700Bold',
     },
 });

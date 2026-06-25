@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const QUESTIONS = [
@@ -15,12 +14,12 @@ export default function AssessmentCriteria({ onBack, onNext }) {
     return (
         <View style={styles.container}>
             {/* Header */}
-            <View style={styles.header}>
+            {/* <View style={styles.header}>
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Create report</Text>
-            </View>
+            </View> */}
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
                 <Text style={styles.sectionTitle}>Assessment Criteria</Text>
@@ -68,8 +67,8 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
         color: '#1a1a1a',
+        fontFamily: 'Urbanist_700Bold',  // bold ke liye
     },
     content: {
         paddingHorizontal: 20,
@@ -77,19 +76,19 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
     sectionTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
+        fontSize: 24,
         color: '#1a1a1a',
-        marginBottom: 24,
+        marginVertical: 24,
+        fontFamily: 'Urbanist_700Bold',
     },
     questionBlock: {
         marginBottom: 24,
     },
     questionText: {
-        fontSize: 16,
-        color: '#374151',
-        fontWeight: '500',
+        fontSize: 18,
+        color: '#494949',
         marginBottom: 12,
+        fontFamily: 'Urbanist_700Bold',  // bold ke liye
     },
     radioGroup: {
         flexDirection: 'row',
@@ -120,8 +119,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#3B82F6',
     },
     radioLabel: {
-        fontSize: 15,
-        color: '#4B5563',
+        fontSize: 14,
+        color: '#4E5D78',
+        fontFamily: 'Urbanist_500Medium',
     },
     bottomContainer: {
         paddingHorizontal: 20,
@@ -132,12 +132,12 @@ const styles = StyleSheet.create({
     nextButton: {
         backgroundColor: '#3B82F6',
         paddingVertical: 18,
-        borderRadius: 30,
+        borderRadius: 57,
         alignItems: 'center',
     },
     nextButtonText: {
         fontSize: 16,
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
 });

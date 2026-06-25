@@ -50,8 +50,6 @@ export default function SelectAVenue({ onBack, onVenueSelect }) {
                 <Ionicons name="search-outline" size={20} color="#a0a0a0" style={styles.searchIcon} />
                 <TextInput
                     style={styles.searchInput}
-                    placeholder="Select a venue..."
-                    placeholderTextColor="#a0a0a0"
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
@@ -79,10 +77,8 @@ export default function SelectAVenue({ onBack, onVenueSelect }) {
                                onPress={() => onVenueSelect && onVenueSelect(venue)}
                             >
                                 <View>
-                                    <Text style={styles.cardTitle}>{venue.name}</Text>
                                     <Text style={styles.cardArea}>{venue.area}</Text>
                                 </View>
-                                <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
                             </TouchableOpacity>
                         ))
                     )}
@@ -95,29 +91,29 @@ export default function SelectAVenue({ onBack, onVenueSelect }) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff' },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    emptyText: { textAlign: 'center', color: '#6B7280', marginTop: 20 },
+    emptyText: { textAlign: 'center', fontFamily: 'Urbanist_400Regular', color: '#6B7280', marginTop: 20 },
     header: {
         flexDirection: 'row', alignItems: 'center',
         paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24,
     },
     backButton: { marginRight: 12 },
-    headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#1a1a1a' },
+    headerTitle: { fontSize: 24, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a' },
     searchContainer: {
         flexDirection: 'row', alignItems: 'center',
-        marginHorizontal: 16, backgroundColor: '#F8F9FB',
-        borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12,
-        paddingHorizontal: 16, paddingVertical: 12, marginBottom: 24,
+        marginHorizontal: 16, backgroundColor: '#F6F6F7',
+        borderWidth: 1, borderColor: '#9E9FAA', borderRadius: 12,
+        paddingHorizontal: 16, paddingVertical: 10, marginBottom: 24,
     },
     searchFocused: { borderColor: '#3B82F6' },
     searchIcon: { marginRight: 10 },
-    searchInput: { flex: 1, fontSize: 16, color: '#000' },
+    searchInput: { flex: 1, fontSize: 16, fontFamily: 'Urbanist_400Regular', color: '#000' },
     listContainer: { flex: 1, paddingHorizontal: 16 },
-    listTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 16, color: '#1a1a1a' },
+    listTitle: { fontSize: 18, fontFamily: 'Urbanist_700Bold', marginBottom: 16, color: '#212121' },
     card: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        backgroundColor: '#F3F4F6', borderRadius: 8,
+        backgroundColor: '#EEF2F5', borderRadius: 8,
         paddingVertical: 16, paddingHorizontal: 16, marginBottom: 12,
     },
-    cardTitle: { fontSize: 16, color: '#1a1a1a', fontWeight: '600' },
-    cardArea: { fontSize: 13, color: '#6B7280', marginTop: 2 },
+    cardTitle: { fontSize: 16, fontFamily: 'Urbanist_600SemiBold', color: '#1a1a1a' },
+    cardArea: { fontSize: 16, fontFamily: 'Urbanist_500Medium', color: '#14172D', marginTop: 2 },
 });

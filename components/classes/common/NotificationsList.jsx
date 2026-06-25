@@ -134,7 +134,6 @@ export default function NotificationsList({ onNotificationSelect }) {
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -148,6 +147,7 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 14,
+        fontFamily: 'Urbanist_400Regular',
         color: '#6B7280',
     },
     header: {
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     hideReadContainer: {
@@ -169,6 +169,7 @@ const styles = StyleSheet.create({
     },
     hideReadText: {
         fontSize: 12,
+        fontFamily: 'Urbanist_400Regular',
         color: '#666',
         marginLeft: 6,
     },
@@ -181,7 +182,7 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
         marginBottom: 16,
     },
@@ -213,18 +214,20 @@ const styles = StyleSheet.create({
     },
     notificationTitle: {
         fontSize: 15,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
         marginBottom: 4,
     },
     notificationSubtitle: {
         fontSize: 13,
+        fontFamily: 'Urbanist_400Regular',
         color: '#6B7280',
         lineHeight: 18,
         marginBottom: 4,
     },
     notificationDate: {
         fontSize: 11,
+        fontFamily: 'Urbanist_400Regular',
         color: '#9CA3AF',
     },
     unreadDot: {

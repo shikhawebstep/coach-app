@@ -12,25 +12,17 @@ export default function ReportIssueList({ onNewReport, onReportSelect, onBack })
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchReports();
-    }, []);
+    useEffect(() => { fetchReports(); }, []);
 
     const fetchReports = async () => {
         try {
             setLoading(true);
             const response = await fetch(
                 `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/report-issue/list`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
+                { headers: { Authorization: `Bearer ${token}` } }
             );
             const result = await response.json();
-            if (response.ok) {
-                setReports(result.data || []);
-            }
+            if (response.ok) setReports(result.data || []);
         } catch (error) {
             console.error('Failed to fetch reports:', error);
         } finally {
@@ -39,42 +31,33 @@ export default function ReportIssueList({ onNewReport, onReportSelect, onBack })
     };
 
     const toggleCategory = (category) => {
-        if (selectedCategories.includes(category)) {
-            setSelectedCategories(selectedCategories.filter(c => c !== category));
-        } else {
-            setSelectedCategories([...selectedCategories, category]);
-        }
+        setSelectedCategories(prev =>
+            prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]
+        );
     };
 
     const formatDate = (isoString) => {
         if (!isoString) return '';
-        const d = new Date(isoString);
-        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        return new Date(isoString).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     };
 
     const formatTime = (isoString) => {
         if (!isoString) return '';
-        const d = new Date(isoString);
-        return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true });
+        return new Date(isoString).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true });
     };
 
     const filteredReports = reports.filter(report => {
         const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(report.category);
-        const venueName = report.venue?.name || '';
-        const matchesSearch = venueName.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = (report.venue?.name || '').toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
     });
 
     return (
         <View style={styles.container}>
+
             {/* Header */}
             <View style={styles.header}>
                 <View style={styles.headerLeft}>
-                    {onBack && (
-                        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                            <Ionicons name="arrow-back" size={24} color="#000" />
-                        </TouchableOpacity>
-                    )}
                     <Text style={styles.headerTitle}>Report an issue</Text>
                 </View>
                 <TouchableOpacity style={styles.newReportBtn} onPress={onNewReport}>
@@ -88,7 +71,7 @@ export default function ReportIssueList({ onNewReport, onReportSelect, onBack })
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Select a venue..."
-                    placeholderTextColor="#a0a0a0"
+                    placeholderTextColor="#797A88"
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
@@ -102,11 +85,14 @@ export default function ReportIssueList({ onNewReport, onReportSelect, onBack })
                         style={styles.checkboxItem}
                         onPress={() => toggleCategory(category)}
                     >
-                        <Ionicons
-                            name={selectedCategories.includes(category) ? "checkbox" : "square-outline"}
-                            size={24}
-                            color={selectedCategories.includes(category) ? "#3B82F6" : "#A1A1AA"}
-                        />
+                        <View style={[
+                            styles.checkbox,
+                            selectedCategories.includes(category) && styles.checkboxChecked,
+                        ]}>
+                            {selectedCategories.includes(category) && (
+                                <Ionicons name="checkmark" size={16} color="#fff" />
+                            )}
+                        </View>
                         <Text style={styles.checkboxText}>{category}</Text>
                     </TouchableOpacity>
                 ))}
@@ -119,9 +105,13 @@ export default function ReportIssueList({ onNewReport, onReportSelect, onBack })
             ) : (
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
                     {filteredReports.map(report => (
-                        <TouchableOpacity key={report.id} style={styles.card} onPress={() => onReportSelect && onReportSelect(report.id)}>
+                        <TouchableOpacity
+                            key={report.id}
+                            style={styles.card}
+                            onPress={() => onReportSelect && onReportSelect(report.id)}
+                        >
                             <View style={styles.col1}>
-                                <Text style={styles.venue}>{report.venue?.name || 'Unknown'}</Text>
+                                <Text style={styles.venue}>{report.venue?.area || 'Unknown'}</Text>
                             </View>
 
                             <View style={styles.col2}>
@@ -134,8 +124,14 @@ export default function ReportIssueList({ onNewReport, onReportSelect, onBack })
                             </View>
 
                             <View style={styles.col4}>
-                                <View style={[styles.statusBadge, report.status?.toLowerCase() === 'solved' ? styles.solvedBadge : styles.pendingBadge]}>
-                                    <Text style={[styles.statusText, report.status?.toLowerCase() === 'solved' ? styles.solvedText : styles.pendingText]}>
+                                <View style={[
+                                    styles.statusBadge,
+                                    report.status?.toLowerCase() === 'solved' ? styles.solvedBadge : styles.pendingBadge,
+                                ]}>
+                                    <Text style={[
+                                        styles.statusText,
+                                        report.status?.toLowerCase() === 'solved' ? styles.solvedText : styles.pendingText,
+                                    ]}>
                                         {report.status ? report.status.charAt(0).toUpperCase() + report.status.slice(1) : ''}
                                     </Text>
                                 </View>
@@ -155,6 +151,8 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#FFFFFF',
     },
+
+    /* Header */
     header: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -167,25 +165,24 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
-    backButton: {
-        marginRight: 10,
-    },
     headerTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
+        fontSize: 26,
+        fontFamily: 'Urbanist_700Bold',
+        color: '#353535',
     },
     newReportBtn: {
-        backgroundColor: '#3B82F6',
+        backgroundColor: '#2F5FE5',
         paddingHorizontal: 16,
         paddingVertical: 10,
-        borderRadius: 20,
+        borderRadius: 30,
     },
     newReportBtnText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_600SemiBold',
         fontSize: 14,
     },
+
+    /* Search */
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -195,17 +192,18 @@ const styles = StyleSheet.create({
         borderColor: '#D1D5DB',
         borderRadius: 12,
         paddingHorizontal: 16,
-        paddingVertical: 14,
+        paddingVertical: 10,
         marginBottom: 20,
     },
-    searchIcon: {
-        marginRight: 10,
-    },
+    searchIcon: { marginRight: 10 },
     searchInput: {
         flex: 1,
         fontSize: 16,
+        fontFamily: 'Urbanist_400Regular',
         color: '#000',
     },
+
+    /* Filters */
     filtersContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -215,17 +213,35 @@ const styles = StyleSheet.create({
     checkboxItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        width: '33%', // 3 columns
+        width: '33%',
         marginBottom: 16,
+    },
+    checkbox: {
+        width: 24,
+        height: 24,
+        borderRadius: 6,
+        borderWidth: 2,
+        borderColor: '#A1A1AA',
+        backgroundColor: 'transparent',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    checkboxChecked: {
+        borderColor: '#3B82F6',
+        backgroundColor: '#3B82F6',
     },
     checkboxText: {
         marginLeft: 8,
         fontSize: 14,
-        color: '#4B5563',
+        fontFamily: 'Urbanist_700Bold',
+        color: '#5F5F6D',
     },
-    listContent: {
-        paddingHorizontal: 16,
-    },
+
+    /* List */
+    listContent: { paddingHorizontal: 16 },
+    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+
+    /* Card */
     card: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -235,36 +251,31 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         marginBottom: 12,
         borderWidth: 1,
-        borderColor: '#F9FAFB',
+        borderColor: '#F3F4F6',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 2,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 3,
     },
-    col1: {
-        flex: 1.2,
-    },
+    col1: { flex: 1.4 },
     venue: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
+        fontSize: 12,
+        fontFamily: 'Urbanist_700Bold',
+        color: '#212121',
     },
-    col2: {
-        flex: 1.5,
-    },
+    col2: { flex: 1.2 },
     dateTime: {
         fontSize: 12,
+        fontFamily: 'Urbanist_400Regular',
         color: '#6B7280',
         lineHeight: 18,
     },
-    col3: {
-        flex: 1.2,
-    },
+    col3: { flex: 1.2 },
     category: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
+        fontSize: 12,
+        fontFamily: 'Urbanist_700Bold',
+        color: '#212121',
     },
     col4: {
         flex: 1,
@@ -277,28 +288,10 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         borderRadius: 6,
     },
-    solvedBadge: {
-        backgroundColor: '#1CAB4B', // Green
-    },
-    pendingBadge: {
-        backgroundColor: '#FBBF24', // Yellow
-    },
-    statusText: {
-        fontSize: 12,
-        fontWeight: 'bold',
-    },
-    solvedText: {
-        color: '#fff',
-    },
-    pendingText: {
-        color: '#1a1a1a',
-    },
-    chevron: {
-        marginLeft: 6,
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
+    solvedBadge: { backgroundColor: '#1CAB4B' },
+    pendingBadge: { backgroundColor: '#F7D02A' },
+    statusText: { fontSize: 12, fontFamily: 'Urbanist_700Bold' },
+    solvedText: { color: '#fff' },
+    pendingText: { color: '#1a1a1a' },
+    chevron: { marginLeft: 6 },
 });

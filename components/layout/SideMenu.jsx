@@ -27,7 +27,7 @@ const MENU_ITEMS = [
         title: 'Classes',
         icon: 'radio-button-on-outline',
         hasSubmenu: true,
-        isOpen: false, // Initial state
+        isOpen: false,
         submenu: [
             { id: 'classes/weekly', title: 'Weekly Classes' },
             { id: 'classes/private', title: 'Private Classes' },
@@ -37,13 +37,13 @@ const MENU_ITEMS = [
         ],
     },
     { id: 'training', title: 'Training', icon: 'play-circle-outline' },
-    { id: 'assessments', title: 'My Assessments', icon: 'stats-chart-outline' },
+    { id: 'classes/practicalAssessments', title: 'My Assessments', icon: 'stats-chart-outline' },
     {
         id: 'health',
         title: 'Venue Health Check',
         icon: 'add-circle-outline',
         hasSubmenu: true,
-        isOpen: true, // Shown open in the image
+        isOpen: true,
         submenu: [
             { id: 'classes/studentNumbers', title: 'Student Numbers' },
             { id: 'classes/customerFeedback', title: 'Customer Feedback' },
@@ -55,7 +55,7 @@ const MENU_ITEMS = [
         title: 'Quality Control',
         icon: 'checkmark-circle-outline',
         hasSubmenu: true,
-        isOpen: true, // Shown open in the image
+        isOpen: true,
         submenu: [
             { id: 'classes/createQcReport', title: 'Create a report' },
             { id: 'classes/myReports', title: 'My reports' },
@@ -116,14 +116,20 @@ export default function SideMenu({ visible, onClose, initialTab = 'Menu' }) {
 
  
 
-  const handleNavigation = (route) => {
+ const handleNavigation = (route) => {
     onClose();
     if (route.startsWith('classes/')) {
         const view = route.split('/')[1];
         router.push({ pathname: '/classes', params: { view } });
     } else if (route.startsWith('/')) {
-        // Direct route, e.g. '/reportIssueList'
+        // Direct top-level route, e.g. '/reportIssueList'
         router.push(route);
+    } else if (route === 'profile') {
+        router.push('/fill-profile');
+    } else if (route === 'schedule') {
+        router.push('/calendar');
+    } else if (route === 'training') {
+        router.push('/training');
     } else {
         console.log('Navigate to:', route);
     }
@@ -333,8 +339,6 @@ const styles = StyleSheet.create({
     },
     footer: {
         paddingTop: 20,
-        borderTopWidth: 1,
-        borderTopColor: '#444',
     },
     tabsContainer: {
         flexDirection: 'row',

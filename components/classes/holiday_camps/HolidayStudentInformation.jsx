@@ -87,7 +87,6 @@ export default function HolidayStudentInformation({ onBack }) {
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -105,7 +104,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 22,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     content: {
@@ -122,7 +121,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 16,
         color: '#4B5563',
-        fontWeight: '600',
+        fontFamily: 'Urbanist_600SemiBold',
     },
     rowWrapper: {
         flexDirection: 'row',
@@ -134,15 +133,17 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 14,
         color: '#6B7280',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         marginBottom: 6,
     },
     value: {
         fontSize: 16,
+        fontFamily: 'Urbanist_400Regular',
         color: '#1a1a1a',
     },
     linkValue: {
         fontSize: 14,
+        fontFamily: 'Urbanist_400Regular',
         color: '#3B82F6',
     },
     notesContainer: {
@@ -156,6 +157,7 @@ const styles = StyleSheet.create({
         padding: 16,
         height: 180,
         fontSize: 16,
+        fontFamily: 'Urbanist_400Regular',
         color: '#1a1a1a',
         backgroundColor: '#FCFCFD',
     },
@@ -174,7 +176,7 @@ const styles = StyleSheet.create({
     },
     cancelBtnText: {
         color: '#3B82F6',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 16,
     },
     saveBtn: {
@@ -186,7 +188,7 @@ const styles = StyleSheet.create({
     },
     saveBtnText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 16,
     },
 });

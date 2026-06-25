@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 22,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     searchContainer: {
@@ -202,6 +202,7 @@ const styles = StyleSheet.create({
     searchInput: {
         flex: 1,
         fontSize: 16,
+        fontFamily: 'Urbanist_400Regular',
         color: '#000',
     },
     clearIcon: {
@@ -213,7 +214,7 @@ const styles = StyleSheet.create({
     },
     listTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         marginBottom: 16,
         color: '#1a1a1a',
     },
@@ -239,7 +240,7 @@ const styles = StyleSheet.create({
     },
     cardTitle: {
         fontSize: 14,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     cardDetails: {
@@ -248,6 +249,7 @@ const styles = StyleSheet.create({
     },
     cardText: {
         fontSize: 13,
+        fontFamily: 'Urbanist_400Regular',
         color: '#666',
         lineHeight: 18,
     },
@@ -258,7 +260,7 @@ const styles = StyleSheet.create({
     },
     countText: {
         fontSize: 14,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     cardStatusContainer: {
@@ -272,14 +274,14 @@ const styles = StyleSheet.create({
         marginRight: 8,
     },
     statusCompleted: {
-        backgroundColor: '#1CAB4B', // Green
+        backgroundColor: '#1CAB4B',
     },
     statusPending: {
-        backgroundColor: '#FFD700', // Yellow
+        backgroundColor: '#FFD700',
     },
     statusText: {
         fontSize: 12,
-        fontWeight: '600',
+        fontFamily: 'Urbanist_600SemiBold',
     },
     statusTextWhite: {
         color: '#fff',
@@ -303,12 +305,13 @@ const styles = StyleSheet.create({
     },
     emptyTitle: {
         fontSize: 22,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
         marginBottom: 8,
     },
     emptySubtitle: {
         fontSize: 15,
+        fontFamily: 'Urbanist_400Regular',
         color: '#666',
         textAlign: 'center',
         paddingHorizontal: 40,

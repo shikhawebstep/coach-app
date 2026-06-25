@@ -8,6 +8,7 @@ export default function WeeklySessionTrainingDetails({ sessionId, onBack, onStud
     const { token } = useAuth();
     const [activeTab, setActiveTab] = useState('Members');
     const [members, setMembers] = useState([]);
+    const [sessionName, setSessionName] = useState('');
     const [sessionData, setSessionData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showAddTrialist, setShowAddTrialist] = useState(false);
@@ -31,6 +32,8 @@ export default function WeeklySessionTrainingDetails({ sessionId, onBack, onStud
             const result = await response.json();
             if (response.ok) {
                 setSessionData(result.data);
+
+                console.log('result.data', result.data)
                 const bookingsMembers = result?.data?.bookings?.members || [];
                 const flattened = [];
                 bookingsMembers.forEach(booking => {
@@ -47,6 +50,7 @@ export default function WeeklySessionTrainingDetails({ sessionId, onBack, onStud
                     });
                 });
                 setMembers(flattened);
+                setSessionName(result.data?.sessionPlan?.groupName);
             } else {
                 console.error('Failed to fetch session details:', result);
             }
@@ -123,8 +127,17 @@ export default function WeeklySessionTrainingDetails({ sessionId, onBack, onStud
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#000" />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => onSessionClick('weeklySession')}>
-                        <Text style={styles.headerTitle}>{sessionTitle}</Text>
+                    <TouchableOpacity
+                        onPress={() => onSessionClick('weeklySession')}
+                        style={{ flex: 1 }}  
+                    >
+                        <Text
+                            style={styles.headerTitle}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                        >
+                            {sessionName}
+                        </Text>
                     </TouchableOpacity>
                 </View>
                 <TouchableOpacity
@@ -300,18 +313,32 @@ const styles = StyleSheet.create({
         paddingTop: 16,
         paddingBottom: 24,
     },
+
     headerLeft: {
+        flex: 1, // important
         flexDirection: 'row',
         alignItems: 'center',
+        marginRight: 12,
+    },
+
+    headerTitle: {
+        fontSize: 24,
+        color: '#1a1a1a',
+        fontFamily: 'Urbanist_700Bold',
+        flexShrink: 1, // important
+    },
+
+    sessionPlanButton: {
+        backgroundColor: '#1CAB4B',
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 8,
+        flexShrink: 0, // important
     },
     backButton: {
         marginRight: 12,
     },
-    headerTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
-    },
+
     sessionPlanButton: {
         backgroundColor: '#1CAB4B',
         paddingHorizontal: 16,
@@ -320,8 +347,8 @@ const styles = StyleSheet.create({
     },
     sessionPlanText: {
         color: '#fff',
-        fontWeight: 'bold',
         fontSize: 14,
+        fontFamily: 'Urbanist_700Bold',
     },
     scrollContent: {
         paddingHorizontal: 16,
@@ -353,26 +380,38 @@ const styles = StyleSheet.create({
     },
     infoLabel: {
         fontSize: 13,
-        fontWeight: '600',
         color: '#9CA3AF',
         marginBottom: 4,
+        fontFamily: 'Urbanist_600SemiBold',
     },
     infoValue: {
         fontSize: 14,
         color: '#1a1a1a',
         lineHeight: 20,
+        fontFamily: 'Urbanist_400Regular',
     },
     statusBadge: {
-        backgroundColor: '#FFD700',
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 6,
         alignSelf: 'flex-start',
     },
+    statusBadgeCompleted: {
+        backgroundColor: '#1CAB4B',
+    },
+    statusBadgePending: {
+        backgroundColor: '#D97706',
+    },
     statusText: {
-        fontSize: 12,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
+        fontSize: 14,
+        textTransform: 'capitalize',
+        fontFamily: 'Urbanist_700Bold',
+    },
+    statusTextCompleted: {
+        color: '#F0FFF4',
+    },
+    statusTextPending: {
+        color: '#FFFBEB',
     },
     mapContainer: {
         height: 140,
@@ -406,7 +445,7 @@ const styles = StyleSheet.create({
     },
     tabText: {
         fontSize: 15,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
     activeTabText: {
         color: '#fff',
@@ -428,6 +467,7 @@ const styles = StyleSheet.create({
         width: 24,
         fontSize: 14,
         color: '#666',
+        fontFamily: 'Urbanist_400Regular',
     },
     memberInfo: {
         flex: 1,
@@ -436,14 +476,15 @@ const styles = StyleSheet.create({
     },
     memberName: {
         fontSize: 12,
-        fontWeight: 'bold',
         color: '#1a1a1a',
         width: 100,
+        fontFamily: 'Urbanist_700Bold',
     },
     memberAge: {
         fontSize: 12,
         color: '#666',
         marginLeft: 8,
+        fontFamily: 'Urbanist_400Regular',
     },
     attendanceButtons: {
         flexDirection: 'row',
@@ -468,7 +509,6 @@ const styles = StyleSheet.create({
     btnNotAttendedActive: {
         backgroundColor: '#E53E3E',
         borderColor: '#E53E3E',
-        color: '#fff',
     },
     btnNotAttendedInactive: {
         backgroundColor: '#fff',
@@ -479,7 +519,8 @@ const styles = StyleSheet.create({
     },
     btnText: {
         fontSize: 12,
-        fontWeight: '600',
+
+        fontFamily: 'Urbanist_600SemiBold',
     },
     btnTextWhite: {
         color: '#fff',
@@ -495,6 +536,7 @@ const styles = StyleSheet.create({
         color: '#9CA3AF',
         fontSize: 14,
         marginTop: 24,
+        fontFamily: 'Urbanist_400Regular',
     },
     addTrialistButton: {
         flexDirection: 'row',
@@ -512,8 +554,8 @@ const styles = StyleSheet.create({
     },
     addTrialistText: {
         fontSize: 16,
-        fontWeight: 'bold',
         color: '#3B82F6',
+        fontFamily: 'Urbanist_700Bold',
     },
     confirmButton: {
         backgroundColor: '#3B82F6',
@@ -523,30 +565,7 @@ const styles = StyleSheet.create({
     },
     confirmButtonText: {
         fontSize: 16,
-        fontWeight: 'bold',
         color: '#fff',
+        fontFamily: 'Urbanist_700Bold',
     },
-    statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-},
-statusBadgeCompleted: {
-    backgroundColor: '#1CAB4B',
-},
-statusBadgePending: {
-    backgroundColor: '#D97706',
-},
-statusText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    textTransform:'capitalize'
-},
-statusTextCompleted: {
-    color: '#F0FFF4',
-},
-statusTextPending: {
-    color: '#FFFBEB',
-},
 });

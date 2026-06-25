@@ -1,7 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function IssueReport({ reportId, onBack }) {
     const { token } = useAuth();
@@ -95,41 +95,54 @@ export default function IssueReport({ reportId, onBack }) {
                 </View>
             </View>
 
-            <View style={styles.content}>
+            <View>
                 {/* Stats Card */}
                 <View style={styles.card}>
                     <View style={styles.cardItem}>
                         <View style={styles.cardIconRow}>
-                            <Ionicons name="calendar-outline" size={14} color="#666" style={styles.cardIcon} />
+                            <Image
+                                source={require('@/assets/images/Calendar.png')}
+                                resizeMode="contain"
+                                style={{height:13,width:13,marginRight:5}} />
                             <Text style={styles.cardLabel}>Date</Text>
                         </View>
                         <Text style={styles.cardValue}>{formatDate(report.createdAt)}</Text>
                     </View>
                     <View style={styles.cardItem}>
                         <View style={styles.cardIconRow}>
-                            <Ionicons name="time-outline" size={14} color="#666" style={styles.cardIcon} />
+                         <Image
+                                source={require('@/assets/images/TimeCircle.png')}
+                                resizeMode="contain"
+                                style={{height:13,width:13,marginRight:5}} />
                             <Text style={styles.cardLabel}>Time</Text>
                         </View>
                         <Text style={styles.cardValue}>{formatTime(report.createdAt)}</Text>
                     </View>
                     <View style={styles.cardItem}>
                         <View style={styles.cardIconRow}>
-                            <Ionicons name="list-outline" size={14} color="#666" style={styles.cardIcon} />
+                          <Image
+                                source={require('@/assets/images/Document.png')}
+                                resizeMode="contain"
+                                style={{height:13,width:13,marginRight:5}} />
                             <Text style={styles.cardLabel}>Category</Text>
                         </View>
                         <Text style={styles.cardValue}>{report.category}</Text>
                     </View>
                     <View style={styles.cardItem}>
                         <View style={styles.cardIconRow}>
-                            <Ionicons name="location-outline" size={14} color="#666" style={styles.cardIcon} />
+                          <Image
+                                source={require('@/assets/images/Location.png')}
+                                resizeMode="contain"
+                                style={{height:13,width:13,marginRight:5}} />
                             <Text style={styles.cardLabel}>Venue</Text>
                         </View>
-                        <Text style={styles.cardValue}>{report.venue?.name || 'Unknown'}</Text>
+                        <Text style={styles.cardValue}>{report.venue?.area || 'Unknown'}</Text>
                     </View>
                 </View>
 
                 {/* Report Content */}
-                <Text style={styles.reportTitle}>{report.title || 'Report issue'}</Text>
+                {/* <Text style={styles.reportTitle}>{report.title || 'Report issue'}</Text> */}
+                <Text style={styles.reportTitle}>Report issue</Text>
                 <Text style={styles.reportDescription}>
                     {report.reportIssue}
                 </Text>
@@ -142,14 +155,17 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        padding: 20
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingTop: 16,
+        paddingVertical: 16,
         paddingBottom: 24,
+        borderBottomColor: '#E0E0E0',
+        borderBottomWidth: 1,
+        marginBottom: 20
     },
     headerLeft: {
         flexDirection: 'row',
@@ -160,7 +176,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     statusButton: {
@@ -169,13 +185,13 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     solvedButton: {
-        backgroundColor: '#1CAB4B', // Green
+        backgroundColor: '#1CAB4B',
     },
     pendingButton: {
-        backgroundColor: '#FBBF24', // Yellow
+        backgroundColor: '#FBBF24',
     },
     statusText: {
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 14,
     },
     solvedText: {
@@ -183,9 +199,6 @@ const styles = StyleSheet.create({
     },
     pendingText: {
         color: '#1a1a1a',
-    },
-    content: {
-        paddingHorizontal: 16,
     },
     card: {
         flexDirection: 'row',
@@ -210,28 +223,26 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 6,
     },
-    cardIcon: {
-        marginRight: 4,
-    },
     cardLabel: {
         fontSize: 12,
-        color: '#6B7280',
-        fontWeight: '600',
+        fontFamily: 'Urbanist_700Bold',
+        color: '#797A88',
     },
     cardValue: {
         fontSize: 14,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     reportTitle: {
         fontSize: 16,
-        fontWeight: 'bold',
-        color: '#6B7280', // Lighter grey bold title
+        fontFamily: 'Urbanist_700Bold',
+        color: '#6B7280',
         marginBottom: 12,
     },
     reportDescription: {
-        fontSize: 16,
-        color: '#1a1a1a',
+        fontSize: 14,
+        fontFamily: 'Urbanist_500Medium',  // 'medium' invalid tha, fix kiya
+        color: '#1B1B1E',
         lineHeight: 24,
     },
     loadingContainer: {

@@ -78,7 +78,6 @@ export default function WeeklySearchSkill({ onBack }) {
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -96,8 +95,8 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
         color: '#1a1a1a',
+        fontFamily: 'Urbanist_700Bold',
     },
     searchContainer: {
         flexDirection: 'row',
@@ -105,7 +104,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 16,
         backgroundColor: '#fff',
         borderWidth: 1,
-        borderColor: '#E5E7EB', // Gray border
+        borderColor: '#E5E7EB',
         borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 12,
@@ -118,6 +117,7 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 16,
         color: '#000',
+        fontFamily: 'Urbanist_400Regular',
     },
     filtersWrapper: {
         marginBottom: 24,
@@ -129,9 +129,9 @@ const styles = StyleSheet.create({
     filterPill: {
         paddingHorizontal: 20,
         paddingVertical: 8,
-        borderRadius: 20, // Rounded outline
+        borderRadius: 20,
         borderWidth: 1.5,
-        borderColor: '#3B82F6', // Blue Border
+        borderColor: '#3B82F6',
         backgroundColor: '#fff',
     },
     activeFilterPill: {
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     filterText: {
         color: '#3B82F6',
         fontSize: 14,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
     activeFilterText: {
         color: '#2563EB',
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
     gridItem: {
-        width: '48%', // Approx 2 columns
+        width: '48%',
         height: 200,
         borderRadius: 24,
         overflow: 'hidden',
@@ -178,12 +178,13 @@ const styles = StyleSheet.create({
     skillName: {
         color: '#fff',
         fontSize: 18,
-        fontWeight: 'bold',
         marginBottom: 4,
+        fontFamily: 'Urbanist_700Bold',
     },
     skillLevel: {
         color: '#fff',
         fontSize: 12,
+        fontFamily: 'Urbanist_400Regular',
     },
     playButtonOverlay: {
         position: 'absolute',
@@ -194,7 +195,7 @@ const styles = StyleSheet.create({
     playButtonCircle: {
         width: 48,
         height: 48,
-        backgroundColor: 'rgba(0,0,0,0.4)', // semi-transparent black
+        backgroundColor: 'rgba(0,0,0,0.4)',
         borderRadius: 24,
         justifyContent: 'center',
         alignItems: 'center',

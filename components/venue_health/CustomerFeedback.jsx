@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
@@ -54,25 +54,26 @@ const FEEDBACK_CARDS = [
 // ─── Circular Progress ────────────────────────────────────────────────────────
 function CircularProgress({ percentage, size = 120, strokeWidth = 10, label = 'percentage', color = '#22c55e' }) {
     const r = (size - strokeWidth) / 2;
-    const circ = 2 * Math.PI * r;
-    const filled = (percentage / 100) * circ;
     const cx = size / 2;
     const cy = size / 2;
+
+    const startAngle = -220;
+    const endAngle = 40;
+    const totalAngle = 260;
+    const filledAngle = (percentage / 100) * totalAngle;
 
     return (
         <View style={{ alignItems: 'center', justifyContent: 'center', width: size, height: size }}>
             <Svg width={size} height={size} style={{ position: 'absolute' }}>
-                {/* background track */}
                 <Path
-                    d={describeArc(cx, cy, r, -210, 30)}
-                    stroke="#e5e7eb"
+                    d={describeArc(cx, cy, r, startAngle, endAngle)}
+                    stroke="#E5E7EB"
                     strokeWidth={strokeWidth}
                     fill="none"
                     strokeLinecap="round"
                 />
-                {/* filled arc */}
                 <Path
-                    d={describeArcFilled(cx, cy, r, -210, 30, percentage)}
+                    d={describeArc(cx, cy, r, startAngle, startAngle + filledAngle)}
                     stroke={color}
                     strokeWidth={strokeWidth}
                     fill="none"
@@ -80,10 +81,21 @@ function CircularProgress({ percentage, size = 120, strokeWidth = 10, label = 'p
                 />
             </Svg>
             <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: size === 120 ? 22 : 36, fontWeight: 'bold', color: '#1a1a1a' }}>
+                <Text style={{
+                    fontSize: size <= 120 ? 22 : 42,
+                    fontFamily: 'Urbanist_700Bold',
+                    color: '#1a1a1a',
+                }}>
                     {percentage}%
                 </Text>
-                <Text style={{ fontSize: size === 120 ? 11 : 13, color: '#6b7280', marginTop: 2 }}>{label}</Text>
+                <Text style={{
+                    fontSize: size <= 120 ? 11 : 13,
+                    fontFamily: 'Urbanist_400Regular',
+                    color: '#9CA3AF',
+                    marginTop: 2,
+                }}>
+                    {label}
+                </Text>
             </View>
         </View>
     );
@@ -110,18 +122,29 @@ function describeArcFilled(cx, cy, r, startAngle, endAngle, pct) {
 // ─── Score Progress Bar ───────────────────────────────────────────────────────
 function ScoreBar({ score }) {
     return (
-        <View style={{ height: 4, backgroundColor: '#e5e7eb', borderRadius: 2, marginTop: 8 }}>
-            <View style={{ width: `${(score / 10) * 100}%`, height: 4, backgroundColor: '#22c55e', borderRadius: 2 }} />
+        <View style={{ height: 5, backgroundColor: '#F3F4F6', borderRadius: 3, marginTop: 10 }}>
+            <View style={{
+                width: `${(score / 10) * 100}%`,
+                height: 5,
+                backgroundColor: '#22c55e',
+                borderRadius: 3,
+            }} />
         </View>
     );
 }
-
 // ─── Screen 1: Card List ──────────────────────────────────────────────────────
-function CardListScreen({ searchQuery, setSearchQuery, cards, onCardPress, onChartPress }) {
+function CardListScreen({ searchQuery, setSearchQuery, cards, onCardPress, onChartPress, onBack }) {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>Customer feedback</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {/* {onBack && (
+                        <TouchableOpacity onPress={onBack} style={{ marginRight: 12 }}>
+                            <Ionicons name="arrow-back" size={24} color="#000" />
+                        </TouchableOpacity>
+                    )} */}
+                    <Text style={styles.headerTitle}>Customer feedback</Text>
+                </View>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
@@ -143,29 +166,35 @@ function CardListScreen({ searchQuery, setSearchQuery, cards, onCardPress, onCha
                 {/* Title row */}
                 <View style={styles.chartTitleContainer}>
                     <Text style={styles.chartTitle}>Customer Satisfaction Results</Text>
-                    <TouchableOpacity style={styles.chartIconBtn} onPress={onChartPress}>
-                        <Ionicons name="bar-chart-outline" size={20} color="#1a1a1a" />
+                    <TouchableOpacity onPress={onChartPress}>
+                        <Image
+                            source={require('@/assets/images/Chart.png')}
+                            style={styles.iconImage}
+                            resizeMode="contain"
+                        />
                     </TouchableOpacity>
                 </View>
 
                 {/* Cards grid */}
                 <View style={styles.cardsGrid}>
                     {cards.map(card => (
-                        <TouchableOpacity
-                            key={card.id}
-                            style={styles.card}
-                            onPress={() => onCardPress(card)}
-                            activeOpacity={0.8}
-                        >
-                            <View style={{ alignItems: 'center', marginBottom: 14 }}>
-                                <CircularProgress percentage={card.percentage} size={110} strokeWidth={9} />
+                        // CardListScreen mein card ke andar
+                        <TouchableOpacity key={card.id} style={styles.card} onPress={() => onCardPress(card)} activeOpacity={0.8}>
+                            <View style={{ alignItems: 'center', marginBottom: 16 }}>
+                                <CircularProgress
+                                    percentage={card.percentage}
+                                    size={120}
+                                    strokeWidth={11}
+                                    color="#22c55e"
+                                    label="percentage"
+                                />
                             </View>
                             <View style={styles.cardMeta}>
-                                <Ionicons name="calendar-outline" size={14} color="#6b7280" />
-                                <Text style={styles.cardMetaText}>{card.date}</Text>
+                                <Ionicons name="calendar-outline" size={15} color="#9CA3AF" />
+                                <Text style={[styles.cardMetaText, { fontFamily: 'Urbanist_700Bold', }]}>{card.date}</Text>
                             </View>
-                            <View style={[styles.cardMeta, { marginTop: 4 }]}>
-                                <Ionicons name="location-outline" size={14} color="#6b7280" />
+                            <View style={[styles.cardMeta]}>
+                                <Ionicons name="location-outline" size={15} color="#9CA3AF" />
                                 <Text style={styles.cardMetaText}>{card.venue}</Text>
                             </View>
                         </TouchableOpacity>
@@ -194,34 +223,26 @@ function ResultsScreen({ card, onBack }) {
                 <View style={styles.metaStrip}>
                     <View style={styles.metaItem}>
                         <Ionicons name="calendar-outline" size={14} color="#6b7280" />
-                        <View>
                             <Text style={styles.metaLabel}>Date</Text>
                             <Text style={styles.metaValue}>{details.date}</Text>
-                        </View>
                     </View>
                     <View style={styles.metaSep} />
                     <View style={styles.metaItem}>
                         <Ionicons name="time-outline" size={14} color="#6b7280" />
-                        <View>
                             <Text style={styles.metaLabel}>Time</Text>
                             <Text style={styles.metaValue}>{details.time}</Text>
-                        </View>
                     </View>
                     <View style={styles.metaSep} />
                     <View style={styles.metaItem}>
                         <Ionicons name="people-outline" size={14} color="#6b7280" />
-                        <View>
                             <Text style={styles.metaLabel}>Students</Text>
                             <Text style={styles.metaValue}>{details.students}</Text>
-                        </View>
                     </View>
                     <View style={styles.metaSep} />
                     <View style={styles.metaItem}>
                         <Ionicons name="location-outline" size={14} color="#6b7280" />
-                        <View>
                             <Text style={styles.metaLabel}>Venue</Text>
                             <Text style={styles.metaValue}>{details.venue}</Text>
-                        </View>
                     </View>
                 </View>
 
@@ -285,9 +306,12 @@ function ChartScreen({ searchQuery, setSearchQuery, onBack }) {
                 {/* Title row */}
                 <View style={styles.chartTitleContainer}>
                     <Text style={styles.chartTitle}>Customer Satisfaction Results</Text>
-                    <TouchableOpacity style={styles.chartIconBtn} onPress={onBack}>
-                        <Ionicons name="grid-outline" size={20} color="#1a1a1a" />
-                    </TouchableOpacity>
+                    <TouchableOpacity  onPress={onBack}>
+                        <Image
+                            source={require('@/assets/images/Chart.png')}
+                            style={styles.iconImage}
+                            resizeMode="contain"
+                        />                    </TouchableOpacity>
                 </View>
 
                 {/* Legend */}
@@ -352,6 +376,7 @@ export default function CustomerFeedback({ onBack }) {
             cards={FEEDBACK_CARDS}
             onCardPress={card => { setSelectedCard(card); setScreen('results'); }}
             onChartPress={() => setScreen('chart')}
+            onBack={onBack}
         />
     );
 }
@@ -360,7 +385,7 @@ export default function CustomerFeedback({ onBack }) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff' },
     header: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 20 },
-    headerTitle: { fontSize: 26, fontWeight: 'bold', color: '#1a1a1a' },
+    headerTitle: { fontSize: 26, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a' },
     backBtn: { flexDirection: 'row', alignItems: 'center', gap: 10 },
     content: { paddingHorizontal: 16, paddingBottom: 40 },
 
@@ -370,79 +395,88 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16, paddingVertical: 14, marginBottom: 30,
     },
     searchIcon: { marginRight: 10 },
-    searchInput: { flex: 1, fontSize: 16, color: '#1a1a1a', fontWeight: '500' },
+    searchInput: { flex: 1, fontSize: 16, fontFamily: 'Urbanist_500Medium', color: '#1a1a1a' },
 
     chartTitleContainer: {
         flexDirection: 'row', justifyContent: 'space-between',
         alignItems: 'center', marginBottom: 16,
     },
-    chartTitle: { fontSize: 18, fontWeight: 'bold', color: '#1e293b' },
-    chartIconBtn: {
-        width: 36, height: 36, borderRadius: 8, borderWidth: 1.5,
-        borderColor: '#1e293b', alignItems: 'center', justifyContent: 'center',
-    },
+    chartTitle: { fontSize: 16, fontFamily: 'Urbanist_700Bold', color: '#1e293b' },
 
-    // Cards grid
+    // Cards grid (list screen)
     cardsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
     card: {
         width: (width - 32 - 14) / 2,
         backgroundColor: '#fff',
-        borderRadius: 16,
+        borderRadius: 20,
         padding: 16,
+        paddingBottom: 20,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 8,
-        elevation: 3,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+        elevation: 4,
+        borderWidth: 1,
+        borderColor: '#F3F4F6',
     },
-    cardMeta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    cardMetaText: { fontSize: 13, color: '#374151' },
+    cardMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
+    cardMetaText: { fontSize: 14, fontFamily: 'Urbanist_500Medium', color: '#374151' },
 
-    // Results
+    // Meta strip (results screen)
     metaStrip: {
         flexDirection: 'row', alignItems: 'center',
-        borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12,
-        paddingVertical: 14, paddingHorizontal: 12,
+        borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 14,
+        paddingVertical: 12, paddingHorizontal: 8,
         justifyContent: 'space-between',
+        marginBottom: 8,
     },
-    metaItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    metaLabel: { fontSize: 11, color: '#6b7280', fontWeight: '600' },
-    metaValue: { fontSize: 13, color: '#1a1a1a', fontWeight: '600' },
-    metaSep: { width: 1, height: 30, backgroundColor: '#e5e7eb' },
+    metaItem: { alignItems: 'center', gap: 4 },
+    metaLabel: { fontSize: 10, fontFamily: 'Urbanist_400Regular', color: '#9CA3AF' },
+    metaValue: { fontSize: 12, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a', textAlign: 'center' },
+    metaSep: { width: 1, height: 36, backgroundColor: '#E5E7EB' },
 
+    // Category cards (results screen)
     catGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
     catCard: {
         width: (width - 32 - 14) / 2,
         backgroundColor: '#fff',
         borderRadius: 16,
         padding: 16,
+        paddingBottom: 18,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.07,
-        shadowRadius: 6,
-        elevation: 2,
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        elevation: 3,
+        borderWidth: 1,
+        borderColor: '#F3F4F6',
     },
-    catCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-    catLabel: { fontSize: 13, color: '#6b7280' },
-    catEmoji: { fontSize: 18 },
-    catScore: { fontSize: 26, fontWeight: 'bold', color: '#1a1a1a' },
+    catCardHeader: {
+        flexDirection: 'row', justifyContent: 'space-between',
+        alignItems: 'center', marginBottom: 6,
+    },
+    catLabel: { fontSize: 12, fontFamily: 'Urbanist_400Regular', color: '#9CA3AF' },
+    catEmoji: { fontSize: 22 },
+    catScore: { fontSize: 28, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a', marginTop: 4 },
 
-    // Chart
+    // Chart screen
     legendContainer: { flexDirection: 'row', marginBottom: 20 },
     legendItem: { flexDirection: 'row', alignItems: 'center', marginRight: 16 },
     legendDot: { width: 8, height: 8, borderRadius: 4, marginRight: 6 },
-    legendText: { fontSize: 13, color: '#4B5563' },
+    legendText: { fontSize: 13, fontFamily: 'Urbanist_400Regular', color: '#4B5563' },
 
     chartArea: { flexDirection: 'row', marginTop: 10 },
     yAxis: {
         width: 30, height: 220, justifyContent: 'space-between',
         alignItems: 'center', marginRight: 10, paddingBottom: 25,
     },
-    axisText: { fontSize: 12, color: '#4B5563', fontWeight: 'bold' },
+    axisText: { fontSize: 12, fontFamily: 'Urbanist_700Bold', color: '#4B5563' },
     chartPlot: { flex: 1, position: 'relative', height: 240 },
     xAxis: {
         position: 'absolute', bottom: 0, left: 0, right: 0, height: 30,
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     },
-    axisTextX: { fontSize: 12, color: '#4B5563', fontWeight: 'bold', flex: 1, textAlign: 'center' },
+    axisTextX: { fontSize: 12, fontFamily: 'Urbanist_700Bold', color: '#4B5563', flex: 1, textAlign: 'center' },
+
+    iconImage: { height: 25, width: 25 },
 });

@@ -20,9 +20,7 @@ export default function TabLayout() {
 
     return (
         <>
-            <Header
-                onMenuPress={() => openMenu('Menu')}
-            />
+            <Header onMenuPress={() => openMenu('Menu')} />
 
             <SideMenu
                 visible={isMenuOpen}
@@ -50,8 +48,8 @@ export default function TabLayout() {
                         marginBottom: 2,
                     },
                     tabBarLabelStyle: {
-                        fontSize: 13,
-                        fontWeight: '700',
+                        fontSize: 10,
+                        fontFamily: 'Urbanist_700Bold',
                     },
                 }}
             >
@@ -62,8 +60,10 @@ export default function TabLayout() {
                         tabBarIcon: ({ focused }) => (
                             <Image
                                 source={require('../../assets/images/home.png')}
-                                style={{ width: 25, height: 25, marginBottom: 10, objectFit: 'contain',
-                                    tintColor: focused ? Colors[colorScheme ?? 'light'].tint : '#9E9E9E' }}
+                                style={{
+                                    width: 25, height: 25, marginBottom: 10, objectFit: 'contain',
+                                    tintColor: focused ? Colors[colorScheme ?? 'light'].tint : '#9E9E9E',
+                                }}
                             />
                         ),
                     }}
@@ -76,8 +76,10 @@ export default function TabLayout() {
                         tabBarIcon: ({ focused }) => (
                             <Image
                                 source={require('../../assets/images/Calendar.png')}
-                                style={{ width: 25, height: 25, marginBottom: 10, objectFit: 'contain',
-                                    tintColor: focused ? Colors[colorScheme ?? 'light'].tint : '#9E9E9E' }}
+                                style={{
+                                    width: 25, height: 25, marginBottom: 10, objectFit: 'contain',
+                                    tintColor: focused ? Colors[colorScheme ?? 'light'].tint : '#9E9E9E',
+                                }}
                             />
                         ),
                     }}
@@ -90,8 +92,10 @@ export default function TabLayout() {
                         tabBarIcon: ({ focused }) => (
                             <Image
                                 source={require('../../assets/images/Document.png')}
-                                style={{ width: 25, height: 25, marginBottom: 10, objectFit: 'contain',
-                                    tintColor: focused ? Colors[colorScheme ?? 'light'].tint : '#9E9E9E' }}
+                                style={{
+                                    width: 25, height: 25, marginBottom: 10, objectFit: 'contain',
+                                    tintColor: focused ? Colors[colorScheme ?? 'light'].tint : '#9E9E9E',
+                                }}
                             />
                         ),
                     }}
@@ -104,11 +108,18 @@ export default function TabLayout() {
                         tabBarIcon: ({ focused }) => (
                             <Image
                                 source={require('../../assets/images/music.png')}
-                                style={{ width: 25, height: 25, marginBottom: 10, objectFit: 'contain',
-                                    tintColor: focused ? Colors[colorScheme ?? 'light'].tint : '#9E9E9E' }}
+                                style={{
+                                    width: 25, height: 25, marginBottom: 10, objectFit: 'contain',
+                                    tintColor: focused ? Colors[colorScheme ?? 'light'].tint : '#9E9E9E',
+                                }}
                             />
                         ),
                     }}
+                />
+
+                <Tabs.Screen
+                    name="reportIssueList"
+                    options={{ href: null }}
                 />
 
                 <Tabs.Screen
@@ -118,8 +129,10 @@ export default function TabLayout() {
                         tabBarIcon: ({ focused }) => (
                             <Image
                                 source={require('../../assets/images/Activity.png')}
-                                style={{ width: 25, height: 25, marginBottom: 10, objectFit: 'contain',
-                                    tintColor: focused ? Colors[colorScheme ?? 'light'].tint : '#9E9E9E' }}
+                                style={{
+                                    width: 25, height: 25, marginBottom: 10, objectFit: 'contain',
+                                    tintColor: focused ? Colors[colorScheme ?? 'light'].tint : '#9E9E9E',
+                                }}
                             />
                         ),
                     }}

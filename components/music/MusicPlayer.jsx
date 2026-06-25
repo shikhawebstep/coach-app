@@ -306,21 +306,23 @@ export default function MusicPlayer({ onBack }) {
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff' },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 60 },
-    emptyText: { fontSize: 14, color: '#6B7280' },
+    errorText: { color: 'red', textAlign: 'center', marginBottom: 12, fontFamily: 'Urbanist_400Regular', fontSize: 13 },
+    emptyText: { fontSize: 14, color: '#6B7280', fontFamily: 'Urbanist_400Regular' },
+
+    /* List */
     listHeader: { paddingHorizontal: 20, paddingTop: 30, paddingBottom: 20 },
-    listTitle: { fontSize: 32, fontWeight: 'bold', color: '#1a1a1a' },
+    listTitle: { fontSize: 32, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a' },
     searchContainer: {
         flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB',
         marginHorizontal: 20, paddingHorizontal: 16, paddingVertical: 12,
         borderRadius: 16, borderWidth: 1, borderColor: '#E5E7EB', marginBottom: 24,
     },
     searchIcon: { marginRight: 10 },
-    searchInput: { flex: 1, fontSize: 16, color: '#1a1a1a' },
-    musicLabel: { fontSize: 22, fontWeight: 'bold', color: '#1a1a1a', paddingHorizontal: 20, marginBottom: 16 },
+    searchInput: { flex: 1, fontSize: 16, color: '#1a1a1a', fontFamily: 'Urbanist_400Regular' },
+    musicLabel: { fontSize: 22, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a', paddingHorizontal: 20, marginBottom: 16 },
     listContent: { paddingBottom: 30 },
     musicRow: {
         flexDirection: 'row', alignItems: 'center',
@@ -328,11 +330,13 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
     },
     musicRowActive: { backgroundColor: '#EFF6FF' },
-    musicIndex: { width: 30, fontSize: 16, fontWeight: '600', color: '#9CA3AF' },
+    musicIndex: { width: 30, fontSize: 16, fontFamily: 'Urbanist_600SemiBold', color: '#9CA3AF' },
     musicThumb: { width: 60, height: 60, borderRadius: 12, marginRight: 16, backgroundColor: '#E5E7EB' },
     musicInfo: { flex: 1 },
-    musicTitle: { fontSize: 15, fontWeight: 'bold', color: '#1a1a1a', marginBottom: 4 },
-    musicArtist: { fontSize: 13, color: '#9CA3AF' },
+    musicTitle: { fontSize: 15, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a', marginBottom: 4 },
+    musicArtist: { fontSize: 13, fontFamily: 'Urbanist_400Regular', color: '#9CA3AF' },
+
+    /* Player */
     header: {
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
         paddingHorizontal: 20, paddingTop: 20, paddingBottom: 20,
@@ -340,8 +344,8 @@ const styles = StyleSheet.create({
     albumContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 10, marginBottom: 30 },
     albumArt: { width: width * 0.8, height: width * 0.8, borderRadius: 20, backgroundColor: '#E5E7EB' },
     trackInfoContainer: { alignItems: 'center', marginBottom: 30 },
-    trackTitle: { fontSize: 22, fontWeight: 'bold', color: '#1a1a1a', marginBottom: 8 },
-    artistName: { fontSize: 16, color: '#6B7280' },
+    trackTitle: { fontSize: 22, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a', marginBottom: 8 },
+    artistName: { fontSize: 16, fontFamily: 'Urbanist_400Regular', color: '#6B7280' },
     progressContainer: { paddingHorizontal: 30, marginBottom: 40 },
     progressBarBg: {
         height: 6, backgroundColor: '#D1D5DB', borderRadius: 3,
@@ -354,7 +358,7 @@ const styles = StyleSheet.create({
         marginLeft: -7, borderWidth: 2, borderColor: '#fff',
     },
     timeRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
-    timeText: { fontSize: 12, color: '#6B7280' },
+    timeText: { fontSize: 12, fontFamily: 'Urbanist_400Regular', color: '#6B7280' },
     controlsContainer: {
         flexDirection: 'row', alignItems: 'center',
         justifyContent: 'space-between', paddingHorizontal: 40,

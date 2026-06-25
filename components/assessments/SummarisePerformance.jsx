@@ -5,12 +5,12 @@ export default function SummarisePerformance({ onBack, onComplete }) {
     return (
         <View style={styles.container}>
             {/* Header */}
-            <View style={styles.header}>
+            {/* <View style={styles.header}>
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Create report</Text>
-            </View>
+            </View> */}
 
             <Text style={styles.title}>Summarise Performance</Text>
 
@@ -53,15 +53,16 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
+        marginVertical: 24,
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     title: {
-        fontSize: 22,
-        fontWeight: 'bold',
+        fontSize: 24,
+        marginVertical: 24,
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
-        textAlign: 'center',
-        marginTop: 20,
+        textAlign: 'center'
     },
     centerContent: {
         flex: 1,
@@ -71,7 +72,7 @@ const styles = StyleSheet.create({
     timer: {
         fontSize: 56,
         color: '#9CA3AF', // Gray
-        fontWeight: 'normal',
+          fontFamily: 'Urbanist_400Regular',
         marginBottom: 60,
     },
     outerCircle: {
@@ -112,6 +113,6 @@ const styles = StyleSheet.create({
     completeButtonText: {
         color: '#fff',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
 });

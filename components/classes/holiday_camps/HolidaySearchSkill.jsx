@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     searchContainer: {
@@ -117,6 +117,7 @@ const styles = StyleSheet.create({
     searchInput: {
         flex: 1,
         fontSize: 16,
+        fontFamily: 'Urbanist_400Regular',
         color: '#000',
     },
     filtersWrapper: {
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
     filterText: {
         color: '#3B82F6',
         fontSize: 14,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
     activeFilterText: {
         color: '#2563EB',
@@ -178,12 +179,13 @@ const styles = StyleSheet.create({
     skillName: {
         color: '#fff',
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         marginBottom: 4,
     },
     skillLevel: {
         color: '#fff',
         fontSize: 12,
+        fontFamily: 'Urbanist_400Regular',
     },
     playButtonOverlay: {
         position: 'absolute',

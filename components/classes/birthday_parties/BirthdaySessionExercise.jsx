@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, ScrollView, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function BirthdaySessionExercise({ sessionData, onBack, onSearchSkillClick }) {
 
@@ -111,10 +111,10 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
         color: '#fff',
         flex: 1,
         textAlign: 'center',
+        fontFamily: 'Urbanist_700Bold',
     },
     content: {
         paddingHorizontal: 16,
@@ -146,24 +146,26 @@ const styles = StyleSheet.create({
     },
     durationLabel: {
         fontSize: 16,
-        fontWeight: 'bold',
         color: '#2563EB',
+        fontFamily: 'Urbanist_700Bold',
     },
     durationValue: {
         fontSize: 16,
         color: '#3B82F6',
+        fontFamily: 'Urbanist_400Regular',
     },
     sectionTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
         color: '#1a1a1a',
         marginBottom: 12,
         marginTop: 8,
+        fontFamily: 'Urbanist_700Bold',
     },
     paragraph: {
         fontSize: 14,
         color: '#6B7280',
         lineHeight: 22,
         marginBottom: 12,
+        fontFamily: 'Urbanist_400Regular',
     },
 });

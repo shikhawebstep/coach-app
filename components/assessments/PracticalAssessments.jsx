@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     content: {
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     },
     name: {
         fontSize: 14,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     dateTimeCol: {
@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
     },
     dateTime: {
         fontSize: 12,
+        fontFamily: 'Urbanist_400Regular',
         color: '#6B7280',
         lineHeight: 18,
     },
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
     },
     venue: {
         fontSize: 14,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     actionCol: {
@@ -144,17 +145,19 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 6,
+        width:85,
     },
     btnStart: {
-        backgroundColor: '#3B82F6', // Blue
+        backgroundColor: '#3B82F6',
     },
     btnComplete: {
-        backgroundColor: '#1CAB4B', // Green
+        backgroundColor: '#1CAB4B',
     },
     actionBtnText: {
+        textAlign:'center',
         color: '#fff',
         fontSize: 12,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
     chevron: {
         marginLeft: 8,

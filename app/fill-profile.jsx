@@ -314,10 +314,11 @@ const styles = StyleSheet.create({
     },
 
     header: { alignItems: 'center', marginBottom: 24 },
-    title: {
-        fontSize: 32, fontWeight: '800', color: '#fff',
-        marginBottom: 8, fontFamily: 'Urbanist_700Bold', textAlign: 'center',
-    },
+  title: {
+    fontSize: 32, color: '#fff',
+    marginBottom: 8, fontFamily: 'Urbanist_700Bold', textAlign: 'center',
+},
+
     subtitle: {
         fontSize: 18, color: 'rgba(255,255,255,0.6)',
         textAlign: 'center', lineHeight: 20, fontFamily: 'Urbanist_400Regular',
@@ -362,7 +363,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
         marginBottom: 16, borderBottomWidth: 1, borderBottomColor: '#2C2C32', paddingBottom: 12,
     },
-    modalTitle: { color: '#fff', fontSize: 17, fontWeight: '700', fontFamily: 'Urbanist_700Bold' },
+modalTitle: { color: '#fff', fontSize: 17, fontFamily: 'Urbanist_700Bold' },
     modalItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#2C2C32' },
     modalItemSelected: { borderBottomColor: '#FFC600' },
     countryRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },

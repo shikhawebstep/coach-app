@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 22,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     headerRight: {
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     },
     progressText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 12,
     },
     statusBadgeCompleted: {
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     },
     statusTextWhite: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 12,
     },
     scrollContent: {
@@ -228,12 +228,13 @@ const styles = StyleSheet.create({
     },
     infoLabel: {
         fontSize: 13,
+        fontFamily: 'Urbanist_400Regular',
         color: '#666',
         marginBottom: 4,
     },
     infoValue: {
         fontSize: 14,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     changeDateBtn: {
@@ -244,7 +245,7 @@ const styles = StyleSheet.create({
     },
     changeDateText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 13,
     },
     mapContainer: {
@@ -266,12 +267,13 @@ const styles = StyleSheet.create({
     locationText: {
         marginLeft: 8,
         fontSize: 13,
+        fontFamily: 'Urbanist_400Regular',
         color: '#4B5563',
         lineHeight: 18,
     },
     sectionTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#4B5563',
         marginBottom: 16,
     },
@@ -284,7 +286,7 @@ const styles = StyleSheet.create({
     },
     inputLabel: {
         fontSize: 15,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#4B5563',
         marginBottom: 8,
     },
@@ -298,6 +300,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 12,
         fontSize: 16,
+        fontFamily: 'Urbanist_400Regular',
         color: '#1a1a1a',
     },
     textAreaContainer: {
@@ -318,7 +321,7 @@ const styles = StyleSheet.create({
     },
     viewNotesBtnText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 16,
         marginRight: 8,
     },
