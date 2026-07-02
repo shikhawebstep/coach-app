@@ -129,7 +129,7 @@ export default function WeeklySessionTrainingDetails({ sessionId, onBack, onStud
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => onSessionClick('weeklySession')}
-                        style={{ flex: 1 }}  
+                        style={{ flex: 1 }}
                     >
                         <Text
                             style={styles.headerTitle}
@@ -157,7 +157,7 @@ export default function WeeklySessionTrainingDetails({ sessionId, onBack, onStud
                             <Text style={styles.infoLabel}>Date</Text>
                             {/* FIX: wrapped both values in a single Text, added space/newline between date and time */}
                             <Text style={styles.infoValue}>
-                                {formatDate(sessionData?.sessionDate)}{'\n'}
+                                {formatDate(sessionData?.sessionDate)} {" "}
                                 {sessionData?.classSchedule?.startTime} - {sessionData?.classSchedule?.endTime}
                             </Text>
                         </View>
@@ -236,7 +236,7 @@ export default function WeeklySessionTrainingDetails({ sessionId, onBack, onStud
                                             <Ionicons
                                                 name="checkmark"
                                                 size={18}
-                                                color={member.status === 'attended' ? '#fff' : '#1CAB4B'}
+                                                color={member.status === 'attended' ? '#fff' : '#101014'}
                                                 style={styles.btnIcon}
                                             />
                                             <Text style={[
@@ -257,7 +257,7 @@ export default function WeeklySessionTrainingDetails({ sessionId, onBack, onStud
                                             <Ionicons
                                                 name="close"
                                                 size={18}
-                                                color={member.status === 'not attended' ? '#fff' : '#E53E3E'}
+                                                color={member.status === 'not attended' ? '#fff' : '#101014'}
                                                 style={styles.btnIcon}
                                             />
                                             <Text style={[
@@ -277,13 +277,15 @@ export default function WeeklySessionTrainingDetails({ sessionId, onBack, onStud
                 {/* Trials Tab */}
                 {activeTab === 'Trials' && (
                     <>
-                        <TouchableOpacity
-                            style={styles.addTrialistButton}
-                            onPress={() => setShowAddTrialist(true)}
-                        >
-                            <Ionicons name="add" size={24} color="#3B82F6" style={styles.addIcon} />
-                            <Text style={styles.addTrialistText}>Add walk by trialist</Text>
-                        </TouchableOpacity>
+                        <View style={{flexDirection:'row',justifyContent:'center',alignContent:"center"}}>
+                            <TouchableOpacity
+                                style={styles.addTrialistButton}
+                                onPress={() => setShowAddTrialist(true)}
+                            >
+                                <Ionicons name="add" size={24} color="#3B82F6" style={styles.addIcon} />
+                                <Text style={styles.addTrialistText}>Add walk by trialist</Text>
+                            </TouchableOpacity>
+                        </View>
                         <TouchableOpacity style={styles.confirmButton}>
                             <Text style={styles.confirmButtonText}>Confirm</Text>
                         </TouchableOpacity>
@@ -358,7 +360,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: '#F0F0F0',
+        borderColor: '#F2F2F2',
         padding: 16,
         marginBottom: 24,
         shadowColor: '#000',
@@ -379,14 +381,14 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     infoLabel: {
-        fontSize: 13,
-        color: '#9CA3AF',
+        fontSize: 12,
+        color: '#989898',
         marginBottom: 4,
-        fontFamily: 'Urbanist_600SemiBold',
+        fontFamily: 'Urbanist_700Bold',
     },
     infoValue: {
-        fontSize: 14,
-        color: '#1a1a1a',
+        fontSize: 12,
+        color: '#212121',
         lineHeight: 20,
         fontFamily: 'Urbanist_400Regular',
     },
@@ -403,7 +405,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#D97706',
     },
     statusText: {
-        fontSize: 14,
+        fontSize: 12,
         textTransform: 'capitalize',
         fontFamily: 'Urbanist_700Bold',
     },
@@ -427,15 +429,15 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         marginBottom: 24,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: '#EBEBEB',
         borderRadius: 8,
-        padding: 4,
+        paddingVertical: 5,
     },
     tab: {
         flex: 1,
         paddingVertical: 12,
         alignItems: 'center',
-        borderRadius: 6,
+        borderRadius: 7,
     },
     activeTab: {
         backgroundColor: '#3B82F6',
@@ -465,9 +467,9 @@ const styles = StyleSheet.create({
     },
     memberIndex: {
         width: 24,
-        fontSize: 14,
-        color: '#666',
-        fontFamily: 'Urbanist_400Regular',
+        fontSize: 12,
+        color: '#212121',
+        fontFamily: 'Urbanist_500Medium',
     },
     memberInfo: {
         flex: 1,
@@ -482,7 +484,7 @@ const styles = StyleSheet.create({
     },
     memberAge: {
         fontSize: 12,
-        color: '#666',
+        color: '#212121',
         marginLeft: 8,
         fontFamily: 'Urbanist_400Regular',
     },
@@ -519,17 +521,17 @@ const styles = StyleSheet.create({
     },
     btnText: {
         fontSize: 12,
-
+        color: '#101014',
         fontFamily: 'Urbanist_600SemiBold',
     },
     btnTextWhite: {
         color: '#fff',
     },
     btnTextGreen: {
-        color: '#1CAB4B',
+        color: '#101014',
     },
     btnTextRed: {
-        color: '#E53E3E',
+        color: '#101014',
     },
     emptyText: {
         textAlign: 'center',
@@ -542,12 +544,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 14,
+        paddingVertical: 10,
+        paddingHorizontal:30,
         borderRadius: 30,
-        borderWidth: 1.5,
+        borderWidth: 2,
         borderColor: '#3B82F6',
         backgroundColor: '#fff',
         marginBottom: 24,
+
     },
     addIcon: {
         marginRight: 8,
@@ -562,6 +566,7 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         borderRadius: 30,
         alignItems: 'center',
+        marginTop:20,
     },
     confirmButtonText: {
         fontSize: 16,

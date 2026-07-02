@@ -84,7 +84,7 @@ const DARK_COLORS = {
 const LIGHT_COLORS = {
   primary: "#F5C518",
   dark: "#F9F9F9",
-  darkCard: "#FFFFFF",
+  darkCard: "#1F222A",
   surface: "#EAEAEA",
   border: "#D3D3D3",
   textPrimary: "#1A1A1A",
@@ -299,7 +299,7 @@ const createStyles = (C) =>
     safe: { flex: 1, backgroundColor: C.screenBg },
     backgroundImage: { flex: 1 },
     stepContainer: { flex: 1, backgroundColor: C.contractBg },
-    stepFooter: { padding: 16, backgroundColor: C.contractBg },
+    stepFooter: { padding: 16 },
 
     primaryBtn: { backgroundColor: "#2F5FE5", borderRadius: 15, paddingHorizontal: 60, paddingVertical: 15, alignItems: "center" },
     greenBtn: { backgroundColor: "#1BAC4B", borderRadius: 40, paddingHorizontal: 60, paddingVertical: 23, alignItems: "center" },
@@ -324,8 +324,8 @@ const createStyles = (C) =>
     taskIconActive: { backgroundColor: C.primary },
     taskIconDone: { backgroundColor: C.success },
     taskIcon: { width: 20, height: 20 },
-    taskTitle: { color: C.textSecondary, fontSize: 14, fontFamily: 'Urbanist_600SemiBold' },
-    taskTitleActive: { color: C.textPrimary },
+    taskTitle: { color: '#fff', fontSize: 14, fontFamily: 'Urbanist_600SemiBold' },
+    taskTitleActive: { color: '#fff' },
     taskSub: { color: C.textSecondary, fontSize: 12, fontFamily: 'Urbanist_400Regular', marginTop: 2 },
     taskBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
     taskBadgePending: { backgroundColor: C.border },
@@ -342,22 +342,22 @@ const createStyles = (C) =>
     welcomeOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0, 0, 0, 0.45)' },
 
     // Dashboard
-    dashProgressCard: { flexDirection: "row", alignItems: "center", backgroundColor: C.darkCard, borderRadius: 32, padding: 14, marginHorizontal: 18, marginBottom: 16, gap: 14, borderWidth: 1, borderColor: C.border },
+    dashProgressCard: { flexDirection: "row", alignItems: "center", backgroundColor: C.darkCard, borderRadius: 32, padding: 14, marginHorizontal: 18, marginBottom: 16, gap: 14 },
     dashCircleWrap: { width: 120, height: 120, justifyContent: "center", alignItems: "center", position: "relative" },
     dashCircleLabel: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: "center", alignItems: "center" },
-    dashCirclePercent: { color: C.textPrimary, fontSize: 24, fontFamily: 'Urbanist_700Bold' },
-    dashProgressTitle: { color: C.textPrimary, fontSize: 19, fontFamily: 'Urbanist_700Bold', lineHeight: 25 },
-    dashProgressSub: { color: C.textSecondary, fontSize: 16, fontFamily: 'Urbanist_400Regular', marginTop: 10 },
-    dashSectionLabel: { color: C.textPrimary, fontSize: 20, fontFamily: 'Urbanist_700Bold', letterSpacing: 1.2, paddingHorizontal: 18, marginBottom: 10 },
+    dashCirclePercent: { color: '#fff', fontSize: 24, fontFamily: 'Urbanist_700Bold' },
+    dashProgressTitle: { color: '#fff', fontSize: 19, fontFamily: 'Urbanist_700Bold', lineHeight: 25 },
+    dashProgressSub: { color: '#fff', fontSize: 16, fontFamily: 'Urbanist_400Regular', marginTop: 10 },
+    dashSectionLabel: { color: '#fff', fontSize: 20, fontFamily: 'Urbanist_700Bold', letterSpacing: 1.2, paddingHorizontal: 18, marginBottom: 10 },
     dashTaskList: { paddingHorizontal: 18, gap: 10 },
-    dashTaskRow: { flexDirection: "row", alignItems: "center", backgroundColor: C.darkCard, borderRadius: 14, padding: 13, gap: 12, borderWidth: 1, borderColor: C.border, marginBottom: 10 },
+    dashTaskRow: { flexDirection: "row", alignItems: "center", backgroundColor: C.darkCard, borderRadius: 14, padding: 13, gap: 12,  marginBottom: 10 },
     dashTaskIcon: { width: 50, height: 50, borderRadius: 21, justifyContent: "center", alignItems: "center" },
-    dashTaskTitle: { color: C.textPrimary, fontSize: 20, fontFamily: 'Urbanist_600SemiBold' },
-    dashTaskDur: { color: C.textSecondary, fontSize: 14, fontFamily: 'Urbanist_400Regular', marginTop: 2 },
+    dashTaskTitle: { color:'#fff', fontSize: 20, fontFamily: 'Urbanist_600SemiBold' },
+    dashTaskDur: { color: '#fff', fontSize: 14, fontFamily: 'Urbanist_400Regular', marginTop: 2 },
     dashBadge: { backgroundColor: C.primary, paddingHorizontal: 9, paddingVertical: 4, borderRadius: 20 },
     dashBadgeDone: { backgroundColor: C.success },
-    dashBadgeText: { color: C.dark, fontSize: 10, fontFamily: 'Urbanist_700Bold' },
-    dashBadgeTextDone: { color: '#fff' },
+    dashBadgeText: { color: '#000', fontSize: 10, fontFamily: 'Urbanist_700Bold' },
+    dashBadgeTextDone: { color: '#000' },
 
     // Contract / shared header
     contractHeader: { flexDirection: "row", alignItems: "center", padding: 14, borderBottomWidth: 0.5, borderBottomColor: C.contractBorderBottom, backgroundColor: C.contractHeaderBg, gap: 10 },
@@ -506,7 +506,7 @@ const TaskDashboardStep = ({ coachName = "Ethan", completedTasks = {}, onSelectT
       <View style={{ flex: 1 }}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
           <View style={{ paddingHorizontal: 18, paddingBottom: 17 }}>
-            <Text style={{ color: COLORS.textPrimary, fontSize: 32, fontFamily: 'Urbanist_700Bold' }}>
+            <Text style={{ color: '#fff', fontSize: 32, fontFamily: 'Urbanist_700Bold' }}>
               Morning, {coachName} 👋
             </Text>
           </View>

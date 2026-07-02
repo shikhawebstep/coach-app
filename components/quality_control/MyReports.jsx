@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 const RESULTS_DATA = [
     { id: 1, name: 'Daniel\nWalsh', date: '3rd April 2023', time: '10:30-11:30am', venue: 'King Cross', score: 75, color: '#1CAB4B' },
@@ -9,8 +9,48 @@ const RESULTS_DATA = [
     { id: 4, name: 'Joshua', date: '3rd April 2023', time: '10:30-11:30am', venue: 'Hammersmith', score: 43, color: '#EF4444' },
 ];
 
+const LIGHT = {
+    background: '#fff',
+    headerTitle: '#1a1a1a',
+    searchBg: '#F6F6F7',
+    searchBorder: '#9E9FAA',
+    searchIcon: '#a0a0a0',
+    searchText: '#000',
+    cardBg: '#fff',
+    cardBorder: '#F9FAFB',
+    shadowColor: '#000',
+    shadowOpacity: 0.03,
+    nameText: '#1a1a1a',
+    dateTimeText: '#6B7280',
+    venueText: '#1a1a1a',
+    chevron: '#000',
+    backIcon: '#000',
+};
+
+const DARK = {
+    background: '#121212',
+    headerTitle: '#FFFFFF',
+    searchBg: '#1E1E1E',
+    searchBorder: '#3A3A3C',
+    searchIcon: '#8E8E93',
+    searchText: '#FFFFFF',
+    cardBg: '#1E1E1E',
+    cardBorder: '#2C2C2E',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    nameText: '#FFFFFF',
+    dateTimeText: '#A1A1AA',
+    venueText: '#FFFFFF',
+    chevron: '#FFFFFF',
+    backIcon: '#FFFFFF',
+};
+
 export default function MyReports({ onBack, title = "My reports" }) {
     const [searchQuery, setSearchQuery] = useState('');
+    const colorScheme = useColorScheme();
+    const isDark = colorScheme === 'dark';
+    const colors = isDark ? DARK : LIGHT;
+    const styles = createStyles(colors);
 
     return (
         <View style={styles.container}>
@@ -18,7 +58,7 @@ export default function MyReports({ onBack, title = "My reports" }) {
             <View style={styles.header}>
                 {onBack && (
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color="#000" />
+                        <Ionicons name="arrow-back" size={24} color={colors.backIcon} />
                     </TouchableOpacity>
                 )}
                 <Text style={styles.headerTitle}>{title}</Text>
@@ -26,11 +66,11 @@ export default function MyReports({ onBack, title = "My reports" }) {
 
             {/* Search Input */}
             <View style={styles.searchContainer}>
-                <Ionicons name="search-outline" size={20} color="#a0a0a0" style={styles.searchIcon} />
+                <Ionicons name="search-outline" size={20} color={colors.searchIcon} style={styles.searchIcon} />
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Select a coach..."
-                    placeholderTextColor="#a0a0a0"
+                    placeholderTextColor={colors.searchIcon}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
@@ -56,7 +96,7 @@ export default function MyReports({ onBack, title = "My reports" }) {
                             <View style={[styles.scoreBadge, { backgroundColor: item.color }]}>
                                 <Text style={styles.scoreText}>{item.score}%</Text>
                             </View>
-                            <Ionicons name="chevron-forward" size={16} color="#000" style={styles.chevron} />
+                            <Ionicons name="chevron-forward" size={16} color={colors.chevron} style={styles.chevron} />
                         </View>
                     </TouchableOpacity>
                 ))}
@@ -66,10 +106,10 @@ export default function MyReports({ onBack, title = "My reports" }) {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: colors.background,
     },
     header: {
         flexDirection: 'row',
@@ -84,15 +124,15 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 24,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: colors.headerTitle,
     },
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         marginHorizontal: 16,
-        backgroundColor: '#F6F6F7',
+        backgroundColor: colors.searchBg,
         borderWidth: 1,
-        borderColor: '#9E9FAA',
+        borderColor: colors.searchBorder,
         borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 14,
@@ -105,7 +145,7 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 16,
         fontFamily: 'Urbanist_400Regular',
-        color: '#000',
+        color: colors.searchText,
     },
     listContent: {
         paddingHorizontal: 16,
@@ -113,16 +153,16 @@ const styles = StyleSheet.create({
     card: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: colors.cardBg,
         borderRadius: 16,
         paddingVertical: 16,
         paddingHorizontal: 16,
         marginBottom: 16,
         borderWidth: 1,
-        borderColor: '#F9FAFB',
-        shadowColor: '#000',
+        borderColor: colors.cardBorder,
+        shadowColor: colors.shadowColor,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.03,
+        shadowOpacity: colors.shadowOpacity,
         shadowRadius: 8,
         elevation: 1,
     },
@@ -132,7 +172,7 @@ const styles = StyleSheet.create({
     nameText: {
         fontSize: 12,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: colors.nameText,
     },
     colDateTime: {
         flex: 1.5,
@@ -140,17 +180,17 @@ const styles = StyleSheet.create({
     dateTimeText: {
         fontSize: 12,
         fontFamily: 'Urbanist_400Regular',
-        color: '#6B7280',
+        color: colors.dateTimeText,
         lineHeight: 18,
     },
     colVenue: {
         flex: 1,
     },
     venueText: {
-        textAlign:'center',
+        textAlign: 'center',
         fontSize: 12,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: colors.venueText,
     },
     colScore: {
         flex: 1,

@@ -72,38 +72,43 @@ export default function WeeklySyllabusDayDetails({ onBack, onSessionItemSelect, 
                 </View>
 
                 {/* ── Level Pill Tabs ── */}
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.tabsContainer}
-                >
-                    {availableLevels.map(level => (
-                        <TouchableOpacity
-                            key={level}
-                            style={[
-                                styles.tab,
-                                activeTab === level
-                                    ? styles.tabActive
-                                    : styles.tabInactive
-                            ]}
-                            onPress={() => setActiveTab(level)}
-                            activeOpacity={0.8}
-                        >
-                            <Text
-                                numberOfLines={1}
-                                ellipsizeMode="tail"
+
+                <View style={styles.tabOuter}>
+
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.tabsContainer}
+                    >
+                        {availableLevels.map(level => (
+                            <TouchableOpacity
+                                key={level}
                                 style={[
-                                    styles.tabText,
+                                    styles.tab,
                                     activeTab === level
-                                        ? styles.tabTextActive
-                                        : styles.tabTextInactive
+                                        ? styles.tabActive
+                                        : styles.tabInactive
                                 ]}
+                                onPress={() => setActiveTab(level)}
+                                activeOpacity={0.8}
                             >
-                                {LEVEL_LABELS[level]}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
+                                <Text
+                                    numberOfLines={1}
+                                    ellipsizeMode="tail"
+                                    style={[
+                                        styles.tabText,
+                                        activeTab === level
+                                            ? styles.tabTextActive
+                                            : styles.tabTextInactive
+                                    ]}
+                                >
+                                    {LEVEL_LABELS[level]}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+
+                </View>
 
                 <View style={styles.body}>
 
@@ -238,45 +243,58 @@ const styles = StyleSheet.create({
         backgroundColor: '#22c55e',
         borderRadius: 15,
         paddingHorizontal: 16,
-        padding: 18,
+        padding: 28,
     },
     backButton: {
         padding: 2,
     },
     headerTitle: {
-        fontSize: 20,
+        fontSize: 32,
         color: '#fff',
         letterSpacing: 0.3,
         fontFamily: 'Urbanist_700Bold',
-    },
 
+        // Text Shadow
+        textShadowColor: 'rgba(0, 0, 0, 0.25)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 4,
+    },
     /* ── Level Tabs ── */
     tabsContainer: {
-        paddingHorizontal: 14,
-        paddingVertical: 8,
+        paddingHorizontal: 5,
+        paddingVertical: 5,
         gap: 10,
+
+    },
+    tabOuter: {
+        backgroundColor: '#EBEBEB',
+        borderRadius: 8,
+        padding: 2,
+        marginBottom: 20,
+        width: '93%',
+        alignSelf: 'center',  // replaces margin: '0 auto'
     },
 
     tab: {
         minWidth: 120,
         paddingHorizontal: 16,
         paddingVertical: 10,
-        borderRadius: 20,
+        borderRadius: 7,
         justifyContent: 'center',
         alignItems: 'center',
         flexShrink: 0,
     },
 
     tabActive: {
-        backgroundColor: '#3B82F6',
+        backgroundColor: '#3771E0',
     },
 
     tabInactive: {
-        backgroundColor: '#F3F4F6',
+        backgroundColor: 'transparent',
     },
 
     tabText: {
-        fontSize: 13,
+        fontSize: 15,
         fontFamily: 'Urbanist_600SemiBold',
         textAlign: 'center',
     },
@@ -326,7 +344,7 @@ const styles = StyleSheet.create({
         marginBottom: 18,
     },
     skillOfDayLabel: {
-        fontSize: 17,
+        fontSize: 24,
         color: '#111827',
         marginBottom: 4,
         fontFamily: 'Urbanist_700Bold',
@@ -338,7 +356,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     skillName: {
-        fontSize: 15,
+        fontSize: 20,
         color: '#374151',
         fontFamily: 'Urbanist_600SemiBold',
     },
@@ -346,8 +364,8 @@ const styles = StyleSheet.create({
         padding: 2,
     },
     skillDesc: {
-        fontSize: 13,
-        color: '#6B7280',
+        fontSize: 14,
+        color: '#88909D',
         lineHeight: 19,
         fontFamily: 'Urbanist_400Regular',
     },

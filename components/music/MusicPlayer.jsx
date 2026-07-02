@@ -2,11 +2,54 @@ import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
+// ── Theme tokens ────────────────────────────────────────────────────────────
+const palettes = {
+    light: {
+        background: '#fff',
+        primary: '#3B82F6',
+        textPrimary: '#1a1a1a',
+        textSecondary: '#6B7280',
+        textMuted: '#9CA3AF',
+        searchBg: '#F9FAFB',
+        searchBorder: '#E5E7EB',
+        rowBorder: '#F3F4F6',
+        rowActiveBg: '#EFF6FF',
+        thumbBg: '#E5E7EB',
+        albumBg: '#E5E7EB',
+        progressBg: '#D1D5DB',
+        progressThumbBorder: '#fff',
+        controlIcon: '#4B5563',
+        error: '#EF4444',
+    },
+    dark: {
+        background: '#0B0F14',
+        primary: '#5B9CFF',
+        textPrimary: '#F3F4F6',
+        textSecondary: '#9CA3AF',
+        textMuted: '#7D8590',
+        searchBg: '#1A1F26',
+        searchBorder: '#2A313B',
+        rowBorder: '#242B33',
+        rowActiveBg: '#16233A',
+        thumbBg: '#242B33',
+        albumBg: '#242B33',
+        progressBg: '#2A313B',
+        progressThumbBorder: '#0B0F14',
+        controlIcon: '#C9CED6',
+        error: '#F87171',
+    },
+};
+
 export default function MusicPlayer({ onBack }) {
+    const colorScheme = useColorScheme();
+    const isDark = colorScheme === 'dark';
+    const theme = isDark ? palettes.dark : palettes.light;
+    const styles = getStyles(theme);
+
     const [view, setView] = useState('list');
     const [selectedTrack, setSelectedTrack] = useState(null);
     const [musicData, setMusicData] = useState([]);
@@ -42,12 +85,12 @@ export default function MusicPlayer({ onBack }) {
                 `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/music/playlist`,
                 {
                     method: "GET",
-                    headers: { Authorization: `Bearer ${token}` },
+                    headers: { Authorization: `Bearer ${token || ""}` },
                     redirect: "follow",
                 }
             );
-            const result = await response.json();
-            if (response.ok) setMusicData(result?.data || []);
+            const result = await response.json().catch(() => ({}));
+            if (response.ok) setMusicData(Array.isArray(result?.data) ? result.data : []);
         } catch (error) {
             console.error("Failed to fetch playlist:", error);
         } finally {
@@ -57,56 +100,54 @@ export default function MusicPlayer({ onBack }) {
 
     // ── load + play a track ────────────────────────────────────
     const handleTrackPress = async (track) => {
-        console.log("Track object:", JSON.stringify(track, null, 2)); // 👈 add this
-        if (!track.uploadMusic) {
-            console.warn("No audio URL for track:", track.musicTitle);
+        if (!track?.uploadMusic) {
+            console.warn("No audio URL for track:", track?.musicTitle);
+            setAudioError("This track doesn't have any audio available.");
             return;
         }
         setSelectedTrack(track);
         setView('player');
         await loadAndPlay(track.uploadMusic);
     };
-  const loadAndPlay = async (uri) => {
-    try {
-        setIsBuffering(true);
-        setAudioError(null);
 
-        if (soundRef.current) {
-            await soundRef.current.unloadAsync();
-            soundRef.current = null;
+    const loadAndPlay = async (uri) => {
+        if (!uri || typeof uri !== "string") {
+            setAudioError("Could not load this track. Please try another.");
+            return;
         }
+        try {
+            setIsBuffering(true);
+            setAudioError(null);
 
-        const encodedUri = encodeURI(decodeURI(uri.trim()));
-        console.log("Attempting to load:", encodedUri);
+            if (soundRef.current) {
+                await soundRef.current.unloadAsync();
+                soundRef.current = null;
+            }
 
-        // Test if URL is reachable first
-        const testFetch = await fetch(encodedUri, { method: 'HEAD' });
-        console.log("URL status:", testFetch.status);
-        console.log("Content-Type:", testFetch.headers.get('content-type'));
+            const encodedUri = encodeURI(decodeURI(uri.trim()));
 
-        const { sound } = await Audio.Sound.createAsync(
-            { uri: encodedUri },
-            { shouldPlay: true },
-            onPlaybackStatusUpdate
-        );
-        soundRef.current = sound;
-        setIsPlaying(true);
-    } catch (e) {
-        console.error("Audio load error:", e.message);
-        console.error("Full error:", JSON.stringify(e));
-        setAudioError("Could not load this track. Please try another.");
-        setIsPlaying(false);
-    } finally {
-        setIsBuffering(false);
-    }
-};
+            const { sound } = await Audio.Sound.createAsync(
+                { uri: encodedUri },
+                { shouldPlay: true },
+                onPlaybackStatusUpdate
+            );
+            soundRef.current = sound;
+            setIsPlaying(true);
+        } catch (e) {
+            console.error("Audio load error:", e?.message || e);
+            setAudioError("Could not load this track. Please try another.");
+            setIsPlaying(false);
+        } finally {
+            setIsBuffering(false);
+        }
+    };
 
     const onPlaybackStatusUpdate = (status) => {
-        if (!status.isLoaded) return;
+        if (!status?.isLoaded) return;
         setPositionMs(status.positionMillis || 0);
         setDurationMs(status.durationMillis || 0);
-        setIsPlaying(status.isPlaying);
-        setIsBuffering(status.isBuffering);
+        setIsPlaying(!!status.isPlaying);
+        setIsBuffering(!!status.isBuffering);
         // auto-advance to next on finish
         if (status.didJustFinish) {
             handleNext();
@@ -128,7 +169,8 @@ export default function MusicPlayer({ onBack }) {
     };
 
     const handleNext = async () => {
-        const idx = musicData.findIndex(t => t.id === selectedTrack?.id);
+        if (!musicData.length) return;
+        const idx = musicData.findIndex(t => t?.id === selectedTrack?.id);
         const next = musicData[(idx + 1) % musicData.length];
         if (next) {
             setSelectedTrack(next);
@@ -142,7 +184,8 @@ export default function MusicPlayer({ onBack }) {
             await soundRef.current?.setPositionAsync(0);
             return;
         }
-        const idx = musicData.findIndex(t => t.id === selectedTrack?.id);
+        if (!musicData.length) return;
+        const idx = musicData.findIndex(t => t?.id === selectedTrack?.id);
         const prev = musicData[(idx - 1 + musicData.length) % musicData.length];
         if (prev) {
             setSelectedTrack(prev);
@@ -152,7 +195,8 @@ export default function MusicPlayer({ onBack }) {
 
     // ── helpers ────────────────────────────────────────────────
     const formatTime = (ms) => {
-        const total = Math.floor(ms / 1000);
+        const safeMs = Number(ms) || 0;
+        const total = Math.floor(safeMs / 1000);
         const m = Math.floor(total / 60);
         const s = total % 60;
         return `${m}:${String(s).padStart(2, '0')}`;
@@ -161,7 +205,7 @@ export default function MusicPlayer({ onBack }) {
     const progressRatio = durationMs > 0 ? positionMs / durationMs : 0;
 
     const filteredMusic = musicData.filter(item =>
-        item.musicTitle?.toLowerCase().includes(searchQuery.toLowerCase())
+        (item?.musicTitle || '').toLowerCase().includes((searchQuery || '').toLowerCase())
     );
 
     // ── LIST VIEW ──────────────────────────────────────────────
@@ -172,20 +216,20 @@ export default function MusicPlayer({ onBack }) {
                     <Text style={styles.listTitle}>Find soundtracks</Text>
                 </View>
 
-             
+
 
                 <View style={styles.searchContainer}>
-                    <Ionicons name="search-outline" size={20} color="#9CA3AF" style={styles.searchIcon} />
+                    <Ionicons name="search-outline" size={20} color={theme.textMuted} style={styles.searchIcon} />
                     <TextInput
                         style={styles.searchInput}
                         placeholder="Search..."
-                        placeholderTextColor="#9CA3AF"
+                        placeholderTextColor={theme.textMuted}
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                     />
                     {searchQuery.length > 0 && (
                         <TouchableOpacity onPress={() => setSearchQuery('')}>
-                            <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+                            <Ionicons name="close-circle" size={18} color={theme.textMuted} />
                         </TouchableOpacity>
                     )}
                 </View>
@@ -194,7 +238,7 @@ export default function MusicPlayer({ onBack }) {
 
                 {loading ? (
                     <View style={styles.centered}>
-                        <ActivityIndicator size="large" color="#3B82F6" />
+                        <ActivityIndicator size="large" color={theme.primary} />
                     </View>
                 ) : filteredMusic.length === 0 ? (
                     <View style={styles.centered}>
@@ -204,26 +248,29 @@ export default function MusicPlayer({ onBack }) {
                     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
                         {filteredMusic.map((item, index) => (
                             <TouchableOpacity
-                                key={item.id}
+                                key={item?.id ?? index}
                                 style={[
                                     styles.musicRow,
-                                    selectedTrack?.id === item.id && styles.musicRowActive,
+                                    selectedTrack?.id === item?.id && styles.musicRowActive,
                                 ]}
                                 onPress={() => handleTrackPress(item)}
                             >
                                 <Text style={styles.musicIndex}>
                                     {String(index + 1).padStart(2, '0')}
                                 </Text>
-                                <Image source={{ uri: item.musicImage }} style={styles.musicThumb} />
+                                <Image
+                                    source={item?.musicImage ? { uri: item.musicImage } : undefined}
+                                    style={styles.musicThumb}
+                                />
                                 <View style={styles.musicInfo}>
-                                    <Text style={styles.musicTitle}>{item.musicTitle}</Text>
-                                    <Text style={styles.musicArtist}>{item.durationFormatted}</Text>
+                                    <Text style={styles.musicTitle}>{item?.musicTitle || 'Untitled track'}</Text>
+                                    <Text style={styles.musicArtist}>{item?.durationFormatted || '-'}</Text>
                                 </View>
-                                {selectedTrack?.id === item.id && isPlaying && (
-                                    <Ionicons name="musical-notes" size={18} color="#3B82F6" style={{ marginRight: 8 }} />
+                                {selectedTrack?.id === item?.id && isPlaying && (
+                                    <Ionicons name="musical-notes" size={18} color={theme.primary} style={{ marginRight: 8 }} />
                                 )}
                                 <TouchableOpacity>
-                                    <Ionicons name="ellipsis-horizontal" size={20} color="#1a1a1a" />
+                                    <Ionicons name="ellipsis-horizontal" size={20} color={theme.textPrimary} />
                                 </TouchableOpacity>
                             </TouchableOpacity>
                         ))}
@@ -238,19 +285,22 @@ export default function MusicPlayer({ onBack }) {
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => setView('list')}>
-                    <Ionicons name="arrow-back" size={24} color="#1a1a1a" />
+                    <Ionicons name="arrow-back" size={24} color={theme.textPrimary} />
                 </TouchableOpacity>
                 <TouchableOpacity>
-                    <Ionicons name="ellipsis-horizontal" size={24} color="#1a1a1a" />
+                    <Ionicons name="ellipsis-horizontal" size={24} color={theme.textPrimary} />
                 </TouchableOpacity>
             </View>
-   {audioError && (
-                    <Text style={{ color: 'red', textAlign: 'center', marginBottom: 12 }}>
-                        {audioError}
-                    </Text>
-                )}
+            {audioError && (
+                <Text style={styles.errorText}>
+                    {audioError}
+                </Text>
+            )}
             <View style={styles.albumContainer}>
-                <Image source={{ uri: selectedTrack?.musicImage }} style={styles.albumArt} />
+                <Image
+                    source={selectedTrack?.musicImage ? { uri: selectedTrack.musicImage } : undefined}
+                    style={styles.albumArt}
+                />
             </View>
 
             <View style={styles.trackInfoContainer}>
@@ -264,7 +314,7 @@ export default function MusicPlayer({ onBack }) {
                     style={styles.progressBarBg}
                     onStartShouldSetResponder={() => true}
                     onResponderRelease={(e) => {
-                        const { locationX } = e.nativeEvent;
+                        const locationX = e?.nativeEvent?.locationX || 0;
                         const barWidth = width - 60;
                         handleSeek(Math.min(Math.max(locationX / barWidth, 0), 1));
                     }}
@@ -281,11 +331,11 @@ export default function MusicPlayer({ onBack }) {
             {/* Controls */}
             <View style={styles.controlsContainer}>
                 <TouchableOpacity>
-                    <Ionicons name="repeat-outline" size={24} color="#4B5563" />
+                    <Ionicons name="repeat-outline" size={24} color={theme.controlIcon} />
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={handlePrev}>
-                    <Ionicons name="play-skip-back" size={28} color="#4B5563" />
+                    <Ionicons name="play-skip-back" size={28} color={theme.controlIcon} />
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.playButton} onPress={togglePlayPause} disabled={isBuffering}>
@@ -296,45 +346,46 @@ export default function MusicPlayer({ onBack }) {
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={handleNext}>
-                    <Ionicons name="play-skip-forward" size={28} color="#4B5563" />
+                    <Ionicons name="play-skip-forward" size={28} color={theme.controlIcon} />
                 </TouchableOpacity>
 
                 <TouchableOpacity>
-                    <Ionicons name="shuffle-outline" size={24} color="#4B5563" />
+                    <Ionicons name="shuffle-outline" size={24} color={theme.controlIcon} />
                 </TouchableOpacity>
             </View>
         </View>
     );
 }
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff' },
+
+const getStyles = (theme) => StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.background },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 60 },
-    errorText: { color: 'red', textAlign: 'center', marginBottom: 12, fontFamily: 'Urbanist_400Regular', fontSize: 13 },
-    emptyText: { fontSize: 14, color: '#6B7280', fontFamily: 'Urbanist_400Regular' },
+    errorText: { color: theme.error, textAlign: 'center', marginBottom: 12, fontFamily: 'Urbanist_400Regular', fontSize: 13 },
+    emptyText: { fontSize: 14, color: theme.textSecondary, fontFamily: 'Urbanist_400Regular' },
 
     /* List */
     listHeader: { paddingHorizontal: 20, paddingTop: 30, paddingBottom: 20 },
-    listTitle: { fontSize: 32, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a' },
+    listTitle: { fontSize: 32, fontFamily: 'Urbanist_700Bold', color: theme.textPrimary },
     searchContainer: {
-        flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB',
+        flexDirection: 'row', alignItems: 'center', backgroundColor: theme.searchBg,
         marginHorizontal: 20, paddingHorizontal: 16, paddingVertical: 12,
-        borderRadius: 16, borderWidth: 1, borderColor: '#E5E7EB', marginBottom: 24,
+        borderRadius: 16, borderWidth: 1, borderColor: theme.searchBorder, marginBottom: 24,
     },
     searchIcon: { marginRight: 10 },
-    searchInput: { flex: 1, fontSize: 16, color: '#1a1a1a', fontFamily: 'Urbanist_400Regular' },
-    musicLabel: { fontSize: 22, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a', paddingHorizontal: 20, marginBottom: 16 },
+    searchInput: { flex: 1, fontSize: 16, color: theme.textPrimary, fontFamily: 'Urbanist_400Regular' },
+    musicLabel: { fontSize: 22, fontFamily: 'Urbanist_700Bold', color: theme.textPrimary, paddingHorizontal: 20, marginBottom: 16 },
     listContent: { paddingBottom: 30 },
     musicRow: {
         flexDirection: 'row', alignItems: 'center',
         paddingHorizontal: 20, paddingVertical: 12,
-        borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
+        borderBottomWidth: 1, borderBottomColor: theme.rowBorder,
     },
-    musicRowActive: { backgroundColor: '#EFF6FF' },
-    musicIndex: { width: 30, fontSize: 16, fontFamily: 'Urbanist_600SemiBold', color: '#9CA3AF' },
-    musicThumb: { width: 60, height: 60, borderRadius: 12, marginRight: 16, backgroundColor: '#E5E7EB' },
+    musicRowActive: { backgroundColor: theme.rowActiveBg },
+    musicIndex: { width: 30, fontSize: 16, fontFamily: 'Urbanist_600SemiBold', color: theme.textMuted },
+    musicThumb: { width: 60, height: 60, borderRadius: 12, marginRight: 16, backgroundColor: theme.thumbBg },
     musicInfo: { flex: 1 },
-    musicTitle: { fontSize: 15, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a', marginBottom: 4 },
-    musicArtist: { fontSize: 13, fontFamily: 'Urbanist_400Regular', color: '#9CA3AF' },
+    musicTitle: { fontSize: 15, fontFamily: 'Urbanist_700Bold', color: theme.textPrimary, marginBottom: 4 },
+    musicArtist: { fontSize: 13, fontFamily: 'Urbanist_400Regular', color: theme.textMuted },
 
     /* Player */
     header: {
@@ -342,31 +393,31 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20, paddingTop: 20, paddingBottom: 20,
     },
     albumContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 10, marginBottom: 30 },
-    albumArt: { width: width * 0.8, height: width * 0.8, borderRadius: 20, backgroundColor: '#E5E7EB' },
+    albumArt: { width: width * 0.8, height: width * 0.8, borderRadius: 20, backgroundColor: theme.albumBg },
     trackInfoContainer: { alignItems: 'center', marginBottom: 30 },
-    trackTitle: { fontSize: 22, fontFamily: 'Urbanist_700Bold', color: '#1a1a1a', marginBottom: 8 },
-    artistName: { fontSize: 16, fontFamily: 'Urbanist_400Regular', color: '#6B7280' },
+    trackTitle: { fontSize: 22, fontFamily: 'Urbanist_700Bold', color: theme.textPrimary, marginBottom: 8 },
+    artistName: { fontSize: 16, fontFamily: 'Urbanist_400Regular', color: theme.textSecondary },
     progressContainer: { paddingHorizontal: 30, marginBottom: 40 },
     progressBarBg: {
-        height: 6, backgroundColor: '#D1D5DB', borderRadius: 3,
+        height: 6, backgroundColor: theme.progressBg, borderRadius: 3,
         position: 'relative', justifyContent: 'center',
     },
-    progressBarFill: { height: '100%', backgroundColor: '#3B82F6', borderRadius: 3 },
+    progressBarFill: { height: '100%', backgroundColor: theme.primary, borderRadius: 3 },
     progressThumb: {
         position: 'absolute', width: 14, height: 14,
-        backgroundColor: '#3B82F6', borderRadius: 7,
-        marginLeft: -7, borderWidth: 2, borderColor: '#fff',
+        backgroundColor: theme.primary, borderRadius: 7,
+        marginLeft: -7, borderWidth: 2, borderColor: theme.progressThumbBorder,
     },
     timeRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
-    timeText: { fontSize: 12, fontFamily: 'Urbanist_400Regular', color: '#6B7280' },
+    timeText: { fontSize: 12, fontFamily: 'Urbanist_400Regular', color: theme.textSecondary },
     controlsContainer: {
         flexDirection: 'row', alignItems: 'center',
         justifyContent: 'space-between', paddingHorizontal: 40,
     },
     playButton: {
-        width: 70, height: 70, borderRadius: 35, backgroundColor: '#3B82F6',
+        width: 70, height: 70, borderRadius: 35, backgroundColor: theme.primary,
         alignItems: 'center', justifyContent: 'center',
-        shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 4 },
+        shadowColor: theme.primary, shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
     },
 });

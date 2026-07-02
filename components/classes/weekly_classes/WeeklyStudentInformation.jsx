@@ -133,13 +133,13 @@ const styles = StyleSheet.create({
     },
     label: {
         fontSize: 14,
-        color: '#6B7280',
+        color: '#797A88',
         fontWeight: 'bold',
         marginBottom: 6,
     },
     value: {
-        fontSize: 16,
-        color: '#1a1a1a',
+        fontSize: 14,
+        color: '#101014',
     },
     linkValue: {
         fontSize: 14,

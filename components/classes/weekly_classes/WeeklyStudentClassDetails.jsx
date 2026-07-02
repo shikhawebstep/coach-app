@@ -102,7 +102,6 @@ export default function WeeklyStudentClassDetails({ onBack, onSave, onCancel, st
                     style={styles.notesInput}
                     multiline
                     textAlignVertical="top"
-                    placeholder="Add a note..."
                     value={notes}
                     onChangeText={setNotes}
                     scrollEnabled={false}   // add this
@@ -137,25 +136,25 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     backButton: { marginRight: 4 },
-    headerTitle: { fontSize: 20,  color: '#1a1a1a', fontFamily: 'Urbanist_700Bold' },
+    headerTitle: { fontSize: 26,  color: '#1a1a1a', fontFamily: 'Urbanist_700Bold' },
     divider: { height: 1, backgroundColor: '#F0F0F0', marginBottom: 16 },
     scrollContent: { paddingHorizontal: 16, paddingBottom: 40 },
-    sectionTitle: { fontSize: 15, color: '#1a1a1a', marginBottom: 12, marginTop: 4, fontFamily: 'Urbanist_600SemiBold' },
+    sectionTitle: { fontSize: 16, color: '#4B4B56', marginBottom: 12, marginTop: 4, fontFamily: 'Urbanist_600SemiBold' },
     rowGroup: { flexDirection: 'row', marginBottom: 16, gap: 32 },
     col: { flex: 1 },
     fieldGroup: { marginBottom: 16 },
-    fieldLabel: { fontSize: 13, color: '#9CA3AF', marginBottom: 4, fontFamily: 'Urbanist_400Regular' },
+    fieldLabel: { fontSize: 14, color: '#9CA3AF', marginBottom: 4, fontFamily: 'Urbanist_700Bold' },
     fieldValue: { fontSize: 14, color: '#1a1a1a', fontFamily: 'Urbanist_600SemiBold' },
     phone: { color: '#3B82F6' },
     notesInput: {
         borderWidth: 1,
-        borderColor: '#E5E7EB',
-        borderRadius: 10,
+        borderColor: '#9E9FAA',
+        borderRadius: 12,
         padding: 12,
-        height: 120,
+        height: 140,
         fontSize: 14,
         color: '#1a1a1a',
-        backgroundColor: '#FAFAFA',
+        backgroundColor: '#F6F6F7',
         marginTop: 6,
         marginBottom: 32,
         fontFamily: 'Urbanist_400Regular',

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 const RESULTS_DATA = [
     { id: 1, name: 'Daniel\nWalsh',  date: '3rd April 2023', time: '10:30-11:30am', venue: 'King Cross',   score: 75, color: '#1CAB4B' },
@@ -9,11 +9,57 @@ const RESULTS_DATA = [
     { id: 4, name: 'Joshua',         date: '3rd April 2023', time: '10:30-11:30am', venue: 'Hammersmith',  score: 43, color: '#EF4444' },
 ];
 
+// ── Theme tokens ────────────────────────────────────────────────────────────
+const palettes = {
+    light: {
+        background: '#fff',
+        headerTitle: '#111827',
+        backIcon: '#111827',
+        searchBg: '#F6F6F7',
+        searchBorder: '#E5E7EB',
+        searchIcon: '#9CA3AF',
+        searchPlaceholder: '#9CA3AF',
+        searchText: '#111827',
+        cardBg: '#fff',
+        cardBorder: '#F3F4F6',
+        nameText: '#111827',
+        dateText: '#6B7280',
+        timeText: '#6B7280',
+        venueText: '#111827',
+        scoreText: '#fff',
+        chevron: '#111827',
+        shadowOpacity: 0.05,
+    },
+    dark: {
+        background: '#0B0F14',
+        headerTitle: '#F3F4F6',
+        backIcon: '#F3F4F6',
+        searchBg: '#1A1F26',
+        searchBorder: '#2A313B',
+        searchIcon: '#7D8590',
+        searchPlaceholder: '#7D8590',
+        searchText: '#F3F4F6',
+        cardBg: '#151A21',
+        cardBorder: '#242B33',
+        nameText: '#F3F4F6',
+        dateText: '#9CA3AF',
+        timeText: '#9CA3AF',
+        venueText: '#F3F4F6',
+        scoreText: '#fff',
+        chevron: '#F3F4F6',
+        shadowOpacity: 0.3,
+    },
+};
+
 export default function CoachResults({ onBack, title = 'My results' }) {
     const [searchQuery, setSearchQuery] = useState('');
+    const colorScheme = useColorScheme();
+    const isDark = colorScheme === 'dark';
+    const theme = isDark ? palettes.dark : palettes.light;
+    const styles = getStyles(theme);
 
     const filtered = RESULTS_DATA.filter(item =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+        (item?.name || '').toLowerCase().includes((searchQuery || '').toLowerCase())
     );
 
     return (
@@ -23,7 +69,7 @@ export default function CoachResults({ onBack, title = 'My results' }) {
             <View style={styles.header}>
                 {onBack && (
                     <TouchableOpacity onPress={onBack} style={styles.backButton} activeOpacity={0.7}>
-                        <Ionicons name="arrow-back" size={24} color="#111827" />
+                        <Ionicons name="arrow-back" size={24} color={theme.backIcon} />
                     </TouchableOpacity>
                 )}
                 <Text style={styles.headerTitle}>{title}</Text>
@@ -31,11 +77,11 @@ export default function CoachResults({ onBack, title = 'My results' }) {
 
             {/* ── Search ── */}
             <View style={styles.searchContainer}>
-                <Ionicons name="search-outline" size={20} color="#9CA3AF" style={styles.searchIcon} />
+                <Ionicons name="search-outline" size={20} color={theme.searchIcon} style={styles.searchIcon} />
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Select a coach..."
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={theme.searchPlaceholder}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
@@ -47,30 +93,32 @@ export default function CoachResults({ onBack, title = 'My results' }) {
                 contentContainerStyle={styles.listContent}
             >
                 {filtered.map(item => (
-                    <TouchableOpacity key={item.id} style={styles.card} activeOpacity={0.85}>
+                    <TouchableOpacity key={item?.id ?? Math.random()} style={styles.card} activeOpacity={0.85}>
 
                         {/* Name */}
                         <View style={styles.colName}>
-                            <Text style={styles.nameText}>{item.name}</Text>
+                            <Text style={styles.nameText}>{item?.name || '-'}</Text>
                         </View>
 
                         {/* Date / Time */}
                         <View style={styles.colDateTime}>
-                            <Text style={styles.dateText}>{item.date}</Text>
-                            <Text style={styles.timeText}>{item.time}</Text>
+                            <Text style={styles.dateText}>{item?.date || '-'}</Text>
+                            <Text style={styles.timeText}>{item?.time || '-'}</Text>
                         </View>
 
                         {/* Venue */}
                         <View style={styles.colVenue}>
-                            <Text style={styles.venueText}>{item.venue}</Text>
+                            <Text style={styles.venueText}>{item?.venue || '-'}</Text>
                         </View>
 
                         {/* Score + Chevron */}
                         <View style={styles.colScore}>
-                            <View style={[styles.scoreBadge, { backgroundColor: item.color }]}>
-                                <Text style={styles.scoreText}>{item.score}%</Text>
+                            <View style={[styles.scoreBadge, { backgroundColor: item?.color || '#6B7280' }]}>
+                                <Text style={styles.scoreText}>
+                                    {item?.score !== undefined && item?.score !== null ? `${item.score}%` : '-'}
+                                </Text>
                             </View>
-                            <Ionicons name="chevron-forward" size={18} color="#111827" style={styles.chevron} />
+                            <Ionicons name="chevron-forward" size={18} color={theme.chevron} style={styles.chevron} />
                         </View>
 
                     </TouchableOpacity>
@@ -81,10 +129,10 @@ export default function CoachResults({ onBack, title = 'My results' }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
 
     /* Header */
@@ -102,7 +150,7 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 26,
         fontFamily: 'Urbanist_700Bold',
-        color: '#111827',
+        color: theme.headerTitle,
         letterSpacing: -0.3,
     },
 
@@ -111,9 +159,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginHorizontal: 20,
-        backgroundColor: '#F6F6F7',
+        backgroundColor: theme.searchBg,
         borderWidth: 1.5,
-        borderColor: '#E5E7EB',
+        borderColor: theme.searchBorder,
         borderRadius: 14,
         paddingHorizontal: 16,
         paddingVertical: 10,
@@ -126,7 +174,7 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 15,
         fontFamily: 'Urbanist_400Regular',
-        color: '#111827',
+        color: theme.searchText,
     },
 
     /* List */
@@ -138,16 +186,16 @@ const styles = StyleSheet.create({
     card: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: theme.cardBg,
         borderRadius: 16,
         paddingVertical: 18,
         paddingHorizontal: 16,
         marginBottom: 14,
         borderWidth: 1,
-        borderColor: '#F3F4F6',
+        borderColor: theme.cardBorder,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: theme.shadowOpacity,
         shadowRadius: 8,
         elevation: 2,
     },
@@ -159,7 +207,7 @@ const styles = StyleSheet.create({
     nameText: {
         fontSize: 12,
         fontFamily: 'Urbanist_700Bold',
-        color: '#111827',
+        color: theme.nameText,
         lineHeight: 18,
     },
 
@@ -171,13 +219,13 @@ const styles = StyleSheet.create({
     dateText: {
         fontSize: 12,
         fontFamily: 'Urbanist_400Regular',
-        color: '#6B7280',
+        color: theme.dateText,
         lineHeight: 18,
     },
     timeText: {
         fontSize: 12,
         fontFamily: 'Urbanist_400Regular',
-        color: '#6B7280',
+        color: theme.timeText,
         lineHeight: 18,
     },
 
@@ -188,9 +236,9 @@ const styles = StyleSheet.create({
     venueText: {
         fontSize: 12,
         fontFamily: 'Urbanist_700Bold',
-        color: '#111827',
-        textAlign:'center',
-        paddingRight:10,
+        color: theme.venueText,
+        textAlign: 'center',
+        paddingRight: 10,
     },
 
     /* Col: Score */
@@ -208,7 +256,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     scoreText: {
-        color: '#fff',
+        color: theme.scoreText,
         fontSize: 13,
         fontFamily: 'Urbanist_700Bold',
     },

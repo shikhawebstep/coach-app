@@ -139,7 +139,7 @@ export default function SelectAVenueList({ venueId, onBack, onSessionSelect }) {
                                         {isCompleted ? 'Completed' : 'Pending'}
                                     </Text>
                                 </View>
-                                <Ionicons name="chevron-forward" size={18} color="#9CA3AF" style={styles.chevron} />
+                                <Ionicons name="chevron-forward" size={18} color="#0B0B26" style={styles.chevron} />
                             </View>
                         </TouchableOpacity>
                     );
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
         borderColor: '#9E9FAA',
         borderRadius: 12,
         paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingVertical: 10,
         marginBottom: 20,
     },
     searchFocused: {
@@ -274,8 +274,8 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     tab: {
-        paddingVertical: 13,
-        paddingHorizontal: 16,
+        paddingVertical: 12,
+        paddingHorizontal: 15,
         borderRadius: 30,
         borderWidth: 2,
     },

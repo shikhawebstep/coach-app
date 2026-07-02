@@ -27,7 +27,7 @@ export default function WeeklyAddTrialist({ onBack }) {
                     <TextInput
                         style={styles.input}
                         placeholder="Student Full Name"
-                        placeholderTextColor="#a0a0a0"
+                        placeholderTextColor="#797A88"
                         value={studentName}
                         onChangeText={setStudentName}
                     />
@@ -37,7 +37,7 @@ export default function WeeklyAddTrialist({ onBack }) {
                     <TextInput
                         style={styles.input}
                         placeholder="Parent Full Name"
-                        placeholderTextColor="#a0a0a0"
+                        placeholderTextColor="#797A88"
                         value={parentName}
                         onChangeText={setParentName}
                     />
@@ -47,7 +47,7 @@ export default function WeeklyAddTrialist({ onBack }) {
                     <TextInput
                         style={styles.input}
                         placeholder="Phone Number"
-                        placeholderTextColor="#a0a0a0"
+                        placeholderTextColor="#797A88"
                         value={phone}
                         onChangeText={setPhone}
                         keyboardType="phone-pad"
@@ -59,8 +59,7 @@ export default function WeeklyAddTrialist({ onBack }) {
                     <TextInput
                         style={styles.textArea}
                         multiline={true}
-                        placeholder="Notes (optional)"
-                        placeholderTextColor="#a0a0a0"
+                        placeholderTextColor="#797A88"
                         value={notes}
                         onChangeText={setNotes}
                         textAlignVertical="top"
@@ -108,29 +107,29 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         borderWidth: 1,
-        borderColor: '#9CA3AF',
-        borderRadius: 8,
+        borderColor: '#9E9FAA',
+        borderRadius: 12,
         backgroundColor: '#F6F6F7',
         marginBottom: 16,
     },
     input: {
         paddingHorizontal: 16,
-        paddingVertical: 14,
+        paddingVertical: 16,
         fontSize: 16,
         color: '#1a1a1a',
         fontFamily: 'Urbanist_400Regular',
     },
     textAreaContainer: {
         borderWidth: 1,
-        borderColor: '#9CA3AF',
-        borderRadius: 8,
+        borderColor: '#9E9FAA',
+        borderRadius: 12,
         backgroundColor: '#F6F6F7',
         marginBottom: 24,
         height: 150,
     },
     textArea: {
         paddingHorizontal: 16,
-        paddingTop: 14,
+        paddingTop: 16,
         fontSize: 16,
         color: '#1a1a1a',
         flex: 1,
