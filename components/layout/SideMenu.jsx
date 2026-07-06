@@ -2,6 +2,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import ProfileModal from './ProfileModal';
 
 import {
     Animated,
@@ -37,7 +38,7 @@ const MENU_ITEMS = [
         ],
     },
     { id: 'training', title: 'Training', icon: 'play-circle-outline' },
-    { id: 'classes/practicalAssessments', title: 'My Assessments', icon: 'stats-chart-outline' },
+    { id: '/practicalAssessments', title: 'My Assessments', icon: 'stats-chart-outline' },
     {
         id: 'health',
         title: 'Venue Health Check',
@@ -45,8 +46,8 @@ const MENU_ITEMS = [
         hasSubmenu: true,
         isOpen: true,
         submenu: [
-            { id: 'classes/studentNumbers', title: 'Student Numbers' },
-            { id: 'classes/customerFeedback', title: 'Customer Feedback' },
+            { id: '/studentNumbers', title: 'Student Numbers' },
+            { id: '/customerFeedback', title: 'Customer Feedback' },
         ],
     },
     { id: '/reportIssueList', title: 'Report an issue', icon: 'warning-outline' },
@@ -57,8 +58,8 @@ const MENU_ITEMS = [
         hasSubmenu: true,
         isOpen: true,
         submenu: [
-            { id: 'classes/createQcReport', title: 'Create a report' },
-            { id: 'classes/myReports', title: 'My reports' },
+            { id: '/createQcReport', title: 'Create a report' },
+            { id: '/myReports', title: 'My reports' },
         ],
     },
 ];
@@ -67,6 +68,7 @@ export default function SideMenu({ visible, onClose, initialTab = 'Menu' }) {
     const router = useRouter();
     const [items, setItems] = useState(MENU_ITEMS);
     const [activeTab, setActiveTab] = useState(initialTab); // 'Menu', 'Profile', 'Notifications'
+    const [isProfileVisible, setIsProfileVisible] = useState(false);
 
 
 
@@ -125,7 +127,7 @@ export default function SideMenu({ visible, onClose, initialTab = 'Menu' }) {
         // Direct top-level route, e.g. '/reportIssueList'
         router.push(route);
     } else if (route === 'profile') {
-        router.push('/fill-profile');
+        setIsProfileVisible(true);
     } else if (route === 'schedule') {
         router.push('/calendar');
     } else if (route === 'training') {
@@ -239,6 +241,10 @@ export default function SideMenu({ visible, onClose, initialTab = 'Menu' }) {
                 </View>
             </Modal>
 
+            <ProfileModal
+                visible={isProfileVisible}
+                onClose={() => setIsProfileVisible(false)}
+            />
         </>
     );
 }

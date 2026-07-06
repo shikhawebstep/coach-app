@@ -123,6 +123,31 @@ export default function TabLayout() {
                 />
 
                 <Tabs.Screen
+                    name="practicalAssessments"
+                    options={{ href: null }}
+                />
+
+                <Tabs.Screen
+                    name="studentNumbers"
+                    options={{ href: null }}
+                />
+
+                <Tabs.Screen
+                    name="customerFeedback"
+                    options={{ href: null }}
+                />
+
+                <Tabs.Screen
+                    name="createQcReport"
+                    options={{ href: null }}
+                />
+
+                <Tabs.Screen
+                    name="myReports"
+                    options={{ href: null }}
+                />
+
+                <Tabs.Screen
                     name="result"
                     options={{
                         title: 'My Results',

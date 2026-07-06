@@ -51,12 +51,13 @@ import MyReports from '@/components/quality_control/MyReports';
 import CustomerFeedback from '@/components/venue_health/CustomerFeedback';
 import StudentNumbers from '@/components/venue_health/StudentNumbers';
 
-import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { useEffect, useState, useCallback } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Classes() {
     const params = useLocalSearchParams();
+    const router = useRouter();
     const [currentView, setCurrentView] = useState(params.view || 'dashboard');
     const [selectedVenue, setSelectedVenue] = useState(null);
     const [selectedSessionId, setSelectedSessionId] = useState(null);
@@ -72,6 +73,13 @@ export default function Classes() {
     const [selectedPrivateBookingId, setSelectedPrivateBookingId] = useState(null);
     const [selectedReportId, setSelectedReportId] = useState(null);
     console.log('currentView', currentView)
+
+    useFocusEffect(
+        useCallback(() => {
+            setCurrentView(params.view || 'dashboard');
+        }, [params.view])
+    );
+
     useEffect(() => {
         if (params.view) {
             setCurrentView(params.view);
@@ -148,7 +156,7 @@ export default function Classes() {
         />;
     }
 
-    if (currentView === 'team') {
+    if (currentView === 'team' || currentView === 'club') {
         return <SelectATeam
             onBack={() => setCurrentView('dashboard')}
             onSessionSelect={() => setCurrentView('session')}
@@ -365,7 +373,7 @@ export default function Classes() {
 
     if (currentView === 'practicalAssessments') {
         return <PracticalAssessments
-            onBack={() => setCurrentView('dashboard')}
+            onBack={() => router.back()}
             onStart={() => setCurrentView('assessmentCriteria')}
         />;
     }
@@ -387,44 +395,44 @@ export default function Classes() {
     if (currentView === 'summarisePerformance') {
         return <SummarisePerformance
             onBack={() => setCurrentView('uploadVideo')}
-            onComplete={() => setCurrentView('dashboard')}
+            onComplete={() => setCurrentView('practicalAssessments')}
         />;
     }
 
 
     if (currentView === 'myResults') {
-        return <CoachResults onBack={() => setCurrentView('dashboard')} title="My results" />;
+        return <CoachResults onBack={() => router.back()} title="My results" />;
     }
 
 
 
     if (currentView === 'musicPlayer') {
-        return <MusicPlayer onBack={() => setCurrentView('dashboard')} />;
+        return <MusicPlayer onBack={() => router.back()} />;
     }
 
 
     if (currentView === 'customerFeedback') {
-        return <CustomerFeedback onBack={() => setCurrentView('dashboard')} />;
+        return <CustomerFeedback onBack={() => router.back()} />;
     }
 
     if (currentView === 'studentNumbers') {
-        return <StudentNumbers onBack={() => setCurrentView('dashboard')} />;
+        return <StudentNumbers onBack={() => router.back()} />;
     }
 
     if (currentView === 'createQcReport') {
-        return <QcReportFlow onBack={() => setCurrentView('dashboard')} />;
+        return <QcReportFlow onBack={() => router.back()} />;
     }
 
     if (currentView === 'myReports') {
-        return <MyReports onBack={() => setCurrentView('dashboard')} />;
+        return <MyReports onBack={() => router.back()} />;
     }
 
     if (currentView === 'assessmentResults') {
-        return <AssessmentResults onBack={() => setCurrentView('dashboard')} />;
+        return <AssessmentResults onBack={() => router.back()} />;
     }
 
     if (currentView === 'venuesFilter') {
-        return <VenuesFilter onBack={() => setCurrentView('dashboard')} />;
+        return <VenuesFilter onBack={() => router.back()} />;
     }
 
 
