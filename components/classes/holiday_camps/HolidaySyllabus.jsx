@@ -1,11 +1,46 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
-export default function HolidaySyllabus({venueId,onBack, onSessionSelect,syllabus  }) {
-    // syllabus = full data object from HolidayCampDetails (pass it down)
+const COLORS = {
+    light: {
+        background: '#fff',
+        agePillBg: '#fff',
+        agePillBorder: '#F3F4F6',
+        inactiveAgePillText: '#666',
+        tabsBg: '#F3F4F6',
+        activeTabBg: '#fff',
+        tabText: '#4B5563',
+        skillTitle: '#1a1a1a',
+        skillName: '#666',
+        skillDesc: '#666',
+        imagePlaceholderBg: '#F3F4F6',
+        cardTitle: '#1a1a1a',
+        cardDesc: '#6B7280',
+        cardTime: '#1a1a1a',
+    },
+    dark: {
+        background: '#121212',
+        agePillBg: '#1E1E1E',
+        agePillBorder: '#2A2A2A',
+        inactiveAgePillText: '#9CA3AF',
+        tabsBg: '#1E1E1E',
+        activeTabBg: '#2A2A2A',
+        tabText: '#D1D5DB',
+        skillTitle: '#F5F5F5',
+        skillName: '#D1D5DB',
+        skillDesc: '#9CA3AF',
+        imagePlaceholderBg: '#2A2A2A',
+        cardTitle: '#F5F5F5',
+        cardDesc: '#9CA3AF',
+        cardTime: '#F5F5F5',
+    },
+};
 
-    console.log('venueId',venueId)
+export default function HolidaySyllabus({ venueId, onBack, onSessionSelect, syllabus }) {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
 
     const camp = syllabus?.holidayCamps?.[0];
     const campDates = camp?.holidayCampDates?.[0];
@@ -20,7 +55,6 @@ export default function HolidaySyllabus({venueId,onBack, onSessionSelect,syllabu
     const levelKeys = sessionPlan ? Object.keys(sessionPlan.levels) : [];
     const [activeAgeGroup, setActiveAgeGroup] = useState(levelKeys[0] || '');
 
-    // Update activeAgeGroup when day changes if needed
     const currentLevelKeys = sessionPlan ? Object.keys(sessionPlan.levels) : [];
     const activeLevelData = sessionPlan?.levels?.[activeAgeGroup]?.[0];
     const exercises = activeLevelData?.sessionExercises ?? [];
@@ -47,7 +81,7 @@ export default function HolidaySyllabus({venueId,onBack, onSessionSelect,syllabu
                 </ImageBackground>
             </View>
 
-            {/* Age Group Pills — dynamic from levels keys */}
+            {/* Age Group Pills */}
             <View style={styles.ageGroupsWrapper}>
                 <View style={styles.ageGroups}>
                     {currentLevelKeys.map(level => (
@@ -64,7 +98,7 @@ export default function HolidaySyllabus({venueId,onBack, onSessionSelect,syllabu
                 </View>
             </View>
 
-            {/* Day Tabs — dynamic */}
+            {/* Day Tabs */}
             <View style={styles.tabsContainer}>
                 {dayTabs.map(tab => (
                     <TouchableOpacity
@@ -72,7 +106,6 @@ export default function HolidaySyllabus({venueId,onBack, onSessionSelect,syllabu
                         style={[styles.tab, activeDay === tab && styles.activeTab]}
                         onPress={() => {
                             setActiveDay(tab);
-                            // reset age group to first available for new day
                             const newSession = sessionsMap[dayTabs.indexOf(tab)];
                             const newLevels = newSession?.sessionPlan ? Object.keys(newSession.sessionPlan.levels) : [];
                             if (newLevels.length) setActiveAgeGroup(newLevels[0]);
@@ -131,7 +164,7 @@ export default function HolidaySyllabus({venueId,onBack, onSessionSelect,syllabu
                                 {imageUri ? (
                                     <Image source={{ uri: imageUri }} style={styles.cardImage} resizeMode="cover" />
                                 ) : (
-                                    <View style={[styles.cardImage, { backgroundColor: '#E5E7EB' }]} />
+                                    <View style={[styles.cardImage, { backgroundColor: theme.imagePlaceholderBg }]} />
                                 )}
                             </View>
                             <View style={styles.cardContent}>
@@ -149,10 +182,10 @@ export default function HolidaySyllabus({venueId,onBack, onSessionSelect,syllabu
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     greenHeaderContainer: {
         paddingHorizontal: 16,
@@ -196,8 +229,8 @@ const styles = StyleSheet.create({
         borderColor: '#3B82F6',
     },
     inactiveAgePill: {
-        backgroundColor: '#fff',
-        borderColor: '#F3F4F6',
+        backgroundColor: theme.agePillBg,
+        borderColor: theme.agePillBorder,
     },
     agePillText: {
         fontSize: 14,
@@ -207,11 +240,11 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     inactiveAgePillText: {
-        color: '#666',
+        color: theme.inactiveAgePillText,
     },
     tabsContainer: {
         flexDirection: 'row',
-        backgroundColor: '#F3F4F6',
+        backgroundColor: theme.tabsBg,
         borderRadius: 12,
         padding: 4,
         marginHorizontal: 16,
@@ -224,12 +257,12 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     activeTab: {
-        backgroundColor: '#fff',
+        backgroundColor: theme.activeTabBg,
     },
     tabText: {
         fontSize: 15,
         fontFamily: 'Urbanist_700Bold',
-        color: '#4B5563',
+        color: theme.tabText,
     },
     activeTabText: {
         color: '#3B82F6',
@@ -254,7 +287,7 @@ const styles = StyleSheet.create({
     skillTitle: {
         fontSize: 18,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.skillTitle,
         marginBottom: 8,
     },
     skillHeader: {
@@ -265,13 +298,13 @@ const styles = StyleSheet.create({
     skillName: {
         fontSize: 16,
         fontFamily: 'Urbanist_400Regular',
-        color: '#666',
+        color: theme.skillName,
         marginRight: 8,
     },
     skillDesc: {
         fontSize: 14,
         fontFamily: 'Urbanist_400Regular',
-        color: '#666',
+        color: theme.skillDesc,
         lineHeight: 20,
     },
     videoPlaceholder: {
@@ -302,7 +335,7 @@ const styles = StyleSheet.create({
         height: 90,
         borderRadius: 8,
         overflow: 'hidden',
-        backgroundColor: '#F3F4F6',
+        backgroundColor: theme.imagePlaceholderBg,
         marginRight: 16,
     },
     cardImage: {
@@ -317,19 +350,19 @@ const styles = StyleSheet.create({
     cardTitle: {
         fontSize: 15,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.cardTitle,
         marginBottom: 4,
     },
     cardDesc: {
         fontSize: 13,
         fontFamily: 'Urbanist_400Regular',
-        color: '#6B7280',
+        color: theme.cardDesc,
         lineHeight: 18,
         marginBottom: 8,
     },
     cardTime: {
         fontSize: 13,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.cardTime,
     },
 });

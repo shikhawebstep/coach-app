@@ -1,13 +1,40 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+
+const COLORS = {
+    light: {
+        background: '#fff',
+        headerTitle: '#1a1a1a',
+        title: '#1a1a1a',
+        timer: '#9CA3AF',
+        outerCircle: '#93C5FD',
+        middleCircle: '#60A5FA',
+        innerCircle: '#3B82F6',
+        icon: '#fff',
+    },
+    dark: {
+        background: '#121212',
+        headerTitle: '#F5F5F5',
+        title: '#F5F5F5',
+        timer: '#9CA3AF',
+        outerCircle: '#1E3A5F',
+        middleCircle: '#2C5282',
+        innerCircle: '#3B82F6',
+        icon: '#fff',
+    },
+};
 
 export default function SummarisePerformance({ onBack, onComplete }) {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     return (
         <View style={styles.container}>
             {/* Header */}
             {/* <View style={styles.header}>
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
+                    <Ionicons name="arrow-back" size={24} color={theme.headerTitle} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Create report</Text>
             </View> */}
@@ -21,7 +48,7 @@ export default function SummarisePerformance({ onBack, onComplete }) {
                 <View style={styles.outerCircle}>
                     <View style={styles.middleCircle}>
                         <TouchableOpacity style={styles.innerCircle}>
-                            <Ionicons name="mic-outline" size={54} color="#fff" />
+                            <Ionicons name="mic-outline" size={54} color={theme.icon} />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -36,10 +63,10 @@ export default function SummarisePerformance({ onBack, onComplete }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     header: {
         flexDirection: 'row',
@@ -55,13 +82,13 @@ const styles = StyleSheet.create({
         fontSize: 24,
         marginVertical: 24,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.headerTitle,
     },
     title: {
         fontSize: 24,
         marginVertical: 24,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.title,
         textAlign: 'center'
     },
     centerContent: {
@@ -71,15 +98,15 @@ const styles = StyleSheet.create({
     },
     timer: {
         fontSize: 56,
-        color: '#9CA3AF', // Gray
-          fontFamily: 'Urbanist_400Regular',
+        color: theme.timer,
+        fontFamily: 'Urbanist_400Regular',
         marginBottom: 60,
     },
     outerCircle: {
         width: 200,
         height: 200,
         borderRadius: 100,
-        backgroundColor: '#93C5FD', // Light blue
+        backgroundColor: theme.outerCircle,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -87,7 +114,7 @@ const styles = StyleSheet.create({
         width: 156,
         height: 156,
         borderRadius: 78,
-        backgroundColor: '#60A5FA', // Mid blue
+        backgroundColor: theme.middleCircle,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -95,7 +122,7 @@ const styles = StyleSheet.create({
         width: 120,
         height: 120,
         borderRadius: 60,
-        backgroundColor: '#3B82F6', // Dark blue
+        backgroundColor: theme.innerCircle,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -115,4 +142,4 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Urbanist_700Bold',
     },
-});
+}); 

@@ -1,12 +1,57 @@
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 const CATEGORIES = ['Equipment', 'Incident', 'Complaint', 'Coaches', 'Venue', 'Other'];
 
+const COLORS = {
+    light: {
+        background: '#FFFFFF',
+        headerTitle: '#353535',
+        searchBg: '#F6F6F7',
+        searchBorder: '#D1D5DB',
+        searchText: '#000',
+        searchPlaceholder: '#797A88',
+        checkboxBorderInactive: '#A1A1AA',
+        checkboxText: '#5F5F6D',
+        cardBg: '#fff',
+        cardBorder: '#F3F4F6',
+        venue: '#212121',
+        dateTime: '#6B7280',
+        category: '#212121',
+        pendingText: '#1a1a1a',
+        chevron: '#000',
+        shadowColor: '#000',
+        shadowOpacity: 0.08,
+    },
+    dark: {
+        background: '#121212',
+        headerTitle: '#F5F5F5',
+        searchBg: '#1E1E1E',
+        searchBorder: '#3A3A3A',
+        searchText: '#F5F5F5',
+        searchPlaceholder: '#9CA3AF',
+        checkboxBorderInactive: '#5A5A5A',
+        checkboxText: '#D1D5DB',
+        cardBg: '#1E1E1E',
+        cardBorder: '#2A2A2A',
+        venue: '#F5F5F5',
+        dateTime: '#9CA3AF',
+        category: '#F5F5F5',
+        pendingText: '#1a1a1a',
+        chevron: '#F5F5F5',
+        shadowColor: '#000',
+        shadowOpacity: 0.3,
+    },
+};
+
 export default function ReportIssueList({ onNewReport, onReportSelect, onBack }) {
     const { token } = useAuth();
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategories, setSelectedCategories] = useState(['Equipment']);
     const [reports, setReports] = useState([]);
@@ -67,11 +112,11 @@ export default function ReportIssueList({ onNewReport, onReportSelect, onBack })
 
             {/* Search Bar */}
             <View style={styles.searchContainer}>
-                <Ionicons name="search-outline" size={20} color="#797A88" style={styles.searchIcon} />
+                <Ionicons name="search-outline" size={20} color={theme.searchPlaceholder} style={styles.searchIcon} />
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Select a venue..."
-                    placeholderTextColor="#797A88"
+                    placeholderTextColor={theme.searchPlaceholder}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
@@ -135,7 +180,7 @@ export default function ReportIssueList({ onNewReport, onReportSelect, onBack })
                                         {report.status ? report.status.charAt(0).toUpperCase() + report.status.slice(1) : ''}
                                     </Text>
                                 </View>
-                                <Ionicons name="chevron-forward" size={16} color="#000" style={styles.chevron} />
+                                <Ionicons name="chevron-forward" size={16} color={theme.chevron} style={styles.chevron} />
                             </View>
                         </TouchableOpacity>
                     ))}
@@ -146,10 +191,10 @@ export default function ReportIssueList({ onNewReport, onReportSelect, onBack })
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.background,
     },
 
     /* Header */
@@ -168,7 +213,7 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 26,
         fontFamily: 'Urbanist_700Bold',
-        color: '#353535',
+        color: theme.headerTitle,
     },
     newReportBtn: {
         backgroundColor: '#2F5FE5',
@@ -187,9 +232,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginHorizontal: 16,
-        backgroundColor: '#F6F6F7',
+        backgroundColor: theme.searchBg,
         borderWidth: 1,
-        borderColor: '#D1D5DB',
+        borderColor: theme.searchBorder,
         borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 10,
@@ -200,7 +245,7 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 16,
         fontFamily: 'Urbanist_400Regular',
-        color: '#000',
+        color: theme.searchText,
     },
 
     /* Filters */
@@ -221,7 +266,7 @@ const styles = StyleSheet.create({
         height: 24,
         borderRadius: 6,
         borderWidth: 2,
-        borderColor: '#A1A1AA',
+        borderColor: theme.checkboxBorderInactive,
         backgroundColor: 'transparent',
         alignItems: 'center',
         justifyContent: 'center',
@@ -234,7 +279,7 @@ const styles = StyleSheet.create({
         marginLeft: 8,
         fontSize: 14,
         fontFamily: 'Urbanist_700Bold',
-        color: '#5F5F6D',
+        color: theme.checkboxText,
     },
 
     /* List */
@@ -245,16 +290,16 @@ const styles = StyleSheet.create({
     card: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: theme.cardBg,
         borderRadius: 16,
         paddingVertical: 16,
         paddingHorizontal: 16,
         marginBottom: 12,
         borderWidth: 1,
-        borderColor: '#F3F4F6',
-        shadowColor: '#000',
+        borderColor: theme.cardBorder,
+        shadowColor: theme.shadowColor,
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
+        shadowOpacity: theme.shadowOpacity,
         shadowRadius: 12,
         elevation: 3,
     },
@@ -262,20 +307,20 @@ const styles = StyleSheet.create({
     venue: {
         fontSize: 12,
         fontFamily: 'Urbanist_700Bold',
-        color: '#212121',
+        color: theme.venue,
     },
     col2: { flex: 1.2 },
     dateTime: {
         fontSize: 12,
         fontFamily: 'Urbanist_400Regular',
-        color: '#6B7280',
+        color: theme.dateTime,
         lineHeight: 18,
     },
     col3: { flex: 1.2 },
     category: {
         fontSize: 12,
         fontFamily: 'Urbanist_700Bold',
-        color: '#212121',
+        color: theme.category,
     },
     col4: {
         flex: 1,
@@ -292,6 +337,6 @@ const styles = StyleSheet.create({
     pendingBadge: { backgroundColor: '#F7D02A' },
     statusText: { fontSize: 12, fontFamily: 'Urbanist_700Bold' },
     solvedText: { color: '#fff' },
-    pendingText: { color: '#1a1a1a' },
+    pendingText: { color: theme.pendingText },
     chevron: { marginLeft: 6 },
 });

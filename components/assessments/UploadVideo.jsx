@@ -1,13 +1,38 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+
+const COLORS = {
+    light: {
+        background: '#fff',
+        headerTitle: '#1a1a1a',
+        outerCircle: '#93C5FD',
+        middleCircle: '#60A5FA',
+        innerCircle: '#3B82F6',
+        iconBox: '#fff',
+        icon: '#3B82F6',
+    },
+    dark: {
+        background: '#121212',
+        headerTitle: '#F5F5F5',
+        outerCircle: '#1E3A5F',
+        middleCircle: '#2C5282',
+        innerCircle: '#3B82F6',
+        iconBox: '#1E1E1E',
+        icon: '#60A5FA',
+    },
+};
 
 export default function UploadVideo({ onBack, onNext }) {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 {/* <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
+                    <Ionicons name="arrow-back" size={24} color={theme.headerTitle} />
                 </TouchableOpacity> */}
                 <Text style={styles.headerTitle}>Upload video</Text>
             </View>
@@ -18,7 +43,7 @@ export default function UploadVideo({ onBack, onNext }) {
                     <View style={styles.middleCircle}>
                         <TouchableOpacity style={styles.innerCircle}>
                             <View style={styles.iconBox}>
-                                <Ionicons name="add" size={32} color="#3B82F6" strokeWidth={4} style={styles.plusIcon} />
+                                <Ionicons name="add" size={32} color={theme.icon} strokeWidth={4} style={styles.plusIcon} />
                             </View>
                         </TouchableOpacity>
                     </View>
@@ -34,17 +59,17 @@ export default function UploadVideo({ onBack, onNext }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingTop: 16,
-        justifyContent:'center',
+        justifyContent: 'center',
         paddingBottom: 24,
     },
     backButton: {
@@ -52,7 +77,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        color: '#1a1a1a',
+        color: theme.headerTitle,
         marginVertical: 24,
         fontFamily: 'Urbanist_700Bold',
         textAlign: 'center'
@@ -66,7 +91,7 @@ const styles = StyleSheet.create({
         width: 220,
         height: 220,
         borderRadius: 110,
-        backgroundColor: '#93C5FD', // Lightest blue
+        backgroundColor: theme.outerCircle,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -74,7 +99,7 @@ const styles = StyleSheet.create({
         width: 170,
         height: 170,
         borderRadius: 85,
-        backgroundColor: '#60A5FA', // Mid blue
+        backgroundColor: theme.middleCircle,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -82,14 +107,14 @@ const styles = StyleSheet.create({
         width: 120,
         height: 120,
         borderRadius: 60,
-        backgroundColor: '#3B82F6', // Dark blue
+        backgroundColor: theme.innerCircle,
         justifyContent: 'center',
         alignItems: 'center',
     },
     iconBox: {
         width: 48,
         height: 48,
-        backgroundColor: '#fff',
+        backgroundColor: theme.iconBox,
         borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',

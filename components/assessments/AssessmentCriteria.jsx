@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 const QUESTIONS = [
     { id: 1, text: 'Punctuality of the coach', answer: 4 },
@@ -10,13 +10,38 @@ const QUESTIONS = [
     { id: 7, text: 'Punctuality of the coach', answer: 3 },
 ];
 
+const COLORS = {
+    light: {
+        background: '#fff',
+        headerTitle: '#1a1a1a',
+        sectionTitle: '#1a1a1a',
+        questionText: '#494949',
+        outerCircleBorder: '#D1D5DB',
+        radioLabel: '#4E5D78',
+        icon: '#000',
+    },
+    dark: {
+        background: '#121212',
+        headerTitle: '#F5F5F5',
+        sectionTitle: '#F5F5F5',
+        questionText: '#D1D5DB',
+        outerCircleBorder: '#4B5563',
+        radioLabel: '#9CA3AF',
+        icon: '#F5F5F5',
+    },
+};
+
 export default function AssessmentCriteria({ onBack, onNext }) {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     return (
         <View style={styles.container}>
             {/* Header */}
             {/* <View style={styles.header}>
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
+                    <Ionicons name="arrow-back" size={24} color={theme.icon} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Create report</Text>
             </View> */}
@@ -50,10 +75,10 @@ export default function AssessmentCriteria({ onBack, onNext }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     header: {
         flexDirection: 'row',
@@ -67,7 +92,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        color: '#1a1a1a',
+        color: theme.headerTitle,
         fontFamily: 'Urbanist_700Bold',  // bold ke liye
     },
     content: {
@@ -77,7 +102,7 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 24,
-        color: '#1a1a1a',
+        color: theme.sectionTitle,
         marginVertical: 24,
         fontFamily: 'Urbanist_700Bold',
     },
@@ -86,7 +111,7 @@ const styles = StyleSheet.create({
     },
     questionText: {
         fontSize: 18,
-        color: '#494949',
+        color: theme.questionText,
         marginBottom: 12,
         fontFamily: 'Urbanist_700Bold',  // bold ke liye
     },
@@ -104,7 +129,7 @@ const styles = StyleSheet.create({
         height: 20,
         borderRadius: 10,
         borderWidth: 2,
-        borderColor: '#D1D5DB',
+        borderColor: theme.outerCircleBorder,
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 6,
@@ -120,14 +145,14 @@ const styles = StyleSheet.create({
     },
     radioLabel: {
         fontSize: 14,
-        color: '#4E5D78',
+        color: theme.radioLabel,
         fontFamily: 'Urbanist_500Medium',
     },
     bottomContainer: {
         paddingHorizontal: 20,
         paddingBottom: 40,
         paddingTop: 10,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     nextButton: {
         backgroundColor: '#3B82F6',

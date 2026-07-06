@@ -1,7 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, ScrollView,ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 export default function ClubSessionExercise({ onBack, onSearchSkillClick, title = "Small-sided games" }) {
+    const colorScheme = useColorScheme();
+    const isDark = colorScheme === 'dark';
+    const styles = getStyles(isDark);
+
     return (
         <View style={styles.container}>
             {/* Header */}
@@ -72,10 +76,10 @@ export default function ClubSessionExercise({ onBack, onSearchSkillClick, title 
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (isDark) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: isDark ? '#121212' : '#fff',
     },
     greenHeaderContainer: {
         paddingHorizontal: 16,
@@ -86,7 +90,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#1CAB4B',
+        backgroundColor: isDark ? '#0F7A37' : '#1CAB4B',
         borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 16,
@@ -108,7 +112,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         overflow: 'hidden',
         marginBottom: 20,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: isDark ? '#1E1E1E' : '#F3F4F6',
     },
     mainImage: {
         width: '100%',
@@ -126,34 +130,34 @@ const styles = StyleSheet.create({
     durationLabel: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#2563EB', // Blue
+        color: isDark ? '#5B9BFF' : '#2563EB', // Blue
     },
     durationValue: {
         fontSize: 16,
-        color: '#3B82F6', // Lighter Blue
+        color: isDark ? '#7FB1FF' : '#3B82F6', // Lighter Blue
     },
     searchButton: {
         borderWidth: 1.5,
-        borderColor: '#2563EB',
+        borderColor: isDark ? '#5B9BFF' : '#2563EB',
         borderRadius: 20,
         paddingHorizontal: 16,
         paddingVertical: 8,
     },
     searchButtonText: {
-        color: '#2563EB',
+        color: isDark ? '#5B9BFF' : '#2563EB',
         fontWeight: 'bold',
         fontSize: 15,
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#1a1a1a',
+        color: isDark ? '#F5F5F5' : '#1a1a1a',
         marginBottom: 12,
         marginTop: 8,
     },
     paragraph: {
         fontSize: 14,
-        color: '#6B7280',
+        color: isDark ? '#B0B0B0' : '#6B7280',
         lineHeight: 22,
         marginBottom: 12,
     },
@@ -163,12 +167,12 @@ const styles = StyleSheet.create({
     },
     bulletItem: {
         fontSize: 14,
-        color: '#6B7280',
+        color: isDark ? '#B0B0B0' : '#6B7280',
         lineHeight: 24,
     },
     numberedItem: {
         fontSize: 14,
-        color: '#6B7280',
+        color: isDark ? '#B0B0B0' : '#6B7280',
         lineHeight: 24,
         marginLeft: 8,
     },

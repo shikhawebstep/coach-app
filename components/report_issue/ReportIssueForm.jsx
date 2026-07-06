@@ -1,12 +1,64 @@
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-
+import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
 const CATEGORIES = ['Equipment', 'Incident', 'Complaint', 'Coaches', 'Venue', 'Other'];
+
+const COLORS = {
+    light: {
+        background: '#fff',
+        icon: '#000',
+        headerTitle: '#1a1a1a',
+        searchBg: '#F6F6F7',
+        searchBorder: '#9E9FAA',
+        searchText: '#000',
+        searchPlaceholder: '#797A88',
+        dropdownBg: '#fff',
+        dropdownBorder: '#9E9FAA',
+        dropdownItemBorder: '#F3F4F6',
+        dropdownItemText: '#1f2937',
+        dropdownItemSub: '#6b7280',
+        checkboxBorderInactive: '#A1A1AA',
+        checkboxText: '#5F5F6D',
+        label: '#797A88',
+        textAreaBg: '#F6F6F7',
+        textAreaBorder: '#9E9FAA',
+        textAreaText: '#1a1a1a',
+        submitButtonDisabled: '#93C5FD',
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+    },
+    dark: {
+        background: '#121212',
+        icon: '#F5F5F5',
+        headerTitle: '#F5F5F5',
+        searchBg: '#1E1E1E',
+        searchBorder: '#3A3A3A',
+        searchText: '#F5F5F5',
+        searchPlaceholder: '#9CA3AF',
+        dropdownBg: '#1E1E1E',
+        dropdownBorder: '#3A3A3A',
+        dropdownItemBorder: '#2A2A2A',
+        dropdownItemText: '#F5F5F5',
+        dropdownItemSub: '#9CA3AF',
+        checkboxBorderInactive: '#5A5A5A',
+        checkboxText: '#D1D5DB',
+        label: '#9CA3AF',
+        textAreaBg: '#1E1E1E',
+        textAreaBorder: '#3A3A3A',
+        textAreaText: '#F5F5F5',
+        submitButtonDisabled: '#1E3A5F',
+        shadowColor: '#000',
+        shadowOpacity: 0.3,
+    },
+};
 
 export default function ReportIssueForm({ onBack }) {
     const { token } = useAuth();
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     const [searchQuery, setSearchQuery] = useState('');
     const [venues, setVenues] = useState([]);
     const [selectedVenue, setSelectedVenue] = useState(null);
@@ -119,128 +171,123 @@ export default function ReportIssueForm({ onBack }) {
     };
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+        {/* Header */}
+        <View style={styles.header}>
+            <TouchableOpacity onPress={onBack} style={styles.backButton}>
+                <Ionicons name="arrow-back" size={24} color={theme.icon} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>New report</Text>
+        </View>
+
+        {/* Search Bar only — dropdown moved out */}
+        <View style={[styles.content, { position: 'relative' }]}>
+            <View style={styles.searchContainer}>
+                <Ionicons name="search-outline" size={20} color={theme.searchPlaceholder} style={styles.searchIcon} />
+                <TextInput
+                    style={styles.searchInput}
+                    placeholder="Select a venue..."
+                    placeholderTextColor={theme.searchPlaceholder}
+                    value={searchQuery}
+                    onChangeText={handleSearchChange}
+                    onFocus={() => setIsDropdownVisible(true)}
+                />
+                {loadingVenues && <ActivityIndicator size="small" color="#3B82F6" />}
+            </View>
+        </View>
+
+        <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.content}
+            keyboardShouldPersistTaps="handled"
         >
-            {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>New report</Text>
+            {/* Filters */}
+            <View style={styles.filtersContainer}>
+                {CATEGORIES.map(category => (
+                    <TouchableOpacity
+                        key={category}
+                        style={styles.checkboxItem}
+                        onPress={() => toggleCategory(category)}
+                    >
+                        <View style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 6,
+                            borderWidth: 2,
+                            borderColor: selectedCategory === category ? "#3B82F6" : theme.checkboxBorderInactive,
+                            backgroundColor: selectedCategory === category ? "#3B82F6" : "transparent",
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}>
+                            {selectedCategory === category && (
+                                <Ionicons name="checkmark" size={16} color="#fff" />
+                            )}
+                        </View>
+                        <Text style={styles.checkboxText}>{category}</Text>
+                    </TouchableOpacity>
+                ))}
             </View>
 
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.content}
-                keyboardShouldPersistTaps="handled"
+            {/* Report Issue Textarea */}
+            <Text style={styles.label}>Report issue</Text>
+            <View style={styles.textAreaContainer}>
+                <TextInput
+                    style={styles.textArea}
+                    multiline={true}
+                    value={reportText}
+                    onChangeText={setReportText}
+                    textAlignVertical="top"
+                    placeholderTextColor={theme.searchPlaceholder}
+                />
+            </View>
+
+            {/* Submit Button */}
+            <TouchableOpacity
+                style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
+                onPress={handleSubmit}
+                disabled={submitting}
             >
-                {/* Search Bar & Dropdown */}
-                <View style={{ zIndex: 10, position: 'relative' }}>
-                    <View style={styles.searchContainer}>
-                        <Ionicons name="search-outline" size={20} color="#797A88" style={styles.searchIcon} />
-                        <TextInput
-                            style={styles.searchInput}
-                            placeholder="Select a venue..."
-                            placeholderTextColor="#797A88"
-                            value={searchQuery}
-                            onChangeText={handleSearchChange}
-                            onFocus={() => setIsDropdownVisible(true)}
-                        />
-                        {loadingVenues && <ActivityIndicator size="small" color="#3B82F6" />}
-                    </View>
-                    {isDropdownVisible && filteredVenues.length > 0 && (
-                        <View style={styles.dropdown}>
-                            <ScrollView nestedScrollEnabled={true} style={{ maxHeight: 200 }}>
-                                {filteredVenues.map(venue => (
-                                    <TouchableOpacity
-                                        key={venue.id}
-                                        style={styles.dropdownItem}
-                                        onPress={() => handleSelectVenue(venue)}
-                                    >
-                                        <Text style={styles.dropdownItemText}>{venue.name}</Text>
-                                        <Text style={styles.dropdownItemSub}>{venue.area}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </ScrollView>
-                        </View>
-                    )}
-                </View>
+                {submitting ? (
+                    <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                    <Text style={styles.submitButtonText}>Submit</Text>
+                )}
+            </TouchableOpacity>
+            <View style={{ height: 40 }} />
+        </ScrollView>
 
-                {/* Filters */}
-                <View style={styles.filtersContainer}>
-                    {CATEGORIES.map(category => (
+        {/* Dropdown rendered LAST so it stacks above ScrollView on both platforms */}
+        {isDropdownVisible && filteredVenues.length > 0 && (
+            <View style={[styles.dropdown, { top: 100, left: 16, right: 16 }]}>
+                <FlatList
+                    data={filteredVenues}
+                    keyExtractor={(item) => item.id.toString()}
+                    keyboardShouldPersistTaps="handled"
+                    nestedScrollEnabled={true}
+                    style={{ maxHeight: 200 }}
+                    renderItem={({ item: venue }) => (
                         <TouchableOpacity
-                            key={category}
-                            style={styles.checkboxItem}
-                            onPress={() => toggleCategory(category)}
+                            style={styles.dropdownItem}
+                            onPress={() => handleSelectVenue(venue)}
                         >
-                            <View style={{
-                                width: 24,
-                                height: 24,
-                                borderRadius: 6,
-                                borderWidth: 2,
-                                borderColor: selectedCategory === category ? "#3B82F6" : "#A1A1AA",
-                                backgroundColor: selectedCategory === category ? "#3B82F6" : "transparent",
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}>
-                                {selectedCategory === category && (
-                                    <Ionicons name="checkmark" size={16} color="#fff" />
-                                )}
-                            </View>
-                            <Text style={styles.checkboxText}>{category}</Text>
+                            <Text style={styles.dropdownItemText}>{venue.name}</Text>
+                            <Text style={styles.dropdownItemSub}>{venue.area}</Text>
                         </TouchableOpacity>
-                    ))}
-                </View>
-
-                {/* Title Input */}
-                {/* <Text style={styles.label}>Title</Text>
-                <View style={styles.titleInputContainer}>
-                    <TextInput
-                        style={styles.titleInput}
-                        placeholder="Enter report title..."
-                        placeholderTextColor="#a0a0a0"
-                        value={title}
-                        onChangeText={setTitle}
-                    />
-                </View> */}
-
-                {/* Report Issue Textarea */}
-                <Text style={styles.label}>Report issue</Text>
-                <View style={styles.textAreaContainer}>
-                    <TextInput
-                        style={styles.textArea}
-                        multiline={true}
-                        value={reportText}
-                        onChangeText={setReportText}
-                        textAlignVertical="top"
-                    />
-                </View>
-
-                {/* Submit Button */}
-                <TouchableOpacity
-                    style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
-                    onPress={handleSubmit}
-                    disabled={submitting}
-                >
-                    {submitting ? (
-                        <ActivityIndicator color="#fff" size="small" />
-                    ) : (
-                        <Text style={styles.submitButtonText}>Submit</Text>
                     )}
-                </TouchableOpacity>
-                <View style={{ height: 40 }} />
-            </ScrollView>
-        </KeyboardAvoidingView>
-    );
+                />
+            </View>
+        )}
+    </KeyboardAvoidingView>
+);
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     header: {
         flexDirection: 'row',
@@ -255,7 +302,7 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 26,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.headerTitle,
     },
     content: {
         paddingHorizontal: 16,
@@ -263,9 +310,9 @@ const styles = StyleSheet.create({
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F6F6F7',
+        backgroundColor: theme.searchBg,
         borderWidth: 1,
-        borderColor: '#9E9FAA',
+        borderColor: theme.searchBorder,
         borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 10,
@@ -278,40 +325,38 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 16,
         fontFamily: 'Urbanist_400Regular',
-        color: '#000',
+        color: theme.searchText,
     },
-    dropdown: {
-        position: 'absolute',
-        top: 60,
-        left: 0,
-        right: 0,
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: '#9E9FAA',
-        borderRadius: 10,
-        maxHeight: 200,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-        zIndex: 50,
-    },
+   dropdown: {
+    position: 'absolute',
+    // top/left/right now passed inline above since it's outside `content` padding
+    backgroundColor: theme.dropdownBg,
+    borderWidth: 1,
+    borderColor: theme.dropdownBorder,
+    borderRadius: 10,
+    maxHeight: 200,
+    shadowColor: theme.shadowColor,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: theme.shadowOpacity,
+    shadowRadius: 4,
+    elevation: 10,   // 👈 was missing — Android needs this for correct stacking, not just zIndex
+    zIndex: 50,
+},
     dropdownItem: {
         paddingHorizontal: 16,
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
+        borderBottomColor: theme.dropdownItemBorder,
     },
     dropdownItemText: {
         fontSize: 16,
         fontFamily: 'Urbanist_500Medium',
-        color: '#1f2937',
+        color: theme.dropdownItemText,
     },
     dropdownItemSub: {
         fontSize: 12,
         fontFamily: 'Urbanist_400Regular',
-        color: '#6b7280',
+        color: theme.dropdownItemSub,
         marginTop: 2,
     },
     filtersContainer: {
@@ -329,19 +374,19 @@ const styles = StyleSheet.create({
         marginLeft: 8,
         fontSize: 14,
         fontFamily: 'Urbanist_700Bold',
-        color: '#5F5F6D',
+        color: theme.checkboxText,
     },
     label: {
         fontSize: 14,
         fontFamily: 'Urbanist_700Bold',
-        color: '#797A88',
+        color: theme.label,
         marginBottom: 8,
     },
     titleInputContainer: {
         borderWidth: 1,
-        borderColor: '#9E9FAA',
+        borderColor: theme.textAreaBorder,
         borderRadius: 12,
-        backgroundColor: '#F6F6F7',
+        backgroundColor: theme.textAreaBg,
         marginBottom: 20,
         paddingHorizontal: 16,
         paddingVertical: 14,
@@ -349,13 +394,13 @@ const styles = StyleSheet.create({
     titleInput: {
         fontSize: 16,
         fontFamily: 'Urbanist_400Regular',
-        color: '#1a1a1a',
+        color: theme.textAreaText,
     },
     textAreaContainer: {
         borderWidth: 1,
-        borderColor: '#9E9FAA',
+        borderColor: theme.textAreaBorder,
         borderRadius: 12,
-        backgroundColor: '#F6F6F7',
+        backgroundColor: theme.textAreaBg,
         marginBottom: 20,
         paddingHorizontal: 16,
         paddingVertical: 14,
@@ -366,7 +411,7 @@ const styles = StyleSheet.create({
         paddingTop: 14,
         fontSize: 16,
         fontFamily: 'Urbanist_400Regular',
-        color: '#1a1a1a',
+        color: theme.textAreaText,
         flex: 1,
     },
     submitButton: {
@@ -377,7 +422,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     submitButtonDisabled: {
-        backgroundColor: '#93C5FD',
+        backgroundColor: theme.submitButtonDisabled,
     },
     submitButtonText: {
         color: '#fff',

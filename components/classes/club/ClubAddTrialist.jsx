@@ -1,8 +1,35 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
+
+const COLORS = {
+    light: {
+        background: '#fff',
+        icon: '#000',
+        headerTitle: '#1a1a1a',
+        inputBorder: '#9CA3AF',
+        inputBg: '#F6F6F7',
+        inputText: '#1a1a1a',
+        placeholder: '#a0a0a0',
+        cancelButtonBg: '#fff',
+    },
+    dark: {
+        background: '#121212',
+        icon: '#F5F5F5',
+        headerTitle: '#F5F5F5',
+        inputBorder: '#3A3A3A',
+        inputBg: '#1E1E1E',
+        inputText: '#F5F5F5',
+        placeholder: '#9CA3AF',
+        cancelButtonBg: '#121212',
+    },
+};
 
 export default function ClubAddTrialist({ onBack }) {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     const [studentName, setStudentName] = useState('Donald Johnson');
     const [parentName, setParentName] = useState('Mark Johnson');
     const [phone, setPhone] = useState('123456789');
@@ -16,7 +43,7 @@ export default function ClubAddTrialist({ onBack }) {
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
+                    <Ionicons name="arrow-back" size={24} color={theme.icon} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Add a walk by trialist</Text>
             </View>
@@ -27,7 +54,7 @@ export default function ClubAddTrialist({ onBack }) {
                     <TextInput
                         style={styles.input}
                         placeholder="Student Full Name"
-                        placeholderTextColor="#a0a0a0"
+                        placeholderTextColor={theme.placeholder}
                         value={studentName}
                         onChangeText={setStudentName}
                     />
@@ -37,7 +64,7 @@ export default function ClubAddTrialist({ onBack }) {
                     <TextInput
                         style={styles.input}
                         placeholder="Parent Full Name"
-                        placeholderTextColor="#a0a0a0"
+                        placeholderTextColor={theme.placeholder}
                         value={parentName}
                         onChangeText={setParentName}
                     />
@@ -47,7 +74,7 @@ export default function ClubAddTrialist({ onBack }) {
                     <TextInput
                         style={styles.input}
                         placeholder="Phone Number"
-                        placeholderTextColor="#a0a0a0"
+                        placeholderTextColor={theme.placeholder}
                         value={phone}
                         onChangeText={setPhone}
                         keyboardType="phone-pad"
@@ -60,7 +87,7 @@ export default function ClubAddTrialist({ onBack }) {
                         style={styles.textArea}
                         multiline={true}
                         placeholder="Notes (optional)"
-                        placeholderTextColor="#a0a0a0"
+                        placeholderTextColor={theme.placeholder}
                         value={notes}
                         onChangeText={setNotes}
                         textAlignVertical="top"
@@ -81,10 +108,10 @@ export default function ClubAddTrialist({ onBack }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     header: {
         flexDirection: 'row',
@@ -99,7 +126,7 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#1a1a1a',
+        color: theme.headerTitle,
     },
     scrollContent: {
         paddingHorizontal: 16,
@@ -107,22 +134,22 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         borderWidth: 1,
-        borderColor: '#9CA3AF',
+        borderColor: theme.inputBorder,
         borderRadius: 8,
-        backgroundColor: '#F6F6F7',
+        backgroundColor: theme.inputBg,
         marginBottom: 16,
     },
     input: {
         paddingHorizontal: 16,
         paddingVertical: 14,
         fontSize: 16,
-        color: '#1a1a1a',
+        color: theme.inputText,
     },
     textAreaContainer: {
         borderWidth: 1,
-        borderColor: '#9CA3AF',
+        borderColor: theme.inputBorder,
         borderRadius: 8,
-        backgroundColor: '#F6F6F7',
+        backgroundColor: theme.inputBg,
         marginBottom: 24,
         height: 150,
     },
@@ -130,7 +157,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingTop: 14,
         fontSize: 16,
-        color: '#1a1a1a',
+        color: theme.inputText,
         flex: 1,
     },
     buttonRow: {
@@ -146,7 +173,7 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: theme.cancelButtonBg,
     },
     cancelButtonText: {
         color: '#3B82F6',

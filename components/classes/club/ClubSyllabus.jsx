@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, ScrollView,ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 const SESSION_ITEMS = [
     {
@@ -8,7 +8,6 @@ const SESSION_ITEMS = [
         desc: 'This skills tutorial will help you understand how to perform the Penguin.',
         time: '10 mins',
         image: require('../../../assets/images/skill.png')
-
     },
     {
         id: 2,
@@ -16,7 +15,6 @@ const SESSION_ITEMS = [
         desc: 'This skills tutorial will help you understand how to perform the Penguin.',
         time: '2 mins',
         image: require('../../../assets/images/skill.png')
-
     },
     {
         id: 3,
@@ -24,7 +22,6 @@ const SESSION_ITEMS = [
         desc: 'This skills tutorial will help you understand how to perform the Penguin.',
         time: '10 mins',
         image: require('../../../assets/images/skill.png')
-
     },
     {
         id: 4,
@@ -32,19 +29,45 @@ const SESSION_ITEMS = [
         desc: 'This skills tutorial will help you understand how to perform the Penguin.',
         time: '12 mins',
         image: require('../../../assets/images/skill.png')
-
     },
 ];
 
+const COLORS = {
+    light: {
+        background: '#fff',
+        sessionTitle: '#1a1a1a',
+        timeIcon: '#9CA3AF',
+        totalTime: '#9CA3AF',
+        imagePlaceholderBg: '#F3F4F6',
+        cardTitle: '#1a1a1a',
+        cardDesc: '#6B7280',
+        cardTime: '#1a1a1a',
+    },
+    dark: {
+        background: '#121212',
+        sessionTitle: '#F5F5F5',
+        timeIcon: '#9CA3AF',
+        totalTime: '#9CA3AF',
+        imagePlaceholderBg: '#2A2A2A',
+        cardTitle: '#F5F5F5',
+        cardDesc: '#9CA3AF',
+        cardTime: '#F5F5F5',
+    },
+};
+
 export default function ClubSyllabus({ onBack, onSessionSelect, title = "Session 1 plan" }) {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     return (
         <View style={styles.container}>
             {/* Green Header */}
             <View style={styles.greenHeaderContainer}>
-             <ImageBackground
+                <ImageBackground
                     source={require('@/assets/images/greenoverlay.png')}
                     style={styles.greenHeader}
-                    imageStyle={{ borderRadius: 20, }}
+                    imageStyle={{ borderRadius: 20 }}
                 >
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#fff" />
@@ -64,7 +87,7 @@ export default function ClubSyllabus({ onBack, onSessionSelect, title = "Session
                 <View style={styles.sessionHeaderRow}>
                     <View style={styles.sessionHeaderLeft}>
                         <Text style={styles.sessionTitle}>Session Plan</Text>
-                        <Ionicons name="time-outline" size={16} color="#9CA3AF" style={styles.timeIcon} />
+                        <Ionicons name="time-outline" size={16} color={theme.timeIcon} style={styles.timeIcon} />
                         <Text style={styles.totalTime}>4 Hours</Text>
                     </View>
                     <TouchableOpacity>
@@ -94,10 +117,10 @@ export default function ClubSyllabus({ onBack, onSessionSelect, title = "Session
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     greenHeaderContainer: {
         paddingHorizontal: 16,
@@ -148,7 +171,7 @@ const styles = StyleSheet.create({
     sessionTitle: {
         fontSize: 22,
         fontWeight: 'bold',
-        color: '#1a1a1a',
+        color: theme.sessionTitle,
         marginRight: 12,
     },
     timeIcon: {
@@ -157,7 +180,7 @@ const styles = StyleSheet.create({
     },
     totalTime: {
         fontSize: 14,
-        color: '#9CA3AF',
+        color: theme.totalTime,
         fontWeight: '600',
     },
     sessionCard: {
@@ -169,7 +192,7 @@ const styles = StyleSheet.create({
         height: 90,
         borderRadius: 8,
         overflow: 'hidden',
-        backgroundColor: '#F3F4F6',
+        backgroundColor: theme.imagePlaceholderBg,
         marginRight: 16,
     },
     cardImage: {
@@ -184,18 +207,18 @@ const styles = StyleSheet.create({
     cardTitle: {
         fontSize: 15,
         fontWeight: 'bold',
-        color: '#1a1a1a',
+        color: theme.cardTitle,
         marginBottom: 4,
     },
     cardDesc: {
         fontSize: 13,
-        color: '#6B7280',
+        color: theme.cardDesc,
         lineHeight: 18,
         marginBottom: 8,
     },
     cardTime: {
         fontSize: 13,
         fontWeight: 'bold',
-        color: '#1a1a1a',
+        color: theme.cardTime,
     },
 });

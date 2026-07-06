@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 const MEMBERS_DATA = [
     { id: 1, name: 'John Smith', age: '7 Years', status: 'attended' },
@@ -8,7 +8,60 @@ const MEMBERS_DATA = [
     { id: 3, name: 'Donald Johnson', age: '7 Years', status: 'attended' },
 ];
 
+const COLORS = {
+    light: {
+        background: '#fff',
+        icon: '#000',
+        headerTitle: '#1a1a1a',
+        infoCardBg: '#fff',
+        infoCardBorder: '#F0F0F0',
+        infoLabel: '#9CA3AF',
+        infoValue: '#1a1a1a',
+        statusBadgeBg: '#FFD700',
+        statusText: '#1a1a1a',
+        tabsBg: '#F3F4F6',
+        inactiveTabText: '#1a1a1a',
+        memberIndex: '#666',
+        memberName: '#1a1a1a',
+        memberAge: '#666',
+        memberBorder: '#F3F4F6',
+        btnAttendedInactiveBg: '#fff',
+        btnNotAttendedInactiveBg: '#fff',
+        btnTextBlack: '#1a1a1a',
+        addTrialistBg: '#fff',
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+    },
+    dark: {
+        background: '#121212',
+        icon: '#F5F5F5',
+        headerTitle: '#F5F5F5',
+        infoCardBg: '#1E1E1E',
+        infoCardBorder: '#2A2A2A',
+        infoLabel: '#9CA3AF',
+        infoValue: '#F5F5F5',
+        statusBadgeBg: '#7A6A00',
+        statusText: '#F5F5F5',
+        tabsBg: '#1E1E1E',
+        inactiveTabText: '#F5F5F5',
+        memberIndex: '#9CA3AF',
+        memberName: '#F5F5F5',
+        memberAge: '#9CA3AF',
+        memberBorder: '#2A2A2A',
+        btnAttendedInactiveBg: '#1E1E1E',
+        btnNotAttendedInactiveBg: '#1E1E1E',
+        btnTextBlack: '#F5F5F5',
+        addTrialistBg: '#1E1E1E',
+        shadowColor: '#000',
+        shadowOpacity: 0.3,
+    },
+};
+
 export default function SessionDetails({ onBack, onSessionPlanClick, onStudentSelect, sessionTitle = "Session 1" }) {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     const [activeTab, setActiveTab] = useState('Coaches');
     const [members, setMembers] = useState(MEMBERS_DATA);
 
@@ -22,7 +75,7 @@ export default function SessionDetails({ onBack, onSessionPlanClick, onStudentSe
             <View style={styles.header}>
                 <View style={styles.headerLeft}>
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color="#000" />
+                        <Ionicons name="arrow-back" size={24} color={theme.icon} />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>{sessionTitle}</Text>
                 </View>
@@ -54,7 +107,6 @@ export default function SessionDetails({ onBack, onSessionPlanClick, onStudentSe
                 </View>
                 {/* Map Placeholder */}
                 <View style={styles.mapContainer}>
-                    {/* Could replace with an actual MapView or Image */}
                     <Image source={require('../../../assets/images/map.png')} style={styles.mapImage} resizeMode="cover" />
                 </View>
 
@@ -94,7 +146,7 @@ export default function SessionDetails({ onBack, onSessionPlanClick, onStudentSe
                                     <Ionicons
                                         name="checkmark"
                                         size={18}
-                                        color={member.status === 'attended' ? '#fff' : '#000'}
+                                        color={member.status === 'attended' ? '#fff' : theme.btnTextBlack}
                                         style={styles.btnIcon}
                                     />
                                     <Text style={[
@@ -145,10 +197,10 @@ export default function SessionDetails({ onBack, onSessionPlanClick, onStudentSe
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     header: {
         flexDirection: 'row',
@@ -168,10 +220,10 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#1a1a1a',
+        color: theme.headerTitle,
     },
     sessionPlanButton: {
-        backgroundColor: '#1CAB4B', // Green
+        backgroundColor: '#1CAB4B',
         paddingHorizontal: 16,
         paddingVertical: 10,
         borderRadius: 8,
@@ -186,15 +238,15 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
     infoCard: {
-        backgroundColor: '#fff',
+        backgroundColor: theme.infoCardBg,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: '#F0F0F0',
+        borderColor: theme.infoCardBorder,
         padding: 16,
         marginBottom: 24,
-        shadowColor: '#000',
+        shadowColor: theme.shadowColor,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: theme.shadowOpacity,
         shadowRadius: 8,
         elevation: 2,
     },
@@ -213,16 +265,16 @@ const styles = StyleSheet.create({
     infoLabel: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#9CA3AF',
+        color: theme.infoLabel,
         marginBottom: 4,
     },
     infoValue: {
         fontSize: 14,
-        color: '#1a1a1a',
+        color: theme.infoValue,
         lineHeight: 20,
     },
     statusBadge: {
-        backgroundColor: '#FFD700',
+        backgroundColor: theme.statusBadgeBg,
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 6,
@@ -231,7 +283,7 @@ const styles = StyleSheet.create({
     statusText: {
         fontSize: 12,
         fontWeight: 'bold',
-        color: '#1a1a1a',
+        color: theme.statusText,
     },
     mapContainer: {
         height: 140,
@@ -247,7 +299,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         marginBottom: 24,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: theme.tabsBg,
         borderRadius: 8,
         padding: 4,
     },
@@ -271,7 +323,7 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     inactiveTabText: {
-        color: '#1a1a1a',
+        color: theme.inactiveTabText,
     },
     membersList: {
         gap: 0,
@@ -282,12 +334,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
+        borderBottomColor: theme.memberBorder,
     },
     memberIndex: {
         width: 24,
         fontSize: 14,
-        color: '#666',
+        color: theme.memberIndex,
     },
     memberInfo: {
         flex: 1,
@@ -297,12 +349,12 @@ const styles = StyleSheet.create({
     memberName: {
         fontSize: 12,
         fontWeight: 'bold',
-        color: '#1a1a1a',
+        color: theme.memberName,
         width: 90,
     },
     memberAge: {
         fontSize: 12,
-        color: '#666',
+        color: theme.memberAge,
         marginLeft: 8,
     },
     attendanceButtons: {
@@ -322,7 +374,7 @@ const styles = StyleSheet.create({
         borderColor: '#1CAB4B',
     },
     btnAttendedInactive: {
-        backgroundColor: '#fff',
+        backgroundColor: theme.btnAttendedInactiveBg,
         borderColor: '#1CAB4B',
     },
     btnNotAttendedActive: {
@@ -330,7 +382,7 @@ const styles = StyleSheet.create({
         borderColor: '#E53E3E',
     },
     btnNotAttendedInactive: {
-        backgroundColor: '#fff',
+        backgroundColor: theme.btnNotAttendedInactiveBg,
         borderColor: '#E53E3E',
     },
     btnIcon: {
@@ -344,7 +396,7 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     btnTextBlack: {
-        color: '#1a1a1a',
+        color: theme.btnTextBlack,
     },
     btnTextRed: {
         color: '#E53E3E',
@@ -357,7 +409,7 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         borderWidth: 1.5,
         borderColor: '#3B82F6',
-        backgroundColor: '#fff',
+        backgroundColor: theme.addTrialistBg,
         marginBottom: 24,
     },
     addIcon: {

@@ -1,9 +1,58 @@
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
+
+const COLORS = {
+    light: {
+        background: '#fff',
+        icon: '#000',
+        headerTitle: '#1a1a1a',
+        searchBg: '#F8F9FB',
+        searchBorder: '#E5E7EB',
+        searchText: '#000',
+        searchPlaceholder: '#a0a0a0',
+        listTitle: '#1a1a1a',
+        emptyText: '#666',
+        cardBg: '#fff',
+        cardBorder: '#F0F0F0',
+        cardTitle: '#1a1a1a',
+        cardText: '#666',
+        durationText: '#1a1a1a',
+        statusPendingBg: '#FFD700',
+        statusText: '#1a1a1a',
+        chevron: '#000',
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+    },
+    dark: {
+        background: '#121212',
+        icon: '#F5F5F5',
+        headerTitle: '#F5F5F5',
+        searchBg: '#1E1E1E',
+        searchBorder: '#3A3A3A',
+        searchText: '#F5F5F5',
+        searchPlaceholder: '#9CA3AF',
+        listTitle: '#F5F5F5',
+        emptyText: '#9CA3AF',
+        cardBg: '#1E1E1E',
+        cardBorder: '#2A2A2A',
+        cardTitle: '#F5F5F5',
+        cardText: '#9CA3AF',
+        durationText: '#F5F5F5',
+        statusPendingBg: '#7A6A00',
+        statusText: '#F5F5F5',
+        chevron: '#F5F5F5',
+        shadowColor: '#000',
+        shadowOpacity: 0.3,
+    },
+};
 
 export default function HolidayCampsList({ onBack, onCampSelect }) {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     const [searchQuery, setSearchQuery] = useState('');
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -37,31 +86,29 @@ export default function HolidayCampsList({ onBack, onCampSelect }) {
         venue.area.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-
-    console.log('data', data)
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
+                    <Ionicons name="arrow-back" size={24} color={theme.icon} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Holiday Camps</Text>
             </View>
 
             {/* Search Bar */}
             <View style={styles.searchContainer}>
-                <Ionicons name="search-outline" size={20} color="#a0a0a0" style={styles.searchIcon} />
+                <Ionicons name="search-outline" size={20} color={theme.searchPlaceholder} style={styles.searchIcon} />
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Search by venue or area..."
-                    placeholderTextColor="#a0a0a0"
+                    placeholderTextColor={theme.searchPlaceholder}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
                 {searchQuery.length > 0 && (
                     <TouchableOpacity onPress={() => setSearchQuery('')}>
-                        <Ionicons name="close-circle" size={18} color="#a0a0a0" />
+                        <Ionicons name="close-circle" size={18} color={theme.searchPlaceholder} />
                     </TouchableOpacity>
                 )}
             </View>
@@ -110,7 +157,7 @@ export default function HolidayCampsList({ onBack, onCampSelect }) {
                                     <View style={[styles.statusBadge, styles.statusPending]}>
                                         <Text style={styles.statusText}>Pending</Text>
                                     </View>
-                                    <Ionicons name="chevron-forward" size={20} color="#000" style={styles.chevron} />
+                                    <Ionicons name="chevron-forward" size={20} color={theme.chevron} style={styles.chevron} />
                                 </View>
                             </TouchableOpacity>
                         );
@@ -123,10 +170,10 @@ export default function HolidayCampsList({ onBack, onCampSelect }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     header: {
         flexDirection: 'row',
@@ -141,15 +188,15 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 24,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.headerTitle,
     },
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         marginHorizontal: 16,
-        backgroundColor: '#F8F9FB',
+        backgroundColor: theme.searchBg,
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: theme.searchBorder,
         borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 12,
@@ -162,7 +209,7 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 16,
         fontFamily: 'Urbanist_400Regular',
-        color: '#000',
+        color: theme.searchText,
     },
     listContainer: {
         flex: 1,
@@ -172,21 +219,28 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontFamily: 'Urbanist_700Bold',
         marginBottom: 16,
-        color: '#1a1a1a',
+        color: theme.listTitle,
+    },
+    emptyText: {
+        fontSize: 14,
+        fontFamily: 'Urbanist_400Regular',
+        color: theme.emptyText,
+        textAlign: 'center',
+        marginTop: 40,
     },
     card: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: theme.cardBg,
         borderRadius: 16,
         paddingVertical: 16,
         paddingHorizontal: 16,
         marginBottom: 12,
         borderWidth: 1,
-        borderColor: '#F0F0F0',
-        shadowColor: '#000',
+        borderColor: theme.cardBorder,
+        shadowColor: theme.shadowColor,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: theme.shadowOpacity,
         shadowRadius: 8,
         elevation: 2,
     },
@@ -197,7 +251,7 @@ const styles = StyleSheet.create({
     cardTitle: {
         fontSize: 14,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.cardTitle,
         lineHeight: 20,
     },
     cardDetails: {
@@ -207,7 +261,7 @@ const styles = StyleSheet.create({
     cardText: {
         fontSize: 13,
         fontFamily: 'Urbanist_400Regular',
-        color: '#666',
+        color: theme.cardText,
         lineHeight: 18,
     },
     cardDuration: {
@@ -218,7 +272,7 @@ const styles = StyleSheet.create({
     durationText: {
         fontSize: 13,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.durationText,
     },
     cardStatusContainer: {
         flexDirection: 'row',
@@ -231,12 +285,12 @@ const styles = StyleSheet.create({
         marginRight: 8,
     },
     statusPending: {
-        backgroundColor: '#FFD700',
+        backgroundColor: theme.statusPendingBg,
     },
     statusText: {
         fontSize: 13,
         fontFamily: 'Urbanist_600SemiBold',
-        color: '#1a1a1a',
+        color: theme.statusText,
     },
     chevron: {
         marginLeft: 4,

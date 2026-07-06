@@ -1,13 +1,44 @@
 import { Ionicons } from '@expo/vector-icons';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
+
+const COLORS = {
+    light: {
+        background: '#fff',
+        icon: '#1a1a1a',
+        headerTitle: '#1a1a1a',
+        divider: '#F3F4F6',
+        sectionTitle: '#4B5563',
+        label: '#6B7280',
+        value: '#1a1a1a',
+        notesBorder: '#D1D5DB',
+        notesBg: '#FCFCFD',
+        notesText: '#1a1a1a',
+    },
+    dark: {
+        background: '#121212',
+        icon: '#F5F5F5',
+        headerTitle: '#F5F5F5',
+        divider: '#2A2A2A',
+        sectionTitle: '#D1D5DB',
+        label: '#9CA3AF',
+        value: '#F5F5F5',
+        notesBorder: '#3A3A3A',
+        notesBg: '#1E1E1E',
+        notesText: '#F5F5F5',
+    },
+};
 
 export default function HolidayStudentInformation({ onBack }) {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#1a1a1a" />
+                    <Ionicons name="arrow-back" size={24} color={theme.icon} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>John Smith information</Text>
             </View>
@@ -69,6 +100,7 @@ export default function HolidayStudentInformation({ onBack }) {
                         multiline={true}
                         numberOfLines={8}
                         textAlignVertical="top"
+                        placeholderTextColor={theme.label}
                     />
                 </View>
 
@@ -87,10 +119,11 @@ export default function HolidayStudentInformation({ onBack }) {
         </View>
     );
 }
-const styles = StyleSheet.create({
+
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     header: {
         flexDirection: 'row',
@@ -105,14 +138,14 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 22,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.headerTitle,
     },
     content: {
         paddingHorizontal: 20,
     },
     divider: {
         height: 1,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: theme.divider,
         marginBottom: 20,
     },
     sectionHeader: {
@@ -120,7 +153,7 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 16,
-        color: '#4B5563',
+        color: theme.sectionTitle,
         fontFamily: 'Urbanist_600SemiBold',
     },
     rowWrapper: {
@@ -132,14 +165,14 @@ const styles = StyleSheet.create({
     },
     label: {
         fontSize: 14,
-        color: '#6B7280',
+        color: theme.label,
         fontFamily: 'Urbanist_700Bold',
         marginBottom: 6,
     },
     value: {
         fontSize: 16,
         fontFamily: 'Urbanist_400Regular',
-        color: '#1a1a1a',
+        color: theme.value,
     },
     linkValue: {
         fontSize: 14,
@@ -152,14 +185,14 @@ const styles = StyleSheet.create({
     },
     notesInput: {
         borderWidth: 1,
-        borderColor: '#D1D5DB',
+        borderColor: theme.notesBorder,
         borderRadius: 12,
         padding: 16,
         height: 180,
         fontSize: 16,
         fontFamily: 'Urbanist_400Regular',
-        color: '#1a1a1a',
-        backgroundColor: '#FCFCFD',
+        color: theme.notesText,
+        backgroundColor: theme.notesBg,
     },
     buttonRow: {
         flexDirection: 'row',

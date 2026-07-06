@@ -1,10 +1,54 @@
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+
+const COLORS = {
+    light: {
+        background: '#fff',
+        icon: '#000',
+        headerTitle: '#1a1a1a',
+        headerBorder: '#E0E0E0',
+        solvedBg: '#1CAB4B',
+        pendingBg: '#FBBF24',
+        solvedText: '#fff',
+        pendingText: '#1a1a1a',
+        cardBackground: '#fff',
+        cardBorder: '#F0F0F0',
+        cardLabel: '#797A88',
+        cardValue: '#1a1a1a',
+        reportTitle: '#6B7280',
+        reportDescription: '#1B1B1E',
+        loadingText: '#6B7280',
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+    },
+    dark: {
+        background: '#121212',
+        icon: '#F5F5F5',
+        headerTitle: '#F5F5F5',
+        headerBorder: '#2A2A2A',
+        solvedBg: '#1CAB4B',
+        pendingBg: '#FBBF24',
+        solvedText: '#fff',
+        pendingText: '#1a1a1a',
+        cardBackground: '#1E1E1E',
+        cardBorder: '#2A2A2A',
+        cardLabel: '#9CA3AF',
+        cardValue: '#F5F5F5',
+        reportTitle: '#9CA3AF',
+        reportDescription: '#E5E5E5',
+        loadingText: '#9CA3AF',
+        shadowColor: '#000',
+        shadowOpacity: 0.3,
+    },
+};
 
 export default function IssueReport({ reportId, onBack }) {
     const { token } = useAuth();
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
     const [report, setReport] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -65,12 +109,12 @@ export default function IssueReport({ reportId, onBack }) {
             <View style={styles.container}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color="#000" />
+                        <Ionicons name="arrow-back" size={24} color={theme.icon} />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Report Details</Text>
                 </View>
                 <View style={styles.loadingContainer}>
-                    <Text style={{ fontSize: 16, color: '#6B7280' }}>Report details not found.</Text>
+                    <Text style={{ fontSize: 16, color: theme.loadingText }}>Report details not found.</Text>
                 </View>
             </View>
         );
@@ -84,7 +128,7 @@ export default function IssueReport({ reportId, onBack }) {
             <View style={styles.header}>
                 <View style={styles.headerLeft}>
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color="#000" />
+                        <Ionicons name="arrow-back" size={24} color={theme.icon} />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>{formatHeaderDate(report.createdAt)}</Text>
                 </View>
@@ -151,10 +195,10 @@ export default function IssueReport({ reportId, onBack }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
         padding: 20
     },
     header: {
@@ -163,7 +207,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingVertical: 16,
         paddingBottom: 24,
-        borderBottomColor: '#E0E0E0',
+        borderBottomColor: theme.headerBorder,
         borderBottomWidth: 1,
         marginBottom: 20
     },
@@ -177,7 +221,7 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 24,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.headerTitle,
     },
     statusButton: {
         paddingHorizontal: 16,
@@ -185,34 +229,34 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     solvedButton: {
-        backgroundColor: '#1CAB4B',
+        backgroundColor: theme.solvedBg,
     },
     pendingButton: {
-        backgroundColor: '#FBBF24',
+        backgroundColor: theme.pendingBg,
     },
     statusText: {
         fontFamily: 'Urbanist_700Bold',
         fontSize: 14,
     },
     solvedText: {
-        color: '#fff',
+        color: theme.solvedText,
     },
     pendingText: {
-        color: '#1a1a1a',
+        color: theme.pendingText,
     },
     card: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        backgroundColor: '#fff',
+        backgroundColor: theme.cardBackground,
         borderRadius: 16,
         padding: 16,
         marginBottom: 24,
         borderWidth: 1,
-        borderColor: '#F0F0F0',
+        borderColor: theme.cardBorder,
         elevation: 1,
-        shadowColor: '#000',
+        shadowColor: theme.shadowColor,
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
+        shadowOpacity: theme.shadowOpacity,
         shadowRadius: 4,
     },
     cardItem: {
@@ -226,23 +270,23 @@ const styles = StyleSheet.create({
     cardLabel: {
         fontSize: 12,
         fontFamily: 'Urbanist_700Bold',
-        color: '#797A88',
+        color: theme.cardLabel,
     },
     cardValue: {
         fontSize: 14,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.cardValue,
     },
     reportTitle: {
         fontSize: 16,
         fontFamily: 'Urbanist_700Bold',
-        color: '#6B7280',
+        color: theme.reportTitle,
         marginBottom: 12,
     },
     reportDescription: {
         fontSize: 14,
-        fontFamily: 'Urbanist_500Medium',  // 'medium' invalid tha, fix kiya
-        color: '#1B1B1E',
+        fontFamily: 'Urbanist_500Medium',  // 'medium' invalid theme property, fix kiya
+        color: theme.reportDescription,
         lineHeight: 24,
     },
     loadingContainer: {

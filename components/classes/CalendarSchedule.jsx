@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 const DAYS = [
     { day: 'Mon', date: '07' },
@@ -55,7 +55,100 @@ const EVENTS_DATA = [
     },
 ];
 
+const COLORS = {
+    light: {
+        background: '#fff',
+        icon: '#1a1a1a',
+        tabBorder: '#3B82F6',
+        tabActiveBg: '#3B82F6',
+        tabInactiveBg: '#fff',
+        tabTextActive: '#fff',
+        tabTextInactive: '#3B82F6',
+        searchBg: '#FAFAFA',
+        searchBorder: '#E5E7EB',
+        searchText: '#1a1a1a',
+        searchIcon: '#a0a0a0',
+        filterPillActiveBorder: '#3B82F6',
+        filterPillActiveBg: '#fff',
+        filterPillInactiveBorder: '#E5E7EB',
+        filterPillInactiveBg: '#FAFAFA',
+        filterTextActive: '#3B82F6',
+        filterTextInactive: '#9CA3AF',
+        filterIconActive: '#3B82F6',
+        filterIconInactive: '#9CA3AF',
+        monthText: '#1a1a1a',
+        dayItemBg: '#F3F4F6',
+        dayItemActiveBg: '#3B82F6',
+        dayName: '#6B7280',
+        dayNumber: '#1a1a1a',
+        dayTextActive: '#fff',
+        timeText: '#4B5563',
+        emptyIcon: '#E5E7EB',
+        emptyText: '#9CA3AF',
+        weekDayTitleBg: '#F9FAFB',
+        weekDayTitleText: '#1a1a1a',
+        weekEventCardBg: '#fff',
+        weekEventCardBorder: '#F3F4F6',
+        weekEventTitle: '#1a1a1a',
+        weekEventTime: '#6B7280',
+        weekChevron: '#9CA3AF',
+        noEventsText: '#9CA3AF',
+        monthGridHeaderText: '#9CA3AF',
+        monthCellSelectedBg: '#3B82F6',
+        monthCellText: '#1a1a1a',
+        monthCellTextSelected: '#fff',
+        monthEventDot: '#3B82F6',
+    },
+    dark: {
+        background: '#121212',
+        icon: '#F5F5F5',
+        tabBorder: '#3B82F6',
+        tabActiveBg: '#3B82F6',
+        tabInactiveBg: '#1E1E1E',
+        tabTextActive: '#fff',
+        tabTextInactive: '#60A5FA',
+        searchBg: '#1E1E1E',
+        searchBorder: '#2A2A2A',
+        searchText: '#F5F5F5',
+        searchIcon: '#8A8A8A',
+        filterPillActiveBorder: '#3B82F6',
+        filterPillActiveBg: '#1E1E1E',
+        filterPillInactiveBorder: '#2A2A2A',
+        filterPillInactiveBg: '#1E1E1E',
+        filterTextActive: '#60A5FA',
+        filterTextInactive: '#9CA3AF',
+        filterIconActive: '#60A5FA',
+        filterIconInactive: '#9CA3AF',
+        monthText: '#F5F5F5',
+        dayItemBg: '#1E1E1E',
+        dayItemActiveBg: '#3B82F6',
+        dayName: '#9CA3AF',
+        dayNumber: '#F5F5F5',
+        dayTextActive: '#fff',
+        timeText: '#9CA3AF',
+        emptyIcon: '#2A2A2A',
+        emptyText: '#9CA3AF',
+        weekDayTitleBg: '#1E1E1E',
+        weekDayTitleText: '#F5F5F5',
+        weekEventCardBg: '#1E1E1E',
+        weekEventCardBorder: '#2A2A2A',
+        weekEventTitle: '#F5F5F5',
+        weekEventTime: '#9CA3AF',
+        weekChevron: '#9CA3AF',
+        noEventsText: '#9CA3AF',
+        monthGridHeaderText: '#9CA3AF',
+        monthCellSelectedBg: '#3B82F6',
+        monthCellText: '#F5F5F5',
+        monthCellTextSelected: '#fff',
+        monthEventDot: '#60A5FA',
+    },
+};
+
 export default function CalendarSchedule() {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     const [activeTab, setActiveTab] = useState('Day');
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedDate, setSelectedDate] = useState('10');
@@ -113,7 +206,7 @@ export default function CalendarSchedule() {
                     ))
                 ) : (
                     <View style={styles.emptyState}>
-                        <Ionicons name="calendar-outline" size={60} color="#E5E7EB" />
+                        <Ionicons name="calendar-outline" size={60} color={theme.emptyIcon} />
                         <Text style={styles.emptyText}>No sessions scheduled for this day</Text>
                     </View>
                 )}
@@ -132,7 +225,7 @@ export default function CalendarSchedule() {
                                 <Text style={styles.weekEventTitle}>{event.title}</Text>
                                 <Text style={styles.weekEventTime}>{event.time}</Text>
                             </View>
-                            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                            <Ionicons name="chevron-forward" size={20} color={theme.weekChevron} />
                         </TouchableOpacity>
                     ))}
                     {EVENTS_DATA.filter(e => e.date === day.date).length === 0 && (
@@ -201,14 +294,15 @@ export default function CalendarSchedule() {
 
             {/* Search + Filter Pill */}
             <View style={styles.searchContainer}>
-                <Ionicons name="search-outline" size={20} color="#a0a0a0" style={styles.searchIcon} />
+                <Ionicons name="search-outline" size={20} color={theme.searchIcon} style={styles.searchIcon} />
                 <TextInput
                     style={styles.searchInput}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
+                    placeholderTextColor={theme.searchIcon}
                 />
                 <TouchableOpacity>
-                    <Ionicons name="close" size={20} color="#1a1a1a" />
+                    <Ionicons name="close" size={20} color={theme.icon} />
                 </TouchableOpacity>
             </View>
 
@@ -219,7 +313,7 @@ export default function CalendarSchedule() {
                         style={[styles.filterPill, activeFilters.includes('Weekly Classes') ? styles.filterPillActive : styles.filterPillInactive]}
                         onPress={() => toggleFilter('Weekly Classes')}
                     >
-                        <Ionicons name="options-outline" size={16} color={activeFilters.includes('Weekly Classes') ? "#3B82F6" : "#9CA3AF"} style={styles.filterIcon} />
+                        <Ionicons name="options-outline" size={16} color={activeFilters.includes('Weekly Classes') ? theme.filterIconActive : theme.filterIconInactive} style={styles.filterIcon} />
                         <Text style={activeFilters.includes('Weekly Classes') ? styles.filterTextActive : styles.filterTextInactive}>Weekly Classes</Text>
                     </TouchableOpacity>
 
@@ -227,7 +321,7 @@ export default function CalendarSchedule() {
                         style={[styles.filterPill, activeFilters.includes('Camps') ? styles.filterPillActive : styles.filterPillInactive]}
                         onPress={() => toggleFilter('Camps')}
                     >
-                        <Ionicons name="swap-vertical-outline" size={16} color={activeFilters.includes('Camps') ? "#3B82F6" : "#9CA3AF"} style={styles.filterIcon} />
+                        <Ionicons name="swap-vertical-outline" size={16} color={activeFilters.includes('Camps') ? theme.filterIconActive : theme.filterIconInactive} style={styles.filterIcon} />
                         <Text style={activeFilters.includes('Camps') ? styles.filterTextActive : styles.filterTextInactive}>Camps</Text>
                     </TouchableOpacity>
 
@@ -243,11 +337,11 @@ export default function CalendarSchedule() {
             {/* Month Header */}
             <View style={styles.monthHeader}>
                 <TouchableOpacity>
-                    <Ionicons name="chevron-back" size={24} color="#1a1a1a" />
+                    <Ionicons name="chevron-back" size={24} color={theme.icon} />
                 </TouchableOpacity>
                 <Text style={styles.monthText}>December 2023</Text>
                 <TouchableOpacity>
-                    <Ionicons name="chevron-forward" size={24} color="#1a1a1a" />
+                    <Ionicons name="chevron-forward" size={24} color={theme.icon} />
                 </TouchableOpacity>
             </View>
 
@@ -258,10 +352,10 @@ export default function CalendarSchedule() {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     topTabsContainer: {
         flexDirection: 'row',
@@ -274,31 +368,31 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         alignItems: 'center',
         borderWidth: 1.5,
-        borderColor: '#3B82F6',
+        borderColor: theme.tabBorder,
     },
     topTabActive: {
-        backgroundColor: '#3B82F6',
+        backgroundColor: theme.tabActiveBg,
     },
     topTabInactive: {
-        backgroundColor: '#fff',
+        backgroundColor: theme.tabInactiveBg,
     },
     topTabText: {
         fontWeight: 'bold',
         fontSize: 14,
     },
     topTabTextActive: {
-        color: '#fff',
+        color: theme.tabTextActive,
     },
     topTabTextInactive: {
-        color: '#3B82F6',
+        color: theme.tabTextInactive,
     },
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         marginHorizontal: 16,
-        backgroundColor: '#FAFAFA',
+        backgroundColor: theme.searchBg,
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: theme.searchBorder,
         borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 12,
@@ -311,7 +405,7 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 14,
         fontWeight: '600',
-        color: '#1a1a1a',
+        color: theme.searchText,
     },
     filtersWrapper: {
         marginBottom: 20,
@@ -329,23 +423,23 @@ const styles = StyleSheet.create({
         borderWidth: 1.5,
     },
     filterPillActive: {
-        borderColor: '#3B82F6',
-        backgroundColor: '#fff',
+        borderColor: theme.filterPillActiveBorder,
+        backgroundColor: theme.filterPillActiveBg,
     },
     filterPillInactive: {
-        borderColor: '#E5E7EB',
-        backgroundColor: '#FAFAFA',
+        borderColor: theme.filterPillInactiveBorder,
+        backgroundColor: theme.filterPillInactiveBg,
     },
     filterIcon: {
         marginRight: 6,
     },
     filterTextActive: {
-        color: '#3B82F6',
+        color: theme.filterTextActive,
         fontWeight: 'bold',
         fontSize: 14,
     },
     filterTextInactive: {
-        color: '#9CA3AF',
+        color: theme.filterTextInactive,
         fontWeight: 'bold',
         fontSize: 14,
     },
@@ -359,7 +453,7 @@ const styles = StyleSheet.create({
     monthText: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#1a1a1a',
+        color: theme.monthText,
     },
     daysWrapper: {
         marginBottom: 24,
@@ -372,12 +466,12 @@ const styles = StyleSheet.create({
         width: 50,
         height: 70,
         borderRadius: 25,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: theme.dayItemBg,
         alignItems: 'center',
         justifyContent: 'center',
     },
     dayItemActive: {
-        backgroundColor: '#3B82F6', // Blue
+        backgroundColor: theme.dayItemActiveBg,
         shadowColor: '#3B82F6',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
@@ -386,17 +480,17 @@ const styles = StyleSheet.create({
     },
     dayName: {
         fontSize: 12,
-        color: '#6B7280',
+        color: theme.dayName,
         marginBottom: 4,
         fontWeight: 'bold',
     },
     dayNumber: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#1a1a1a',
+        color: theme.dayNumber,
     },
     dayTextActive: {
-        color: '#fff',
+        color: theme.dayTextActive,
     },
     timelineContent: {
         paddingHorizontal: 16,
@@ -412,7 +506,7 @@ const styles = StyleSheet.create({
     },
     timeText: {
         fontSize: 12,
-        color: '#4B5563',
+        color: theme.timeText,
     },
     eventColumn: {
         flex: 1,
@@ -443,7 +537,7 @@ const styles = StyleSheet.create({
         paddingVertical: 50,
     },
     emptyText: {
-        color: '#9CA3AF',
+        color: theme.emptyText,
         marginTop: 10,
         fontSize: 16,
     },
@@ -453,9 +547,9 @@ const styles = StyleSheet.create({
     weekDayTitle: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#1a1a1a',
+        color: theme.weekDayTitleText,
         marginBottom: 12,
-        backgroundColor: '#F9FAFB',
+        backgroundColor: theme.weekDayTitleBg,
         padding: 8,
         borderRadius: 8,
     },
@@ -464,12 +558,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: 16,
-        backgroundColor: '#fff',
+        backgroundColor: theme.weekEventCardBg,
         borderRadius: 12,
         marginBottom: 8,
         borderLeftWidth: 4,
         borderWidth: 1,
-        borderColor: '#F3F4F6',
+        borderColor: theme.weekEventCardBorder,
     },
     weekEventInfo: {
         flex: 1,
@@ -477,16 +571,16 @@ const styles = StyleSheet.create({
     weekEventTitle: {
         fontSize: 15,
         fontWeight: 'bold',
-        color: '#1a1a1a',
+        color: theme.weekEventTitle,
     },
     weekEventTime: {
         fontSize: 12,
-        color: '#6B7280',
+        color: theme.weekEventTime,
         marginTop: 4,
     },
     noEventsText: {
         fontSize: 14,
-        color: '#9CA3AF',
+        color: theme.noEventsText,
         fontStyle: 'italic',
         marginLeft: 8,
     },
@@ -503,7 +597,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 12,
         fontWeight: 'bold',
-        color: '#9CA3AF',
+        color: theme.monthGridHeaderText,
     },
     monthGridBody: {
         flexDirection: 'row',
@@ -519,21 +613,21 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     monthCellSelected: {
-        backgroundColor: '#3B82F6',
+        backgroundColor: theme.monthCellSelectedBg,
     },
     monthCellText: {
         fontSize: 16,
-        color: '#1a1a1a',
+        color: theme.monthCellText,
     },
     monthCellTextSelected: {
-        color: '#fff',
+        color: theme.monthCellTextSelected,
         fontWeight: 'bold',
     },
     monthEventDot: {
         width: 4,
         height: 4,
         borderRadius: 2,
-        backgroundColor: '#3B82F6',
+        backgroundColor: theme.monthEventDot,
         marginTop: 4,
     },
 });

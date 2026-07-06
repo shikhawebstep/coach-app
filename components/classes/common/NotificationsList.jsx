@@ -1,7 +1,8 @@
 import { useAuth } from '@/context/AuthContext';
+import { getNotificationVisual } from '@/utils/notificationVisuals';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 // Group flat notifications array into sections by category
 function groupByCategory(notifications = []) {
@@ -26,6 +27,9 @@ export default function NotificationsList({ onNotificationSelect }) {
     const [sections, setSections] = useState([]);
     const [loading, setLoading] = useState(true);
     const { token } = useAuth();
+    const colorScheme = useColorScheme();
+    const isDark = colorScheme === 'dark';
+    const styles = getStyles(isDark);
 
     useEffect(() => {
         fetchNotifications();
@@ -65,7 +69,7 @@ export default function NotificationsList({ onNotificationSelect }) {
     if (loading) {
         return (
             <View style={styles.centered}>
-                <ActivityIndicator size="large" color="#000" />
+                <ActivityIndicator size="large" color={isDark ? '#fff' : '#000'} />
             </View>
         );
     }
@@ -82,7 +86,7 @@ export default function NotificationsList({ onNotificationSelect }) {
                     <Ionicons
                         name={hideRead ? 'checkbox' : 'square-outline'}
                         size={20}
-                        color={hideRead ? '#000' : '#a0a0a0'}
+                        color={hideRead ? (isDark ? '#fff' : '#000') : '#a0a0a0'}
                     />
                     <Text style={styles.hideReadText}>Hide read</Text>
                 </TouchableOpacity>
@@ -97,35 +101,39 @@ export default function NotificationsList({ onNotificationSelect }) {
                     visibleSections.map((section) => (
                         <View key={section.category} style={styles.sectionContainer}>
                             <Text style={styles.sectionTitle}>{section.category}</Text>
-                            {section.items.map(item => (
-                                <TouchableOpacity
-                                    key={item.id}
-                                    style={styles.notificationCard}
-                                    onPress={() => onNotificationSelect?.(item)}
-                                >
-                                    {/* Sender avatar */}
-                                    <Image
-                                        source={{ uri: item.createdBy?.profile }}
-                                        style={styles.avatarImage}
-                                    />
+                            {section.items.map(item => {
+                                const typeImage = getNotificationVisual(item);
+                                return (
+                                    <TouchableOpacity
+                                        key={item.id}
+                                        style={styles.notificationCard}
+                                        onPress={() => onNotificationSelect?.(item)}
+                                    >
+                                        {/* Sender avatar with notification-type badge */}
+                                        <View style={styles.avatarWrapper}>
 
-                                    {/* Content */}
-                                    <View style={styles.contentContainer}>
-                                        <Text style={styles.notificationTitle} numberOfLines={1}>
-                                            {item.title}
-                                        </Text>
-                                        <Text style={styles.notificationSubtitle} numberOfLines={2}>
-                                            {item.description}
-                                        </Text>
-                                        <Text style={styles.notificationDate}>
-                                            {formatDate(item.createdAt)}
-                                        </Text>
-                                    </View>
+                                            <Image style={styles.avatarImage} source={typeImage}  resizeMode="contain" />
 
-                                    {/* Unread dot — shown when isRead is false */}
-                                    {!isRead(item) && <View style={styles.unreadDot} />}
-                                </TouchableOpacity>
-                            ))}
+                                        </View>
+
+                                        {/* Content */}
+                                        <View style={styles.contentContainer}>
+                                            <Text style={styles.notificationTitle} numberOfLines={1}>
+                                                {item.title}
+                                            </Text>
+                                            <Text style={styles.notificationSubtitle} numberOfLines={2}>
+                                                {item.description}
+                                            </Text>
+                                            <Text style={styles.notificationDate}>
+                                                {formatDate(item.createdAt)}
+                                            </Text>
+                                        </View>
+
+                                        {/* Unread dot — shown when isRead is false */}
+                                        {!isRead(item) && <View style={styles.unreadDot} />}
+                                    </TouchableOpacity>
+                                );
+                            })}
                         </View>
                     ))
                 )}
@@ -134,10 +142,11 @@ export default function NotificationsList({ onNotificationSelect }) {
         </View>
     );
 }
-const styles = StyleSheet.create({
+
+const getStyles = (isDark) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: isDark ? '#121212' : '#fff',
     },
     centered: {
         flex: 1,
@@ -148,7 +157,7 @@ const styles = StyleSheet.create({
     emptyText: {
         fontSize: 14,
         fontFamily: 'Urbanist_400Regular',
-        color: '#6B7280',
+        color: isDark ? '#9CA3AF' : '#6B7280',
     },
     header: {
         flexDirection: 'row',
@@ -161,7 +170,7 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 24,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: isDark ? '#F5F5F5' : '#1a1a1a',
     },
     hideReadContainer: {
         flexDirection: 'row',
@@ -170,7 +179,7 @@ const styles = StyleSheet.create({
     hideReadText: {
         fontSize: 12,
         fontFamily: 'Urbanist_400Regular',
-        color: '#666',
+        color: isDark ? '#9CA3AF' : '#666',
         marginLeft: 6,
     },
     scrollContent: {
@@ -183,31 +192,52 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 16,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: isDark ? '#F5F5F5' : '#1a1a1a',
         marginBottom: 16,
     },
     notificationCard: {
         flexDirection: 'row',
         alignItems: 'flex-start',
-        backgroundColor: '#fff',
+        backgroundColor: isDark ? '#1E1E1E' : '#fff',
         borderRadius: 16,
         padding: 16,
         marginBottom: 12,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: isDark ? 0.3 : 0.05,
         shadowRadius: 8,
         elevation: 2,
         borderWidth: 1,
-        borderColor: '#F9FAFB',
+        borderColor: isDark ? '#2A2A2A' : '#F9FAFB',
+        position: 'relative',
+    },
+    avatarWrapper: {
+        width: 48,
+        height: 48,
+        marginRight: 12,
         position: 'relative',
     },
     avatarImage: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        marginRight: 12,
-        backgroundColor: '#F3F4F6',
+        width: 55,
+        height: 55,
+    },
+    typeBadge: {
+        position: 'absolute',
+        bottom: -4,
+        right: -4,
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: isDark ? '#1E1E1E' : '#fff',
+        borderWidth: 1.5,
+        borderColor: isDark ? '#1E1E1E' : '#fff',
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+    },
+    typeBadgeImage: {
+        width: 14,
+        height: 14,
     },
     contentContainer: {
         flex: 1,
@@ -215,20 +245,20 @@ const styles = StyleSheet.create({
     notificationTitle: {
         fontSize: 15,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: isDark ? '#F5F5F5' : '#1a1a1a',
         marginBottom: 4,
     },
     notificationSubtitle: {
         fontSize: 13,
         fontFamily: 'Urbanist_400Regular',
-        color: '#6B7280',
+        color: isDark ? '#B0B0B0' : '#6B7280',
         lineHeight: 18,
         marginBottom: 4,
     },
     notificationDate: {
         fontSize: 11,
         fontFamily: 'Urbanist_400Regular',
-        color: '#9CA3AF',
+        color: isDark ? '#777' : '#9CA3AF',
     },
     unreadDot: {
         position: 'absolute',

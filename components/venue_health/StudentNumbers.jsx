@@ -1,17 +1,82 @@
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import Svg, { Polyline } from 'react-native-svg';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+const COLORS = {
+    light: {
+        background: '#fff',
+        icon: '#1a1a1a',
+        headerTitle: '#1a1a1a',
+        yearText: '#1a1a1a',
+        borderBtn: '#1a1a1a',
+        rowBorder: '#F3F4F6',
+        tableHeaderBg: '#fff',
+        headerColText: '#4B5563',
+        cellText: '#1a1a1a',
+        textGreen: '#1CAB4B',
+        textRed: '#EF4444',
+        textYellow: '#F59E0B',
+        bgLightGreen: '#ECFDF5',
+        bgLightRed: '#FEF2F2',
+        bgLightYellow: '#FFFBEB',
+        totalRowBorder: '#E5E7EB',
+        totalRowBg: '#fff',
+        legendText: '#4B5563',
+        axisText: '#4B5563',
+        modalContainerBg: '#fff',
+        modalHeaderBorder: '#E5E7EB',
+        modalTitle: '#1a1a1a',
+        filterText: '#1a1a1a',
+        checkboxBorder: '#D1D5DB',
+        checkboxSelectedBg: '#3B82F6',
+        checkboxCheck: '#fff',
+        divider: '#F3F4F6',
+    },
+    dark: {
+        background: '#121212',
+        icon: '#F5F5F5',
+        headerTitle: '#F5F5F5',
+        yearText: '#F5F5F5',
+        borderBtn: '#F5F5F5',
+        rowBorder: '#2A2A2A',
+        tableHeaderBg: '#121212',
+        headerColText: '#9CA3AF',
+        cellText: '#F5F5F5',
+        textGreen: '#34D399',
+        textRed: '#F87171',
+        textYellow: '#FBBF24',
+        bgLightGreen: '#0F2A1E',
+        bgLightRed: '#2A1414',
+        bgLightYellow: '#2A2412',
+        totalRowBorder: '#2A2A2A',
+        totalRowBg: '#121212',
+        legendText: '#D1D5DB',
+        axisText: '#D1D5DB',
+        modalContainerBg: '#121212',
+        modalHeaderBorder: '#2A2A2A',
+        modalTitle: '#F5F5F5',
+        filterText: '#F5F5F5',
+        checkboxBorder: '#5A5A5A',
+        checkboxSelectedBg: '#3B82F6',
+        checkboxCheck: '#fff',
+        divider: '#2A2A2A',
+    },
+};
+
 export default function StudentNumbers({ onBack }) {
     const { token } = useAuth();
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     const [venues, setVenues] = useState([]);
     const [loading, setLoading] = useState(true);
     const [year, setYear] = useState(2026);
-    const [startMonthIndex, setStartMonthIndex] = useState(2); // Default to March (index 2)
+    const [startMonthIndex, setStartMonthIndex] = useState(2);
     const [viewMode, setViewMode] = useState('table');
     const [isFilterVisible, setIsFilterVisible] = useState(false);
     const [selectedVenues, setSelectedVenues] = useState(new Set());
@@ -60,10 +125,9 @@ export default function StudentNumbers({ onBack }) {
         if (startMonthIndex < 8) setStartMonthIndex(startMonthIndex + 1);
     };
 
-    // Helper to get color style based on type
     const getCellStyles = (students, capacity) => {
         if (!capacity || capacity === 0) {
-            return { text: styles.textYellow, bg: styles.bgLightYellow }; // default
+            return { text: styles.textYellow, bg: styles.bgLightYellow };
         }
         const ratio = students / capacity;
         if (ratio >= 0.8) return { text: styles.textGreen, bg: styles.bgLightGreen };
@@ -73,7 +137,6 @@ export default function StudentNumbers({ onBack }) {
 
     const visibleMonths = [0, 1, 2, 3].map(offset => startMonthIndex + offset);
 
-    // Dynamic filtering and total calculation
     const allUniqueVenueNames = venues.length > 0
         ? Array.from(new Set(venues.map(v => v.venueName)))
         : [];
@@ -90,7 +153,6 @@ export default function StudentNumbers({ onBack }) {
         });
     });
 
-    // Dynamic Graph Logic
     const colors = ['#EC4899', '#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#14B8A6'];
     let maxStudents = 0;
     filteredVenues.forEach(v => {
@@ -141,12 +203,11 @@ export default function StudentNumbers({ onBack }) {
 
     return (
         <View style={styles.container}>
-            {/* Header / Controls */}
             <View style={styles.headerRow}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     {onBack && (
                         <TouchableOpacity onPress={onBack} style={{ marginRight: 12 }}>
-                            <Ionicons name="arrow-back" size={24} color="#000" />
+                            <Ionicons name="arrow-back" size={24} color={theme.icon} />
                         </TouchableOpacity>
                     )}
                     <Text style={styles.headerTitle}>Student numbers</Text>
@@ -183,7 +244,6 @@ export default function StudentNumbers({ onBack }) {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-
                         onPress={() => setViewMode(viewMode === 'table' ? 'graph' : 'table')}
                     >
                         <Image
@@ -195,17 +255,14 @@ export default function StudentNumbers({ onBack }) {
                 </View>
             </View>
 
-            {/* Table Header / Body or Graph View */}
             {loading ? (
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 40 }}>
                     <ActivityIndicator size="large" color="#3B82F6" />
                 </View>
             ) : viewMode === 'table' ? (
                 <View style={{ flex: 1 }}>
-                    {/* Table Header */}
                     <View style={[styles.row, styles.tableHeader]}>
                         <View style={[styles.colVenueH, { flexDirection: 'row', alignItems: 'center' }]}>
-                           
                             <Text style={styles.headerColText}>Venue</Text>
                         </View>
                         <View style={styles.colCapH}>
@@ -219,8 +276,8 @@ export default function StudentNumbers({ onBack }) {
                                             source={require('@/assets/images/Arrow - Left 2.png')}
                                             style={styles.smallIcon}
                                             resizeMode="contain"
-                                        />                                   
-                                         </TouchableOpacity>
+                                        />
+                                    </TouchableOpacity>
                                 )}
                                 <Text style={styles.headerColText}>{MONTH_NAMES[mIndex]}</Text>
                                 {i === 3 && (
@@ -229,13 +286,13 @@ export default function StudentNumbers({ onBack }) {
                                             source={require('@/assets/images/Arrow - Right 2.png')}
                                             style={styles.smallIcon}
                                             resizeMode="contain"
-                                        />                                    </TouchableOpacity>
+                                        />
+                                    </TouchableOpacity>
                                 )}
                             </View>
                         ))}
                     </View>
 
-                    {/* Table Body */}
                     <ScrollView showsVerticalScrollIndicator={false}>
                         {filteredVenues.map((venue, index) => (
                             <View key={venue.venueId || index} style={styles.row}>
@@ -257,7 +314,6 @@ export default function StudentNumbers({ onBack }) {
                             </View>
                         ))}
 
-                        {/* Total Row */}
                         <View style={[styles.row, styles.totalRow]}>
                             <View style={styles.colVenue}><Text style={[styles.cellText, { fontWeight: 'bold' }]}>Total</Text></View>
                             <View style={styles.colCap}><Text style={styles.textGreen}>-</Text></View>
@@ -275,7 +331,6 @@ export default function StudentNumbers({ onBack }) {
                 </View>
             ) : (
                 <View style={{ flex: 1, paddingHorizontal: 16 }}>
-                    {/* Legend */}
                     <View style={[styles.legendContainer, { flexWrap: 'wrap' }]}>
                         {polylines.map((pl) => (
                             <View key={pl.key} style={styles.legendItem}>
@@ -288,16 +343,13 @@ export default function StudentNumbers({ onBack }) {
                         )}
                     </View>
 
-                    {/* Chart Area */}
                     <View style={styles.chartArea}>
-                        {/* Y Axis Labels */}
                         <View style={styles.yAxis}>
                             {yLabels.map((yl, idx) => (
                                 <Text key={idx} style={styles.axisText}>{yl}</Text>
                             ))}
                         </View>
 
-                        {/* SVG Line Chart */}
                         <View style={styles.chartPlot}>
                             <Svg width="100%" height={220} viewBox="0 -10 310 220" preserveAspectRatio="none">
                                 {polylines.map((pl) => (
@@ -313,7 +365,6 @@ export default function StudentNumbers({ onBack }) {
                                 ))}
                             </Svg>
 
-                            {/* X Axis Labels */}
                             <View style={styles.xAxis}>
                                 {MONTH_NAMES.map((m, idx) => (
                                     <Text key={idx} style={styles.axisTextX}>{m}</Text>
@@ -324,26 +375,23 @@ export default function StudentNumbers({ onBack }) {
                 </View>
             )}
 
-            {/* Filter Modal */}
             <Modal visible={isFilterVisible} animationType="slide" transparent={false}>
                 <View style={styles.modalContainer}>
                     <View style={styles.modalHeader}>
                         <TouchableOpacity onPress={() => setIsFilterVisible(false)} style={styles.modalBackBtn}>
-                            <Ionicons name="arrow-back" size={24} color="#000" />
+                            <Ionicons name="arrow-back" size={24} color={theme.icon} />
                         </TouchableOpacity>
                         <Text style={styles.modalTitle}>Venues</Text>
                     </View>
                     <ScrollView style={styles.modalContent}>
-                        {/* Select All */}
                         <TouchableOpacity style={styles.filterRow} onPress={toggleAllVenues}>
                             <Text style={styles.filterText}>Select all</Text>
                             <View style={[styles.checkbox, selectedVenues.size === allUniqueVenueNames.length && styles.checkboxSelected]}>
-                                {selectedVenues.size === allUniqueVenueNames.length && <Ionicons name="checkmark" size={16} color="#fff" />}
+                                {selectedVenues.size === allUniqueVenueNames.length && <Ionicons name="checkmark" size={16} color={theme.checkboxCheck} />}
                             </View>
                         </TouchableOpacity>
                         <View style={styles.divider} />
 
-                        {/* Venue List */}
                         {allUniqueVenueNames.map((vName, idx) => {
                             const isSelected = selectedVenues.has(vName);
                             return (
@@ -351,7 +399,7 @@ export default function StudentNumbers({ onBack }) {
                                     <TouchableOpacity style={styles.filterRow} onPress={() => toggleVenueFilter(vName)}>
                                         <Text style={styles.filterText}>{vName}</Text>
                                         <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-                                            {isSelected && <Ionicons name="checkmark" size={16} color="#fff" />}
+                                            {isSelected && <Ionicons name="checkmark" size={16} color={theme.checkboxCheck} />}
                                         </View>
                                     </TouchableOpacity>
                                     <View style={styles.divider} />
@@ -366,10 +414,10 @@ export default function StudentNumbers({ onBack }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     headerRow: {
         flexDirection: 'row',
@@ -382,7 +430,7 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 24,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.headerTitle,
     },
     controlsGrid: {
         flexDirection: 'row',
@@ -394,7 +442,7 @@ const styles = StyleSheet.create({
     yearText: {
         fontSize: 18,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.yearText,
         marginHorizontal: 8,
     },
     actionBtn: {
@@ -403,7 +451,7 @@ const styles = StyleSheet.create({
     },
     borderBtn: {
         borderWidth: 1.5,
-        borderColor: '#1a1a1a',
+        borderColor: theme.borderBtn,
         borderRadius: 6,
         padding: 4,
         marginLeft: 8,
@@ -411,21 +459,21 @@ const styles = StyleSheet.create({
     row: {
         flexDirection: 'row',
         borderBottomWidth: 1,
-        borderColor: '#F3F4F6',
+        borderColor: theme.rowBorder,
     },
     tableHeader: {
         paddingVertical: 12,
-        backgroundColor: '#fff',
+        backgroundColor: theme.tableHeaderBg,
     },
     headerColText: {
         fontSize: 12,
         paddingHorizontal: 4,
         fontFamily: 'Urbanist_700Bold',
-        color: '#4B5563',
+        color: theme.headerColText,
     },
     colVenueH: {
         flex: 2.2,
-        justifyContent: 'start',
+        justifyContent: 'flex-start',
         paddingLeft: 15,
     },
     colCapH: {
@@ -458,41 +506,41 @@ const styles = StyleSheet.create({
     cellText: {
         fontSize: 13,
         fontFamily: 'Urbanist_400Regular',
-        color: '#1a1a1a',
+        color: theme.cellText,
     },
     cellValue: {
         fontSize: 13,
         fontFamily: 'Urbanist_700Bold',
     },
     textGreen: {
-        color: '#1CAB4B',
+        color: theme.textGreen,
         fontFamily: 'Urbanist_700Bold',
         fontSize: 13,
     },
     textRed: {
-        color: '#EF4444',
+        color: theme.textRed,
         fontFamily: 'Urbanist_700Bold',
         fontSize: 13,
     },
     textYellow: {
-        color: '#F59E0B',
+        color: theme.textYellow,
         fontFamily: 'Urbanist_700Bold',
         fontSize: 13,
     },
     bgLightGreen: {
-        backgroundColor: '#ECFDF5',
+        backgroundColor: theme.bgLightGreen,
     },
     bgLightRed: {
-        backgroundColor: '#FEF2F2',
+        backgroundColor: theme.bgLightRed,
     },
     bgLightYellow: {
-        backgroundColor: '#FFFBEB',
+        backgroundColor: theme.bgLightYellow,
     },
     totalRow: {
         borderTopWidth: 2,
-        borderColor: '#E5E7EB',
+        borderColor: theme.totalRowBorder,
         borderBottomWidth: 0,
-        backgroundColor: '#fff',
+        backgroundColor: theme.totalRowBg,
     },
     legendContainer: {
         flexDirection: 'row',
@@ -514,7 +562,7 @@ const styles = StyleSheet.create({
     legendText: {
         fontSize: 13,
         fontFamily: 'Urbanist_400Regular',
-        color: '#4B5563',
+        color: theme.legendText,
     },
     chartArea: {
         flexDirection: 'row',
@@ -531,7 +579,7 @@ const styles = StyleSheet.create({
     axisText: {
         fontSize: 12,
         fontFamily: 'Urbanist_700Bold',
-        color: '#4B5563',
+        color: theme.axisText,
     },
     chartPlot: {
         flex: 1,
@@ -551,13 +599,13 @@ const styles = StyleSheet.create({
     axisTextX: {
         fontSize: 12,
         fontFamily: 'Urbanist_700Bold',
-        color: '#4B5563',
+        color: theme.axisText,
         flex: 1,
         textAlign: 'center',
     },
     modalContainer: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.modalContainerBg,
     },
     modalHeader: {
         flexDirection: 'row',
@@ -566,7 +614,7 @@ const styles = StyleSheet.create({
         paddingTop: 60,
         paddingBottom: 20,
         borderBottomWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: theme.modalHeaderBorder,
     },
     modalBackBtn: {
         marginRight: 16,
@@ -574,7 +622,7 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontSize: 20,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.modalTitle,
     },
     modalContent: {
         flex: 1,
@@ -589,24 +637,24 @@ const styles = StyleSheet.create({
     filterText: {
         fontSize: 16,
         fontFamily: 'Urbanist_400Regular',
-        color: '#1a1a1a',
+        color: theme.filterText,
     },
     checkbox: {
         width: 24,
         height: 24,
         borderWidth: 1.5,
-        borderColor: '#D1D5DB',
+        borderColor: theme.checkboxBorder,
         borderRadius: 6,
         justifyContent: 'center',
         alignItems: 'center',
     },
     checkboxSelected: {
-        backgroundColor: '#3B82F6',
-        borderColor: '#3B82F6',
+        backgroundColor: theme.checkboxSelectedBg,
+        borderColor: theme.checkboxSelectedBg,
     },
     divider: {
         height: 1,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: theme.divider,
         marginHorizontal: 20,
     },
     iconImage: {

@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 const ASSESSMENTS_DATA = [
     {
@@ -20,13 +20,44 @@ const ASSESSMENTS_DATA = [
     }
 ];
 
+const COLORS = {
+    light: {
+        background: '#fff',
+        cardBackground: '#fff',
+        cardBorder: '#F9FAFB',
+        headerTitle: '#1a1a1a',
+        name: '#1a1a1a',
+        dateTime: '#6B7280',
+        venue: '#1a1a1a',
+        icon: '#000',
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+    },
+    dark: {
+        background: '#121212',
+        cardBackground: '#1E1E1E',
+        cardBorder: '#2A2A2A',
+        headerTitle: '#F5F5F5',
+        name: '#F5F5F5',
+        dateTime: '#9CA3AF',
+        venue: '#F5F5F5',
+        icon: '#F5F5F5',
+        shadowColor: '#000',
+        shadowOpacity: 0.3,
+    },
+};
+
 export default function PracticalAssessments({ onBack, onStart }) {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
+                    <Ionicons name="arrow-back" size={24} color={theme.icon} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>My Practical Assessments</Text>
             </View>
@@ -61,7 +92,7 @@ export default function PracticalAssessments({ onBack, onStart }) {
                             >
                                 <Text style={styles.actionBtnText}>{assessment.status}</Text>
                             </TouchableOpacity>
-                            <Ionicons name="chevron-forward" size={20} color="#000" style={styles.chevron} />
+                            <Ionicons name="chevron-forward" size={20} color={theme.icon} style={styles.chevron} />
                         </View>
                     </TouchableOpacity>
                 ))}
@@ -70,10 +101,10 @@ export default function PracticalAssessments({ onBack, onStart }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     header: {
         flexDirection: 'row',
@@ -88,7 +119,7 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 24,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.headerTitle,
     },
     content: {
         paddingHorizontal: 16,
@@ -98,15 +129,15 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#fff',
+        backgroundColor: theme.cardBackground,
         borderRadius: 16,
         padding: 16,
         marginBottom: 16,
         borderWidth: 1,
-        borderColor: '#F9FAFB',
-        shadowColor: '#000',
+        borderColor: theme.cardBorder,
+        shadowColor: theme.shadowColor,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: theme.shadowOpacity,
         shadowRadius: 8,
         elevation: 2,
     },
@@ -116,7 +147,7 @@ const styles = StyleSheet.create({
     name: {
         fontSize: 14,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.name,
     },
     dateTimeCol: {
         flex: 1.5,
@@ -124,7 +155,7 @@ const styles = StyleSheet.create({
     dateTime: {
         fontSize: 12,
         fontFamily: 'Urbanist_400Regular',
-        color: '#6B7280',
+        color: theme.dateTime,
         lineHeight: 18,
     },
     venueCol: {
@@ -133,7 +164,7 @@ const styles = StyleSheet.create({
     venue: {
         fontSize: 14,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.venue,
     },
     actionCol: {
         flexDirection: 'row',
@@ -145,7 +176,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 6,
-        width:85,
+        width: 85,
     },
     btnStart: {
         backgroundColor: '#3B82F6',
@@ -154,7 +185,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#1CAB4B',
     },
     actionBtnText: {
-        textAlign:'center',
+        textAlign: 'center',
         color: '#fff',
         fontSize: 12,
         fontFamily: 'Urbanist_700Bold',

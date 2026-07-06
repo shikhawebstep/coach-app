@@ -1,16 +1,33 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+
+const COLORS = {
+    light: {
+        background: '#fff',
+        imagePlaceholderBg: '#E5E7EB',
+        sectionTitle: '#1a1a1a',
+        paragraph: '#6B7280',
+    },
+    dark: {
+        background: '#121212',
+        imagePlaceholderBg: '#2A2A2A',
+        sectionTitle: '#F5F5F5',
+        paragraph: '#9CA3AF',
+    },
+};
 
 export default function HolidaySessionExercise({ onBack, onSearchSkillClick, exercise }) {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     const imageUrls = (() => {
         try { return JSON.parse(exercise?.imageUrl || '[]'); } catch { return []; }
     })();
     const imageUri = imageUrls[0];
 
-    // Parse HTML into sections
     const parseHtmlSections = (html) => {
         if (!html) return [];
-        // Strip tags, decode entities
         return html
             .replace(/<br\s*\/?>/gi, '\n')
             .replace(/<li[^>]*>/gi, '• ')
@@ -48,7 +65,7 @@ export default function HolidaySessionExercise({ onBack, onSearchSkillClick, exe
                     {imageUri ? (
                         <Image source={{ uri: imageUri }} style={styles.mainImage} resizeMode="cover" />
                     ) : (
-                        <View style={[styles.mainImage, { backgroundColor: '#E5E7EB' }]} />
+                        <View style={[styles.mainImage, { backgroundColor: theme.imagePlaceholderBg }]} />
                     )}
                 </View>
 
@@ -63,7 +80,7 @@ export default function HolidaySessionExercise({ onBack, onSearchSkillClick, exe
                     </TouchableOpacity>
                 </View>
 
-                {/* Description — rendered as plain text from HTML */}
+                {/* Description */}
                 <Text style={styles.sectionTitle}>Description</Text>
                 <Text style={styles.paragraph}>{cleanDescription}</Text>
 
@@ -73,10 +90,10 @@ export default function HolidaySessionExercise({ onBack, onSearchSkillClick, exe
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     greenHeaderContainer: {
         paddingHorizontal: 16,
@@ -109,7 +126,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         overflow: 'hidden',
         marginBottom: 20,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: theme.imagePlaceholderBg,
     },
     mainImage: {
         width: '100%',
@@ -127,12 +144,12 @@ const styles = StyleSheet.create({
     durationLabel: {
         fontSize: 16,
         fontFamily: 'Urbanist_700Bold',
-        color: '#2563EB', // Blue
+        color: '#2563EB',
     },
     durationValue: {
         fontSize: 16,
         fontFamily: 'Urbanist_400Regular',
-        color: '#3B82F6', // Lighter Blue
+        color: '#3B82F6',
     },
     searchButton: {
         borderWidth: 1.5,
@@ -149,14 +166,14 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontFamily: 'Urbanist_700Bold',
-        color: '#1a1a1a',
+        color: theme.sectionTitle,
         marginBottom: 12,
         marginTop: 8,
     },
     paragraph: {
         fontSize: 14,
         fontFamily: 'Urbanist_400Regular',
-        color: '#6B7280',
+        color: theme.paragraph,
         lineHeight: 22,
         marginBottom: 12,
     },
@@ -167,13 +184,13 @@ const styles = StyleSheet.create({
     bulletItem: {
         fontSize: 14,
         fontFamily: 'Urbanist_400Regular',
-        color: '#6B7280',
+        color: theme.paragraph,
         lineHeight: 24,
     },
     numberedItem: {
         fontSize: 14,
         fontFamily: 'Urbanist_400Regular',
-        color: '#6B7280',
+        color: theme.paragraph,
         lineHeight: 24,
         marginLeft: 8,
     },
