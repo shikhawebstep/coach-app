@@ -14,7 +14,8 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View
+    View,
+    useColorScheme
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -23,6 +24,9 @@ export default function ProfileModal({ visible, onClose }) {
     const { token, userId } = useAuth();
     const [view, setView] = useState('profile');
     const [profileData, setProfileData] = useState(null);
+    const colorScheme = useColorScheme();
+    const isDark = colorScheme === 'dark';
+    const styles = getStyles(isDark);
 
     // ── Edit profile form state ──────────────────────────────────────────────
     const [firstName, setFirstName] = useState('');
@@ -33,7 +37,6 @@ export default function ProfileModal({ visible, onClose }) {
     const [postalCode, setPostalCode] = useState('');
     const [profileSaving, setProfileSaving] = useState(false);
 
-    // ── Refer a coach form state ─────────────────────────────────────────────
     // ── Refer a coach form state ─────────────────────────────────────────────
     const [referName, setReferName] = useState('');       // single field: "Shikha Thakur"
     const [referPhone, setReferPhone] = useState('');
@@ -210,7 +213,7 @@ export default function ProfileModal({ visible, onClose }) {
                         value={firstName}
                         onChangeText={setFirstName}
                         placeholder="First Name"
-                        placeholderTextColor="#999"
+                        placeholderTextColor={isDark ? '#888' : '#999'}
                     />
                 </View>
 
@@ -220,7 +223,7 @@ export default function ProfileModal({ visible, onClose }) {
                         value={lastName}
                         onChangeText={setLastName}
                         placeholder="Last Name"
-                        placeholderTextColor="#999"
+                        placeholderTextColor={isDark ? '#888' : '#999'}
                     />
                 </View>
 
@@ -230,57 +233,27 @@ export default function ProfileModal({ visible, onClose }) {
                         value={email}
                         onChangeText={setEmail}
                         placeholder="Email"
-                        placeholderTextColor="#999"
+                        placeholderTextColor={isDark ? '#888' : '#999'}
                         keyboardType="email-address"
                         autoCapitalize="none"
                     />
-                    <Ionicons name="mail-outline" size={20} color="#333" style={styles.inputIconRight} />
+                    <Ionicons name="mail-outline" size={20} color={isDark ? '#ccc' : '#333'} style={styles.inputIconRight} />
                 </View>
 
                 <View style={styles.phoneInputContainer}>
                     <View style={styles.flagContainer}>
                         <Text style={styles.flagText}>🇺🇸</Text>
-                        <Ionicons name="chevron-down" size={16} color="#333" />
+                        <Ionicons name="chevron-down" size={16} color={isDark ? '#ccc' : '#333'} />
                     </View>
                     <TextInput
                         style={styles.phoneInput}
                         value={phoneNumber}
                         onChangeText={setPhoneNumber}
                         placeholder="Phone Number"
-                        placeholderTextColor="#797A88"
+                        placeholderTextColor={isDark ? '#888' : '#797A88'}
                         keyboardType="phone-pad"
                     />
                 </View>
-
-                {/* <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        value={city}
-                        onChangeText={setCity}
-                        placeholder="City"
-                        placeholderTextColor="#797A88"
-                    />
-                </View> */}
-
-                {/* <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        value={postalCode}
-                        onChangeText={setPostalCode}
-                        placeholder="Postal Code"
-                        placeholderTextColor="#797A88"
-                        keyboardType="number-pad"
-                    />
-                </View> */}
-
-                {/* {profileData?.referralCode ? (
-                    <View style={[styles.inputContainer, { backgroundColor: '#f0f4ff' }]}>
-                        <Ionicons name="gift-outline" size={18} color="#3b5fdf" style={{ marginRight: 8 }} />
-                        <Text style={[styles.input, { color: '#3b5fdf' }]}>
-                            Referral Code: {profileData.referralCode}
-                        </Text>
-                    </View>
-                ) : null} */}
 
                 <TouchableOpacity
                     style={styles.contractActionCard}
@@ -361,25 +334,12 @@ export default function ProfileModal({ visible, onClose }) {
                     <Text style={styles.contractMainTitle}>
                         {contract?.title || 'INDEPENDENT CONTRACTOR AGREEMENT'}
                     </Text>
-                    {/* 
-                {contract?.contractType ? (
-                    <Text style={[styles.contractParagraph, { color: '#3b5fdf', fontFamily: 'Urbanist_700Bold' }]}>
-                        Contract Type: {contract.contractType}
-                    </Text>
-                ) : null} */}
 
                     <Text style={styles.contractParagraph}>
                         This independent contractor agreement is between{' '}
                         <Text style={styles.boldText}>{contractorName}</Text>
                         {' '}And SAMBA SOCCER SCHOOLS GLOBAL LTD ("We", "Us", "Our", the "Company")
                     </Text>
-
-                    {/* {contract?.description ? (
-                    <>
-                        <Text style={styles.contractSectionTitle}>Description</Text>
-                        <Text style={styles.contractParagraph}>{contract.description}</Text>
-                    </>
-                ) : null} */}
 
                     <Text style={styles.contractSectionTitle}>Background</Text>
                     <Text style={styles.contractParagraph}>
@@ -404,12 +364,6 @@ export default function ProfileModal({ visible, onClose }) {
                     <Text style={styles.contractParagraph}>
                         c. Any amendments or modifications of this Agreement or additional obligation assumed by either Party in connection with this agreement will only be binding if evidenced in writing and signed by both parties.
                     </Text>
-
-                    {/* {isSigned && contract?.signedAt ? (
-                    <Text style={[styles.contractParagraph, { color: '#02b45a', marginTop: 16 }]}>
-                        ✓ Signed on {new Date(contract.signedAt).toLocaleDateString()}
-                    </Text>
-                ) : null} */}
                 </View>
             </ScrollView>
         );
@@ -419,37 +373,37 @@ export default function ProfileModal({ visible, onClose }) {
     const renderReferCoach = () => (
         <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
             <Text style={[styles.pageTitle, { textAlign: 'center' }]}>Refer a coach</Text>
-            <Text style={[styles.referSubtitle, { textAlign: 'center', color: '#88909D' }]}>
+            <Text style={[styles.referSubtitle, { textAlign: 'center' }]}>
                 Fill out the form below and we'll take care of the rest. If your referee is hired, you'll earn £20 as a thank you and an additional £10 if they continue with us for over 12 weeks.
             </Text>
 
             <View style={styles.formContainer}>
-                <View style={[styles.inputContainer, { borderWidth: 1, borderColor: '#9E9FAA' }]}>
+                <View style={[styles.inputContainer, styles.referInputBordered]}>
                     <TextInput
                         style={[styles.input, { fontWeight: 'medium' }]}
                         placeholder="Full Name"
-                        placeholderTextColor="#797A88"
+                        placeholderTextColor={isDark ? '#888' : '#797A88'}
                         value={referName}
                         onChangeText={setReferName}
                     />
                 </View>
 
-                <View style={[styles.inputContainer, { borderWidth: 1, borderColor: '#9E9FAA' }]}>
+                <View style={[styles.inputContainer, styles.referInputBordered]}>
                     <TextInput
                         style={[styles.input, { fontWeight: 'medium' }]}
                         placeholder="Telephone Number"
-                        placeholderTextColor="#797A88"
+                        placeholderTextColor={isDark ? '#888' : '#797A88'}
                         keyboardType="phone-pad"
                         value={referPhone}
                         onChangeText={setReferPhone}
                     />
                 </View>
 
-                <View style={[styles.inputContainer, { height: 120, alignItems: 'flex-start', paddingTop: 14, borderWidth: 1, borderColor: '#9E9FAA' }]}>
+                <View style={[styles.inputContainer, styles.referInputBordered, { height: 120, alignItems: 'flex-start', paddingTop: 14 }]}>
                     <TextInput
                         style={[styles.input, { fontWeight: 'medium', height: 90, textAlignVertical: 'top' }]}
                         placeholder="Notes (Optional)"
-                        placeholderTextColor="#797A88"
+                        placeholderTextColor={isDark ? '#888' : '#797A88'}
                         multiline
                         value={referNotes}
                         onChangeText={setReferNotes}
@@ -505,7 +459,7 @@ export default function ProfileModal({ visible, onClose }) {
 
         return (
             <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                <View style={[styles.resultHeader,{display:'flex',}]}>
+                <View style={[styles.resultHeader, { display: 'flex', }]}>
                     <Image
                         source={
                             profileData?.profile
@@ -536,19 +490,19 @@ export default function ProfileModal({ visible, onClose }) {
 
                 <View style={styles.resultMetaRow}>
                     <View style={styles.resultMetaItem}>
-                        <Ionicons name="calendar-outline" size={14} color="#000" />
+                        <Ionicons name="calendar-outline" size={14} color={isDark ? '#ccc' : '#000'} />
                         <Text style={styles.resultMetaText}>18/01/23</Text>
                     </View>
                     <View style={styles.resultMetaItem}>
-                        <Ionicons name="location-outline" size={14} color="#000" />
+                        <Ionicons name="location-outline" size={14} color={isDark ? '#ccc' : '#000'} />
                         <Text style={styles.resultMetaText}>Kings Cross</Text>
                     </View>
                     <View style={styles.resultMetaItem}>
-                        <Ionicons name="time-outline" size={14} color="#000" />
+                        <Ionicons name="time-outline" size={14} color={isDark ? '#ccc' : '#000'} />
                         <Text style={styles.resultMetaText}>9:30</Text>
                     </View>
                     <View style={styles.resultMetaItem}>
-                        <Ionicons name="person-outline" size={14} color="#000" />
+                        <Ionicons name="person-outline" size={14} color={isDark ? '#ccc' : '#000'} />
                         <Text style={styles.resultMetaText}>Ellis Marsh</Text>
                     </View>
                 </View>
@@ -662,10 +616,10 @@ export default function ProfileModal({ visible, onClose }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (isDark) => StyleSheet.create({
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0)' },
     screenContainer: {
-        width: width, height: '100%', backgroundColor: '#fff',
+        width: width, height: '100%', backgroundColor: isDark ? '#121212' : '#fff',
         position: 'absolute', left: 0, top: 0, bottom: 0,
         elevation: 10, shadowColor: '#000',
         shadowOffset: { width: 5, height: 0 }, shadowOpacity: 0.3, shadowRadius: 5,
@@ -673,17 +627,17 @@ const styles = StyleSheet.create({
     headerBg: { width: '100%', height: 100, justifyContent: 'flex-end' },
     headerTop: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 15 },
     backButton: { padding: 4 },
-    bodyContainer: { flex: 1, backgroundColor: '#fff' },
+    bodyContainer: { flex: 1, backgroundColor: isDark ? '#121212' : '#fff' },
     scrollContent: { flex: 1, padding: 20 },
-    pageTitle: { fontSize: 26, color: '#1A1A1A', marginBottom: 20, fontWeight: 'bold' },
-    pageTitleHeader: { fontSize: 26, color: '#1A1A1A', flex: 1, fontWeight: 'bold', fontFamily: 'Urbanist_700Bold' },
+    pageTitle: { fontSize: 26, color: isDark ? '#F5F5F5' : '#1A1A1A', marginBottom: 20, fontWeight: 'bold' },
+    pageTitleHeader: { fontSize: 26, color: isDark ? '#F5F5F5' : '#1A1A1A', flex: 1, fontWeight: 'bold', fontFamily: 'Urbanist_700Bold' },
 
     profileImageContainer: { alignSelf: 'center', marginBottom: 30, position: 'relative' },
     profileImageWrapper: { width: 110, height: 110, borderRadius: 55, overflow: 'hidden', justifyContent: 'center', alignItems: 'center' },
     editIconBadge: {
         position: 'absolute', bottom: 0, right: 0, width: 32, height: 32,
         borderRadius: 16, justifyContent: 'center',
-        alignItems: 'center', borderWidth: 2, borderColor: '#fff',
+        alignItems: 'center', borderWidth: 2, borderColor: isDark ? '#121212' : '#fff',
     },
     editIconBadgeImage: {
         height: 30,
@@ -692,21 +646,24 @@ const styles = StyleSheet.create({
 
     formContainer: { gap: 16, paddingBottom: 50 },
     inputContainer: {
-        flexDirection: 'row', alignItems: 'center', backgroundColor: '#f5f5f5',
+        flexDirection: 'row', alignItems: 'center', backgroundColor: isDark ? '#1E1E1E' : '#f5f5f5',
         borderRadius: 12, borderColor: '#9E9FAA', paddingHorizontal: 16, height: 56,
     },
-    input: { flex: 1, fontSize: 16, color: '#333', fontWeight: 'bold' },
-    inputTextWithIcon: { flex: 1, fontSize: 16, fontWeight: 'bold', color: '#333', fontFamily: 'Urbanist_500Medium' },
+    referInputBordered: {
+        borderWidth: 1, borderColor: isDark ? '#3A3A3A' : '#9E9FAA',
+    },
+    input: { flex: 1, fontSize: 16, color: isDark ? '#F5F5F5' : '#333', fontWeight: 'bold' },
+    inputTextWithIcon: { flex: 1, fontSize: 16, fontWeight: 'bold', color: isDark ? '#F5F5F5' : '#333', fontFamily: 'Urbanist_500Medium' },
     inputIconRight: { marginLeft: 10 },
     phoneInputContainer: {
-        flexDirection: 'row', fontWeight: 'bold', alignItems: 'center', backgroundColor: '#f5f5f5',
+        flexDirection: 'row', fontWeight: 'bold', alignItems: 'center', backgroundColor: isDark ? '#1E1E1E' : '#f5f5f5',
         borderRadius: 12, height: 56, paddingHorizontal: 16,
     },
-    flagContainer: { flexDirection: 'row', alignItems: 'center', marginRight: 10, borderRightWidth: 1, borderRightColor: '#ddd', paddingRight: 10, gap: 4 },
+    flagContainer: { flexDirection: 'row', alignItems: 'center', marginRight: 10, borderRightWidth: 1, borderRightColor: isDark ? '#3A3A3A' : '#ddd', paddingRight: 10, gap: 4 },
     flagText: { fontSize: 20 },
-    phoneInput: { flex: 1, fontWeight: 'bold', fontSize: 16, color: '#333', fontFamily: 'Urbanist_500Medium' },
+    phoneInput: { flex: 1, fontWeight: 'bold', fontSize: 16, color: isDark ? '#F5F5F5' : '#333', fontFamily: 'Urbanist_500Medium' },
     contractActionCard: {
-        backgroundColor: '#2643a6', borderRadius: 12, height: 80,
+        backgroundColor: isDark ? '#1A2E6E' : '#2643a6', borderRadius: 12, height: 80,
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
         paddingHorizontal: 20, marginTop: 10, marginBottom: 10, position: 'relative',
     },
@@ -732,21 +689,21 @@ const styles = StyleSheet.create({
     contractTopButton: { backgroundColor: '#2F5FE5', paddingVertical: 8, paddingHorizontal: 25, borderRadius: 20 },
     contractTopBtnText: { color: '#fff', fontSize: 14, fontFamily: 'Urbanist_500Medium' },
     contractContent: { paddingBottom: 50 },
-    contractMainTitle: { fontSize: 16, color: '#1a1a1a', marginBottom: 20, textTransform: 'uppercase', fontFamily: 'Urbanist_700Bold' },
-    contractSectionTitle: { fontSize: 18, color: '#1a1a1a', marginTop: 20, marginBottom: 12, fontFamily: 'Urbanist_700Bold' },
-    contractParagraph: { fontSize: 14, lineHeight: 24, color: '#555', marginBottom: 15, fontFamily: 'Urbanist_400Regular' },
-    boldText: { color: '#1a1a1a', fontFamily: 'Urbanist_700Bold' },
+    contractMainTitle: { fontSize: 16, color: isDark ? '#F5F5F5' : '#1a1a1a', marginBottom: 20, textTransform: 'uppercase', fontFamily: 'Urbanist_700Bold' },
+    contractSectionTitle: { fontSize: 18, color: isDark ? '#F5F5F5' : '#1a1a1a', marginTop: 20, marginBottom: 12, fontFamily: 'Urbanist_700Bold' },
+    contractParagraph: { fontSize: 14, lineHeight: 24, color: isDark ? '#B0B0B0' : '#555', marginBottom: 15, fontFamily: 'Urbanist_400Regular' },
+    boldText: { color: isDark ? '#F5F5F5' : '#1a1a1a', fontFamily: 'Urbanist_700Bold' },
 
-    referSubtitle: { fontSize: 14, color: '#666', lineHeight: 22, marginBottom: 28, fontFamily: 'Urbanist_400Regular' },
+    referSubtitle: { fontSize: 14, color: isDark ? '#9CA3AF' : '#88909D', lineHeight: 22, marginBottom: 28, fontFamily: 'Urbanist_400Regular' },
 
-    resultTabRow: { flexDirection: 'row', backgroundColor: '#f0f0f0', borderRadius: 10, padding: 4, marginBottom: 20 },
+    resultTabRow: { flexDirection: 'row', backgroundColor: isDark ? '#1E1E1E' : '#f0f0f0', borderRadius: 10, padding: 4, marginBottom: 20 },
     resultTab: { flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
     resultTabActive: { backgroundColor: '#3b5fdf' },
-    resultTabText: { fontSize: 15, color: '#797A88', fontFamily: 'Urbanist_500Medium' },
+    resultTabText: { fontSize: 15, color: isDark ? '#9CA3AF' : '#797A88', fontFamily: 'Urbanist_500Medium' },
     resultTabTextActive: { color: '#fff', fontFamily: 'Urbanist_700Bold' },
-    resultMetaRow: { flexDirection: 'row', gap: 12, marginBottom: 20, flexWrap: 'wrap' ,justifyContent:'space-between',borderBottomColor:'#EEEEEE',borderBottomWidth:1,paddingBottom:20},
+    resultMetaRow: { flexDirection: 'row', gap: 12, marginBottom: 20, flexWrap: 'wrap', justifyContent: 'space-between', borderBottomColor: isDark ? '#2A2A2A' : '#EEEEEE', borderBottomWidth: 1, paddingBottom: 20 },
     resultMetaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-    resultMetaText: { fontSize: 14, color: '#000', fontFamily: 'Urbanist_500Medium' },
+    resultMetaText: { fontSize: 14, color: isDark ? '#F5F5F5' : '#000', fontFamily: 'Urbanist_500Medium' },
     scoreCard: { backgroundColor: '#1F222A', borderRadius: 20, padding: 30, flexDirection: 'row', alignItems: 'center', marginBottom: 16, gap: 20 },
     donutWrapper: { width: 80, height: 80, justifyContent: 'center', alignItems: 'center', position: 'relative' },
     donutTrack: { width: 76, height: 76, borderRadius: 38, borderWidth: 8, borderColor: '#444', position: 'absolute', justifyContent: 'center', alignItems: 'center' },
@@ -759,14 +716,14 @@ const styles = StyleSheet.create({
     ratingPill: { flex: 1, borderRadius: 12, paddingVertical: 12, alignItems: 'center', justifyContent: 'center' },
     ratingScore: { fontSize: 40, color: '#fff', fontFamily: 'LuckiestGuy_400Regular' },
     ratingLabel: { fontSize: 18, color: '#fff', fontFamily: 'LuckiestGuy_400Regular', marginTop: 2 },
-    insightTabRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#eee', marginBottom: 16 },
+    insightTabRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: isDark ? '#2A2A2A' : '#eee', marginBottom: 16 },
     insightTabActive: { paddingBottom: 10, marginRight: 24, borderBottomWidth: 2, borderBottomColor: '#3b5fdf' },
     insightTab: { paddingBottom: 10, marginRight: 24 },
     insightTabTextActive: { fontSize: 16, color: '#3b5fdf', fontFamily: 'Urbanist_700Bold' },
-    insightTabText: { fontSize: 16, color: '#999', fontFamily: 'Urbanist_500Medium' },
+    insightTabText: { fontSize: 16, color: isDark ? '#777' : '#999', fontFamily: 'Urbanist_500Medium' },
     strengthsList: { gap: 10 },
-    strengthItem: { backgroundColor: '#EEF2F5', borderRadius: 10, paddingVertical: 14, paddingHorizontal: 16 },
-    strengthText: { fontSize: 16, color: '#333', fontFamily: 'Urbanist_500Medium' },
+    strengthItem: { backgroundColor: isDark ? '#1E1E1E' : '#EEF2F5', borderRadius: 10, paddingVertical: 14, paddingHorizontal: 16 },
+    strengthText: { fontSize: 16, color: isDark ? '#F5F5F5' : '#333', fontFamily: 'Urbanist_500Medium' },
     profileImage: { width: 110, height: 110, resizeMode: 'cover' },
     resultHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginVertical: 15, },
-});  
+});
