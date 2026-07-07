@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
-import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { useEffect, useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { ActivityIndicator, Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 const COLORS = {
     light: {
@@ -37,29 +38,63 @@ const COLORS = {
     },
 };
 
-export default function HolidaySyllabus({ venueId, onBack, onSessionSelect, syllabus }) {
+export default function HolidaySyllabus({ venueId, onBack, onSessionSelect }) {
     const colorScheme = useColorScheme();
     const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
     const styles = getStyles(theme);
 
-    const camp = syllabus?.holidayCamps?.[0];
+    const { token } = useAuth();
+    const [syllabusData, setSyllabusData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (venueId) {
+            fetchSyllabus();
+        }
+    }, [venueId]);
+
+    const fetchSyllabus = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/holiday-camp/${venueId}/detail`,
+                { method: 'GET', headers: { Authorization: `Bearer ${token}` } }
+            );
+            const result = await response.json();
+            if (response.ok) {
+                setSyllabusData(result?.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch syllabus data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const camp = syllabusData?.holidayCamps?.[0];
     const campDates = camp?.holidayCampDates?.[0];
     const sessionsMap = campDates?.sessionsMap ?? [];
 
     const dayTabs = sessionsMap.map((s, i) => `Day ${i + 1}`);
-    const [activeDay, setActiveDay] = useState(dayTabs[0] || 'Day 1');
+    const [activeDay, setActiveDay] = useState('Day 1');
 
-    const activeSession = sessionsMap[dayTabs.indexOf(activeDay)];
+    const activeSession = sessionsMap.find((s, i) => `Day ${i + 1}` === activeDay) || sessionsMap[0];
     const sessionPlan = activeSession?.sessionPlan;
 
     const levelKeys = sessionPlan ? Object.keys(sessionPlan.levels) : [];
-    const [activeAgeGroup, setActiveAgeGroup] = useState(levelKeys[0] || '');
+    const [activeAgeGroup, setActiveAgeGroup] = useState('');
 
-    const currentLevelKeys = sessionPlan ? Object.keys(sessionPlan.levels) : [];
-    const activeLevelData = sessionPlan?.levels?.[activeAgeGroup]?.[0];
+    // Ensure activeAgeGroup is valid when levelKeys change
+    useEffect(() => {
+        if (levelKeys.length > 0 && !levelKeys.includes(activeAgeGroup)) {
+            setActiveAgeGroup(levelKeys[0]);
+        }
+    }, [levelKeys]);
+
+    const activeLevelData = sessionPlan?.levels?.[activeAgeGroup]?.[0] || sessionPlan?.levels?.[levelKeys[0]]?.[0];
     const exercises = activeLevelData?.sessionExercises ?? [];
 
-    const videoKey = `${activeAgeGroup}_video`;
+    const videoKey = `${activeAgeGroup || levelKeys[0]}_video`;
     const videoUrl = sessionPlan?.[videoKey];
 
     const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
@@ -81,22 +116,28 @@ export default function HolidaySyllabus({ venueId, onBack, onSessionSelect, syll
                 </ImageBackground>
             </View>
 
-            {/* Age Group Pills */}
-            <View style={styles.ageGroupsWrapper}>
-                <View style={styles.ageGroups}>
-                    {currentLevelKeys.map(level => (
-                        <TouchableOpacity
-                            key={level}
-                            style={[styles.agePill, activeAgeGroup === level ? styles.activeAgePill : styles.inactiveAgePill]}
-                            onPress={() => setActiveAgeGroup(level)}
-                        >
-                            <Text style={[styles.agePillText, activeAgeGroup === level ? styles.activeAgePillText : styles.inactiveAgePillText]}>
-                                {capitalize(level)}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
+            {loading ? (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#3B82F6" />
                 </View>
-            </View>
+            ) : (
+                <>
+                    {/* Age Group Pills */}
+                    <View style={styles.ageGroupsWrapper}>
+                        <View style={styles.ageGroups}>
+                            {levelKeys.map(level => (
+                                <TouchableOpacity
+                                    key={level}
+                                    style={[styles.agePill, activeAgeGroup === level ? styles.activeAgePill : styles.inactiveAgePill]}
+                                    onPress={() => setActiveAgeGroup(level)}
+                                >
+                                    <Text style={[styles.agePillText, activeAgeGroup === level ? styles.activeAgePillText : styles.inactiveAgePillText]}>
+                                        {capitalize(level)}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </View>
 
             {/* Day Tabs */}
             <View style={styles.tabsContainer}>
@@ -178,6 +219,8 @@ export default function HolidaySyllabus({ venueId, onBack, onSessionSelect, syll
                     );
                 })}
             </ScrollView>
+            </>
+            )}
         </View>
     );
 }

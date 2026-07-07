@@ -130,12 +130,34 @@ export default function HolidayCampsList({ onBack, onCampSelect }) {
                         const formatDate = (dateStr) => {
                             if (!dateStr) return '-';
                             const date = new Date(dateStr);
-                            return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+                            const day = date.getDate();
+                            const suffix = (day % 10 === 1 && day !== 11) ? 'st' : (day % 10 === 2 && day !== 12) ? 'nd' : (day % 10 === 3 && day !== 13) ? 'rd' : 'th';
+                            const month = date.toLocaleString('en-GB', { month: 'long' });
+                            const year = date.getFullYear();
+                            return `${day}${suffix} ${month} ${year}`;
                         };
 
-                        const timeRange = schedule
-                            ? `${schedule.startTime} - ${schedule.endTime}`
-                            : '-';
+                        const formatTimeRange = (startTime, endTime) => {
+                            if (!startTime || !endTime) return '-';
+                            const formatTime = (timeString) => {
+                                const [hours, minutes] = timeString.split(':');
+                                let h = parseInt(hours, 10);
+                                const ampm = h >= 12 ? 'pm' : 'am';
+                                h = h % 12 || 12;
+                                return { time: `${h}:${minutes}`, ampm };
+                            };
+                            
+                            const s = formatTime(startTime);
+                            const e = formatTime(endTime);
+                            
+                            if (s.ampm === e.ampm) {
+                                return `${s.time}-${e.time}${e.ampm}`;
+                            } else {
+                                return `${s.time}${s.ampm}-${e.time}${e.ampm}`;
+                            }
+                        };
+
+                        const timeRange = formatTimeRange(schedule?.startTime, schedule?.endTime);
 
                         return (
                             <TouchableOpacity

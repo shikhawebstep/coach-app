@@ -33,6 +33,7 @@ import HolidayCampDetails from '@/components/classes/holiday_camps/HolidayCampDe
 import HolidayCampsList from '@/components/classes/holiday_camps/HolidayCampsList';
 import HolidayStudentClassDetails from '@/components/classes/holiday_camps/HolidayStudentClassDetails';
 import HolidaySyllabus from '@/components/classes/holiday_camps/HolidaySyllabus';
+import SelectHolidayCampSessionList from '@/components/classes/holiday_camps/SelectHolidayCampSessionList';
 
 import PrivateClassesBookings from '@/components/classes/private_classes/PrivateClassesBookings';
 import PrivateStudentClassDetails from '@/components/classes/private_classes/PrivateStudentClassDetails';
@@ -89,24 +90,35 @@ export default function Classes() {
         return <HolidayCampsList
             onBack={() => setCurrentView('dashboard')}
             onCampSelect={(id) => {
-                setCurrentView('campDetails');
+                setCurrentView('campSessionList');
                 setSelectedVenuenId(id)
 
             }}
         />;
     }
 
+    if (currentView === 'campSessionList') {
+        return <SelectHolidayCampSessionList
+            venueId={selectedVenuenId}
+            onBack={() => setCurrentView('camps')}
+            onSessionSelect={(dayIndex) => {
+                setSelectedSessionId(dayIndex);
+                setCurrentView('campDetails');
+            }}
+        />;
+    }
+
     if (currentView === 'campDetails') {
         return <HolidayCampDetails
-            id={selectedVenuenId}
-            onBack={() => setCurrentView('camps')}
+            sessionId={selectedSessionId}
+            onBack={() => setCurrentView('campSessionList')}
             onSyllabusClick={(data) =>{ 
                 setCurrentView('holidaySyllabus');
                 setSyllabusDetails(data)
             }}
             onStudentSelect={(student) => {
                 setSelectedStudent(student);         // ← store it
-                setCurrentView('holidayStudentClass');
+                setCurrentView('holidayStudentInformation');
             }}
         />;
     }
@@ -225,13 +237,14 @@ export default function Classes() {
 
     if (currentView === 'holidayStudentClass') {
         return <HolidayStudentClassDetails
+            student={selectedStudent}
             onBack={() => setCurrentView('campDetails')}
             onNotesClick={() => setCurrentView('holidayStudentInformation')}
         />;
     }
 
     if (currentView === 'holidayStudentInformation') {
-        return <StudentInformation onBack={() => setCurrentView('holidayStudentClass')} />;
+        return <StudentInformation student={selectedStudent} onBack={() => setCurrentView('campDetails')} />;
     }
 
     if (currentView === 'studentClass') {

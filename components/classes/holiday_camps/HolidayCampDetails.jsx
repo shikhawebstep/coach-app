@@ -61,34 +61,59 @@ const COLORS = {
     },
 };
 
-export default function HolidayCampDetails({ id, onBack, onSyllabusClick, onStudentSelect }) {
+export default function HolidayCampDetails({ sessionId, onBack, onSyllabusClick, onStudentSelect }) {
     const colorScheme = useColorScheme();
     const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
     const styles = getStyles(theme);
 
-    const [activeTab, setActiveTab] = useState('Day 1');
     const [students, setStudents] = useState([]);
+    const [currentSessionId, setCurrentSessionId] = useState(sessionId);
     const [showAddTrialist, setShowAddTrialist] = useState(false);
     const [data, setData] = useState({});
     const [loading, setLoading] = useState(true);
     const { token } = useAuth();
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        if (currentSessionId) {
+            fetchData(currentSessionId);
+        }
+    }, [currentSessionId]);
 
-    const fetchData = async () => {
+    const fetchData = async (idToFetch) => {
         try {
             setLoading(true);
             const response = await fetch(
-                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/holiday-camp/${id}/detail`,
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/holiday-camp/session/${idToFetch}`,
                 {
                     method: 'GET',
                     headers: { Authorization: `Bearer ${token}` },
                 }
             );
             const result = await response.json();
-            if (response.ok) setData(result?.data || {});
+            if (response.ok) {
+                setData(result?.data || {});
+                const bookingsMembers = result?.data?.bookings?.members || [];
+                const flattened = [];
+                bookingsMembers.forEach((booking) => {
+                    (booking.students || []).forEach((student) => {
+                        const getValid = (v) => (v && String(v).toLowerCase() !== 'undefined' && String(v).toLowerCase() !== 'null') ? String(v) : '';
+                        const fName = getValid(student.studentFirstName) || getValid(student.firstName) || getValid(student?.user?.firstName) || '';
+                        const lName = getValid(student.studentLastName) || getValid(student.lastName) || getValid(student?.user?.lastName) || '';
+                        const fullName = `${fName} ${lName}`.trim() || 'Unknown Student';
+
+                        flattened.push({
+                            bookingId: booking.id,
+                            studentId: student.id,
+                            name: fullName,
+                            age: `${student.age || 'N/A'} Years`,
+                            status: student.attendance,
+                            rawStudent: student,
+                            booking: booking,
+                        });
+                    });
+                });
+                setStudents(flattened);
+            }
         } catch (error) {
             console.error('Failed to fetch venue detail:', error);
         } finally {
@@ -98,7 +123,7 @@ export default function HolidayCampDetails({ id, onBack, onSyllabusClick, onStud
 
     const handleAttendance = async (studentId, status) => {
         try {
-            const url = `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/holiday-camp/session/${id}/attendance/${studentId}`;
+            const url = `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/holiday-camp/session/${currentSessionId}/attendance/${studentId}`;
             const response = await fetch(url, {
                 method: 'PATCH',
                 headers: {
@@ -109,7 +134,7 @@ export default function HolidayCampDetails({ id, onBack, onSyllabusClick, onStud
             });
 
             if (response.ok) {
-                fetchData();
+                fetchData(currentSessionId);
             } else {
                 const errorText = await response.text();
                 console.error('Server error response:', { status: response.status, errorText });
@@ -120,22 +145,41 @@ export default function HolidayCampDetails({ id, onBack, onSyllabusClick, onStud
     };
 
     // Derived values
-    const camp = data?.holidayCamps?.[0];
-    const campDates = camp?.holidayCampDates?.[0];
-    const sessionsMap = campDates?.sessionsMap ?? [];
-    const schedule = data?.classSchedules?.[0];
+    const campDates = data?.campDate;
+    const schedule = data?.classSchedule;
+    const sessionsMap = data?.sessionsMap || [];
 
-    const dayTabs = sessionsMap.map((s, i) => ({
-        label: `Day ${i + 1}`,
-        sessionDate: s.sessionDate,
-        sessionPlan: s.sessionPlan,
-    }));
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return dateString;
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        const dayName = days[date.getDay()];
+        const day = date.getDate();
+        const month = months[date.getMonth()];
+        
+        const suffix = (day % 10 === 1 && day !== 11) ? 'st' :
+                       (day % 10 === 2 && day !== 12) ? 'nd' :
+                       (day % 10 === 3 && day !== 13) ? 'rd' : 'th';
+                       
+        return `${dayName} ${day}${suffix} ${month}`;
+    };
 
-    const activeSession = dayTabs.find(d => d.label === activeTab);
+    const formatTime = (timeString) => {
+        if (!timeString) return '';
+        const [hours, minutes] = timeString.split(':');
+        let h = parseInt(hours, 10);
+        const ampm = h >= 12 ? '' : '';
+        h = h % 12 || 12;
+        return `${h}:${minutes}${ampm}`;
+    };
 
-    const activeExercises = activeSession?.sessionPlan
-        ? Object.values(activeSession.sessionPlan.levels).flat().flatMap(entry => entry.sessionExercises ?? [])
-        : [];
+    const displayDate = formatDate(campDates?.startDate);
+    const displayTime = schedule?.startTime ? formatTime(schedule.startTime) : 'N/A';
+    const displayStudents = students.length.toString();
+    const displayStatus = schedule?.status ? schedule.status.charAt(0).toUpperCase() + schedule.status.slice(1) : 'Pending';
 
     if (showAddTrialist) {
         return <AddTrialist onBack={() => setShowAddTrialist(false)} />;
@@ -175,30 +219,28 @@ export default function HolidayCampDetails({ id, onBack, onSyllabusClick, onStud
                                     <Ionicons name="calendar-outline" size={16} color={theme.infoIcon} style={styles.infoIcon} />
                                     <Text style={styles.infoLabel}>Date</Text>
                                 </View>
-                                <Text style={styles.infoValue}>{campDates?.startDate ?? 'N/A'}</Text>
+                                <Text style={styles.infoValue}>{displayDate}</Text>
                             </View>
                             <View style={styles.infoItem}>
                                 <View style={styles.infoLabelContainer}>
                                     <Ionicons name="time-outline" size={16} color={theme.infoIcon} style={styles.infoIcon} />
                                     <Text style={styles.infoLabel}>Time</Text>
                                 </View>
-                                <Text style={styles.infoValue}>
-                                    {schedule ? `${schedule.startTime} - ${schedule.endTime}` : 'N/A'}
-                                </Text>
+                                <Text style={styles.infoValue}>{displayTime}</Text>
                             </View>
                             <View style={styles.infoItem}>
                                 <View style={styles.infoLabelContainer}>
                                     <Ionicons name="person-outline" size={16} color={theme.infoIcon} style={styles.infoIcon} />
                                     <Text style={styles.infoLabel}>Students</Text>
                                 </View>
-                                <Text style={styles.infoValue}>
-                                    {schedule ? `${schedule.capacity}/${schedule.totalCapacity}` : 'N/A'}
-                                </Text>
+                                <Text style={styles.infoValue}>{displayStudents}</Text>
                             </View>
                             <View style={styles.infoItem}>
-                                <Text style={styles.infoLabel}>Status</Text>
+                                <View style={styles.infoLabelContainer}>
+                                    <Text style={[styles.infoLabel, { marginLeft: 0 }]}>Status</Text>
+                                </View>
                                 <View style={styles.statusBadge}>
-                                    <Text style={styles.statusText}>{schedule?.status ?? 'N/A'}</Text>
+                                    <Text style={styles.statusText}>{displayStatus}</Text>
                                 </View>
                             </View>
                         </View>
@@ -216,70 +258,71 @@ export default function HolidayCampDetails({ id, onBack, onSyllabusClick, onStud
                     {/* Location */}
                     <View style={styles.locationContainer}>
                         <Ionicons name="location-outline" size={18} color={theme.infoIcon} />
-                        <Text style={styles.locationText}>{data?.address ?? 'N/A'}</Text>
+                        <Text style={styles.locationText}>{data?.venue?.address ?? 'N/A'}</Text>
                     </View>
 
                     {/* Day Tabs */}
-                    <View style={styles.tabsContainer}>
-                        {dayTabs.map(tab => (
-                            <TouchableOpacity
-                                key={tab.label}
-                                style={[styles.tab, activeTab === tab.label && styles.activeTab]}
-                                onPress={() => setActiveTab(tab.label)}
-                            >
-                                <Text style={[styles.tabText, activeTab === tab.label && styles.activeTabText]}>
-                                    {tab.label}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                    {sessionsMap.length > 0 && (
+                        <View style={styles.tabsContainer}>
+                            {sessionsMap.map(tab => (
+                                <TouchableOpacity
+                                    key={tab.mapId}
+                                    style={[styles.tab, currentSessionId === tab.mapId && styles.activeTab]}
+                                    onPress={() => setCurrentSessionId(tab.mapId)}
+                                >
+                                    <Text style={[styles.tabText, currentSessionId === tab.mapId && styles.activeTabText]}>
+                                        {tab.dayLabel || `Day ${sessionsMap.indexOf(tab) + 1}`}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    )}
 
-                    {/* Exercises List */}
+                    {/* Students List */}
                     <View style={styles.studentsList}>
-                        {activeExercises.length === 0 ? (
+                        {students.length === 0 ? (
                             <Text style={styles.emptyText}>
-                                No exercises for this day.
+                                No students for this session.
                             </Text>
                         ) : (
-                            activeExercises.map((exercise, index) => {
-                                const attendance = students.find(s => s.id === exercise.id);
+                            students.map((student, index) => {
                                 return (
                                     <TouchableOpacity
-                                        key={`${exercise.id}-${index}`}
+                                        key={`${student.studentId}-${index}`}
                                         style={styles.studentCard}
-                                        onPress={() => onStudentSelect && onStudentSelect(exercise)}
+                                        onPress={() => onStudentSelect && onStudentSelect(student)}
                                     >
                                         <Text style={styles.studentIndex}>{index + 1}</Text>
                                         <View style={styles.studentInfo}>
-                                            <Text style={styles.studentName}>{exercise.title}</Text>
-                                            <Text style={styles.studentAge}>{exercise.duration}</Text>
+                                            <Text style={styles.studentName} numberOfLines={1}>{student.name}</Text>
+                                            <Text style={styles.studentAge}>{student.age}</Text>
                                         </View>
                                         <View style={styles.attendanceButtons}>
                                             <TouchableOpacity
-                                                style={[styles.attendanceBtn, attendance?.status === 'attended' ? styles.btnAttendedActive : styles.btnAttendedInactive]}
-                                                onPress={() => handleAttendance(exercise.id, 'attended')}
+                                                style={[styles.attendanceBtn, student.status === 'attended' ? styles.btnAttendedActive : styles.btnAttendedInactive]}
+                                                onPress={() => handleAttendance(student.studentId, 'attended')}
                                             >
                                                 <Ionicons
                                                     name="checkmark"
                                                     size={18}
-                                                    color={attendance?.status === 'attended' ? '#fff' : theme.btnTextBlack}
+                                                    color={student.status === 'attended' ? '#fff' : theme.btnTextBlack}
                                                     style={styles.btnIcon}
                                                 />
-                                                <Text style={[styles.btnText, attendance?.status === 'attended' ? styles.btnTextWhite : styles.btnTextBlack]}>
+                                                <Text style={[styles.btnText, student.status === 'attended' ? styles.btnTextWhite : styles.btnTextBlack]}>
                                                     Attended
                                                 </Text>
                                             </TouchableOpacity>
                                             <TouchableOpacity
-                                                style={[styles.attendanceBtn, attendance?.status === 'not attended' ? styles.btnNotAttendedActive : styles.btnNotAttendedInactive]}
-                                                onPress={() => handleAttendance(exercise.id, 'not attended')}
+                                                style={[styles.attendanceBtn, student.status === 'not attended' ? styles.btnNotAttendedActive : styles.btnNotAttendedInactive]}
+                                                onPress={() => handleAttendance(student.studentId, 'not attended')}
                                             >
                                                 <Ionicons
                                                     name="close"
                                                     size={18}
-                                                    color={attendance?.status === 'not attended' ? '#fff' : '#E53E3E'}
+                                                    color={student.status === 'not attended' ? '#fff' : '#E53E3E'}
                                                     style={styles.btnIcon}
                                                 />
-                                                <Text style={[styles.btnText, attendance?.status === 'not attended' ? styles.btnTextWhite : styles.btnTextRed]}>
+                                                <Text style={[styles.btnText, student.status === 'not attended' ? styles.btnTextWhite : styles.btnTextRed]}>
                                                     Not Attended
                                                 </Text>
                                             </TouchableOpacity>
@@ -388,16 +431,16 @@ const getStyles = (theme) => StyleSheet.create({
         fontFamily: 'Urbanist_700Bold',
     },
     statusBadge: {
-        backgroundColor: theme.statusBadgeBg,
-        paddingHorizontal: 8,
+        backgroundColor: '#FACC15',
+        paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 6,
         alignSelf: 'flex-start',
     },
     statusText: {
-        fontSize: 12,
-        color: theme.statusText,
-        fontFamily: 'Urbanist_700Bold',
+        fontSize: 13,
+        color: '#1a1a1a',
+        fontFamily: 'Urbanist_600SemiBold',
     },
     mapContainer: {
         height: 140,

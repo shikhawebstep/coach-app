@@ -42,7 +42,22 @@ const COLORS = {
     },
 };
 
-export default function HolidayStudentClassDetails({ onBack, onNotesClick, studentName = "John Smith" }) {
+export default function HolidayStudentClassDetails({ student, onBack, onNotesClick }) {
+
+    console.log("HolidayStudentClassDetails - student:", student);
+    const studentName = student?.name || "Unknown";
+    const age = student?.age || "N/A";
+    
+    // Attempt to extract extra details if available
+    const medicalInfo = student?.rawStudent?.medicalInformation || student?.rawStudent?.medicalInfo || "None provided";
+    const abilityLevel = student?.rawStudent?.abilityLevel || "N/A";
+    const areasToWorkOn = student?.rawStudent?.areasToWorkOn || "N/A";
+
+    // Date/Time if we have it in the booking
+    // Usually these come from the session context, but we use defaults if missing
+    const sessionDate = student?.booking?.campDate?.startDate || "Sat 3rd Apr";
+    const sessionTime = "9:30am";
+    const studentsRatio = "3-to-1";
     const colorScheme = useColorScheme();
     const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
     const styles = getStyles(theme);
@@ -76,21 +91,21 @@ export default function HolidayStudentClassDetails({ onBack, onNotesClick, stude
                                 <Ionicons name="calendar-outline" size={16} color={theme.infoIcon} style={styles.infoIcon} />
                                 <Text style={styles.infoLabel}>Date</Text>
                             </View>
-                            <Text style={styles.infoValue}>Sat 3rd Apr</Text>
+                            <Text style={styles.infoValue}>{sessionDate}</Text>
                         </View>
                         <View style={styles.infoItem}>
                             <View style={styles.infoLabelContainer}>
                                 <Ionicons name="time-outline" size={16} color={theme.infoIcon} style={styles.infoIcon} />
                                 <Text style={styles.infoLabel}>Time</Text>
                             </View>
-                            <Text style={styles.infoValue}>9:30am</Text>
+                            <Text style={styles.infoValue}>{sessionTime}</Text>
                         </View>
                         <View style={styles.infoItem}>
                             <View style={styles.infoLabelContainer}>
                                 <Ionicons name="person-outline" size={16} color={theme.infoIcon} style={styles.infoIcon} />
                                 <Text style={styles.infoLabel}>Students</Text>
                             </View>
-                            <Text style={styles.infoValue}>3-to-1</Text>
+                            <Text style={styles.infoValue}>{studentsRatio}</Text>
                         </View>
                         <TouchableOpacity style={styles.changeDateBtn}>
                             <Text style={styles.changeDateText}>Change date</Text>
@@ -122,7 +137,7 @@ export default function HolidayStudentClassDetails({ onBack, onNotesClick, stude
                         <View style={styles.inputContainer}>
                             <TextInput
                                 style={styles.input}
-                                value="John Smith"
+                                value={studentName}
                                 editable={false}
                             />
                         </View>
@@ -132,7 +147,7 @@ export default function HolidayStudentClassDetails({ onBack, onNotesClick, stude
                         <View style={styles.inputContainer}>
                             <TextInput
                                 style={styles.input}
-                                value="7"
+                                value={age}
                                 editable={false}
                             />
                         </View>
@@ -144,7 +159,7 @@ export default function HolidayStudentClassDetails({ onBack, onNotesClick, stude
                     <View style={styles.inputContainer}>
                         <TextInput
                             style={styles.input}
-                            value="Mild asthma"
+                            value={medicalInfo}
                             editable={false}
                         />
                     </View>
@@ -155,7 +170,7 @@ export default function HolidayStudentClassDetails({ onBack, onNotesClick, stude
                     <View style={styles.inputContainer}>
                         <TextInput
                             style={styles.input}
-                            value="Beginner"
+                            value={abilityLevel}
                             editable={false}
                         />
                     </View>
@@ -166,7 +181,7 @@ export default function HolidayStudentClassDetails({ onBack, onNotesClick, stude
                     <View style={[styles.inputContainer, styles.textAreaContainer]}>
                         <TextInput
                             style={[styles.input, styles.textArea]}
-                            value="Beginner students, needs help on dribbling technique and basics of the game."
+                            value={areasToWorkOn}
                             multiline={true}
                             editable={false}
                         />
