@@ -1,7 +1,8 @@
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import CustomLoader from '@/components/common/CustomLoader';
 import AddTrialist from '../common/AddTrialist';
 
 const COLORS = {
@@ -205,7 +206,7 @@ export default function HolidayCampDetails({ sessionId, onBack, onSyllabusClick,
 
             {loading ? (
                 <View style={styles.loaderContainer}>
-                    <ActivityIndicator size="large" color={theme.loaderTint} />
+                    <CustomLoader size={80} color={theme.loaderTint} />
                     <Text style={styles.loaderText}>Loading camp details...</Text>
                 </View>
             ) : (

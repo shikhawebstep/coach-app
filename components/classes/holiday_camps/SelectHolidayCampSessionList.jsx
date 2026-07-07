@@ -2,7 +2,6 @@ import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,6 +10,7 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import CustomLoader from '@/components/common/CustomLoader';
 
 export default function SelectHolidayCampSessionList({ venueId, onBack, onSessionSelect }) {
   const { token } = useAuth();
@@ -52,11 +52,7 @@ export default function SelectHolidayCampSessionList({ venueId, onBack, onSessio
   const renderList = () => {
     if (loading)
       return (
-        <ActivityIndicator
-          size="large"
-          color="#3B82F6"
-          style={{ marginTop: 40 }}
-        />
+        <CustomLoader size={80} color="#3B82F6" />
       );
 
     const formatTimeRange = (startTime, endTime) => {

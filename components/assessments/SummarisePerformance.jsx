@@ -1,5 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { Audio } from 'expo-av';
+import { useState, useEffect } from 'react';
 
 const COLORS = {
     light: {
@@ -11,6 +13,9 @@ const COLORS = {
         middleCircle: '#60A5FA',
         innerCircle: '#3B82F6',
         icon: '#fff',
+        cardBg: '#F3F4F6',
+        text: '#1F2937',
+        subText: '#4B5563',
     },
     dark: {
         background: '#121212',
@@ -21,6 +26,9 @@ const COLORS = {
         middleCircle: '#2C5282',
         innerCircle: '#3B82F6',
         icon: '#fff',
+        cardBg: '#1E1E1E',
+        text: '#F3F4F6',
+        subText: '#9CA3AF',
     },
 };
 
@@ -29,33 +37,166 @@ export default function SummarisePerformance({ onBack, onComplete }) {
     const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
     const styles = getStyles(theme);
 
+    const [recording, setRecording] = useState(null);
+    const [seconds, setSeconds] = useState(0);
+    const [status, setStatus] = useState('idle'); // 'idle', 'recording', 'stopped'
+    const [soundUri, setSoundUri] = useState(null);
+    const [playbackSound, setPlaybackSound] = useState(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+
+    // Audio Timer
+    useEffect(() => {
+        let interval = null;
+        if (status === 'recording') {
+            interval = setInterval(() => {
+                setSeconds(sec => sec + 1);
+            }, 1000);
+        } else {
+            clearInterval(interval);
+        }
+        return () => clearInterval(interval);
+    }, [status]);
+
+    // Clean up sounds on unmount
+    useEffect(() => {
+        return () => {
+            if (playbackSound) {
+                playbackSound.unloadAsync();
+            }
+        };
+    }, [playbackSound]);
+
+    async function startRecording() {
+        try {
+            const permission = await Audio.requestPermissionsAsync();
+            if (permission.status !== 'granted') {
+                alert('Permission to access microphone is required!');
+                return;
+            }
+
+            await Audio.setAudioModeAsync({
+                allowsRecordingIOS: true,
+                playsInSilentModeIOS: true,
+            });
+
+            const { recording } = await Audio.Recording.createAsync(
+                Audio.RecordingOptionsPresets.HIGH_QUALITY
+            );
+            
+            setRecording(recording);
+            setSeconds(0);
+            setStatus('recording');
+        } catch (err) {
+            console.error('Failed to start recording', err);
+        }
+    }
+
+    async function stopRecording() {
+        if (!recording) return;
+        try {
+            await recording.stopAndUnloadAsync();
+            const uri = recording.getURI();
+            setSoundUri(uri);
+            setRecording(null);
+            setStatus('stopped');
+        } catch (err) {
+            console.error('Failed to stop recording', err);
+        }
+    }
+
+    async function playAudio() {
+        if (!soundUri) return;
+        try {
+            if (playbackSound) {
+                await playbackSound.unloadAsync();
+            }
+
+            const { sound } = await Audio.Sound.createAsync(
+                { uri: soundUri },
+                { shouldPlay: true }
+            );
+
+            setPlaybackSound(sound);
+            setIsPlaying(true);
+
+            sound.setOnPlaybackStatusUpdate((statusUpdate) => {
+                if (statusUpdate.didJustFinish) {
+                    setIsPlaying(false);
+                }
+            });
+        } catch (err) {
+            console.error('Failed to play audio', err);
+        }
+    }
+
+    async function stopPlayback() {
+        if (playbackSound) {
+            await playbackSound.stopAsync();
+            setIsPlaying(false);
+        }
+    }
+
+    const resetRecording = () => {
+        setSoundUri(null);
+        setSeconds(0);
+        setStatus('idle');
+        if (playbackSound) {
+            playbackSound.unloadAsync();
+            setPlaybackSound(null);
+        }
+        setIsPlaying(false);
+    };
+
+    const fmt = sec => `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+
     return (
         <View style={styles.container}>
-            {/* Header */}
-            {/* <View style={styles.header}>
+            <View style={styles.header}>
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={theme.headerTitle} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Create report</Text>
-            </View> */}
+            </View>
 
             <Text style={styles.title}>Summarise Performance</Text>
 
             <View style={styles.centerContent}>
-                <Text style={styles.timer}>00:30</Text>
+                <Text style={styles.timer}>{fmt(seconds)}</Text>
 
                 {/* Ripple Effect Circles */}
-                <View style={styles.outerCircle}>
-                    <View style={styles.middleCircle}>
-                        <TouchableOpacity style={styles.innerCircle}>
-                            <Ionicons name="mic-outline" size={54} color={theme.icon} />
+                <View style={[styles.outerCircle, status === 'recording' && styles.outerCircleRecording]}>
+                    <View style={[styles.middleCircle, status === 'recording' && styles.middleCircleRecording]}>
+                        <TouchableOpacity 
+                            style={[styles.innerCircle, status === 'recording' && styles.innerCircleRecording]}
+                            onPress={status === 'recording' ? stopRecording : startRecording}
+                        >
+                            <Ionicons name={status === 'recording' ? 'stop' : 'mic-outline'} size={54} color={theme.icon} />
                         </TouchableOpacity>
                     </View>
                 </View>
+
+                {status === 'stopped' && soundUri && (
+                    <View style={styles.audioPlayerContainer}>
+                        <TouchableOpacity onPress={isPlaying ? stopPlayback : playAudio} style={styles.playButton}>
+                            <Ionicons name={isPlaying ? 'pause' : 'play'} size={24} color="#fff" />
+                        </TouchableOpacity>
+                        <View style={{ flex: 1, marginLeft: 12 }}>
+                            <Text style={styles.audioText}>Recorded Feedback</Text>
+                            <Text style={styles.audioSubText}>Duration: {fmt(seconds)}</Text>
+                        </View>
+                        <TouchableOpacity onPress={resetRecording} style={styles.trashButton}>
+                            <Ionicons name="trash" size={24} color="#EF4444" />
+                        </TouchableOpacity>
+                    </View>
+                )}
             </View>
 
             <View style={styles.bottomContainer}>
-                <TouchableOpacity style={styles.completeButton} onPress={onComplete}>
+                <TouchableOpacity 
+                    style={[styles.completeButton, status !== 'stopped' && { opacity: 0.5 }]} 
+                    onPress={onComplete}
+                    disabled={status !== 'stopped'}
+                >
                     <Text style={styles.completeButtonText}>Complete</Text>
                 </TouchableOpacity>
             </View>
@@ -80,27 +221,30 @@ const getStyles = (theme) => StyleSheet.create({
     },
     headerTitle: {
         fontSize: 26,
-        marginVertical: 24,
         fontFamily: 'Urbanist_700Bold',
         color: theme.headerTitle,
+        flex: 1,
+        textAlign: 'center',
+        marginRight: 36, // Balance the back button
     },
     title: {
-        fontSize: 26,
-        marginVertical: 24,
+        fontSize: 22,
         fontFamily: 'Urbanist_700Bold',
         color: theme.title,
-        textAlign: 'center'
+        textAlign: 'center',
+        marginTop: 10,
     },
     centerContent: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        paddingHorizontal: 20,
     },
     timer: {
         fontSize: 56,
         color: theme.timer,
         fontFamily: 'Urbanist_400Regular',
-        marginBottom: 60,
+        marginBottom: 40,
     },
     outerCircle: {
         width: 200,
@@ -109,6 +253,10 @@ const getStyles = (theme) => StyleSheet.create({
         backgroundColor: theme.outerCircle,
         justifyContent: 'center',
         alignItems: 'center',
+        marginBottom: 40,
+    },
+    outerCircleRecording: {
+        backgroundColor: 'rgba(239, 68, 68, 0.2)',
     },
     middleCircle: {
         width: 156,
@@ -118,6 +266,9 @@ const getStyles = (theme) => StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    middleCircleRecording: {
+        backgroundColor: 'rgba(239, 68, 68, 0.4)',
+    },
     innerCircle: {
         width: 120,
         height: 120,
@@ -125,6 +276,42 @@ const getStyles = (theme) => StyleSheet.create({
         backgroundColor: theme.innerCircle,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    innerCircleRecording: {
+        backgroundColor: '#EF4444',
+    },
+    audioPlayerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.cardBg,
+        padding: 16,
+        borderRadius: 12,
+        width: '100%',
+        marginTop: 20,
+        borderWidth: 1,
+        borderColor: theme.cardBg === '#fff' ? '#E5E7EB' : '#2A2A2A',
+    },
+    playButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: '#3B82F6',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    audioText: {
+        fontSize: 16,
+        fontFamily: 'Urbanist_700Bold',
+        color: theme.text,
+    },
+    audioSubText: {
+        fontSize: 12,
+        fontFamily: 'Urbanist_400Regular',
+        color: theme.subText,
+        marginTop: 2,
+    },
+    trashButton: {
+        padding: 8,
     },
     bottomContainer: {
         paddingHorizontal: 20,
@@ -142,4 +329,4 @@ const getStyles = (theme) => StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Urbanist_700Bold',
     },
-}); 
+});

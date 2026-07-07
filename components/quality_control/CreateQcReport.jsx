@@ -1,13 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
     Dimensions,
     Image,
     Modal, ScrollView, StyleSheet, Text,
     TextInput, TouchableOpacity, useColorScheme,
     View
 } from 'react-native';
+import CustomLoader from '@/components/common/CustomLoader';
+import { Audio } from 'expo-av';
 
 const { width } = Dimensions.get('window');
 
@@ -192,13 +193,14 @@ function CreateReportScreen({ onBack, onStart, c }) {
 function ObservationFormScreen({ onBack, onNext, formState, setFormState, c }) {
     const s = getStyles(c);
     
-    const [recording, setRecording] = useState(false);
+    const [recordingInstance, setRecordingInstance] = useState(null);
+    const [isRecording, setIsRecording] = useState(false);
     const [seconds, setSeconds] = useState(0);
 
     // Audio Timer
     useEffect(() => {
         let interval = null;
-        if (recording) {
+        if (isRecording) {
             interval = setInterval(() => {
                 setSeconds(sec => sec + 1);
             }, 1000);
@@ -206,12 +208,45 @@ function ObservationFormScreen({ onBack, onNext, formState, setFormState, c }) {
             clearInterval(interval);
         }
         return () => clearInterval(interval);
-    }, [recording]);
+    }, [isRecording]);
 
-    const toggleRecording = () => {
-        if (!recording && seconds === 0) setSeconds(0);
-        setRecording(!recording);
-    };
+    async function startRecording() {
+        try {
+            const permission = await Audio.requestPermissionsAsync();
+            if (permission.status !== 'granted') {
+                alert('Permission to access microphone is required!');
+                return;
+            }
+
+            await Audio.setAudioModeAsync({
+                allowsRecordingIOS: true,
+                playsInSilentModeIOS: true,
+            });
+
+            const { recording } = await Audio.Recording.createAsync(
+                Audio.RecordingOptionsPresets.HIGH_QUALITY
+            );
+            
+            setRecordingInstance(recording);
+            setSeconds(0);
+            setIsRecording(true);
+        } catch (err) {
+            console.error('Failed to start recording', err);
+        }
+    }
+
+    async function stopRecording() {
+        if (!recordingInstance) return;
+        try {
+            await recordingInstance.stopAndUnloadAsync();
+            const uri = recordingInstance.getURI();
+            setFormState(prev => ({ ...prev, voiceNoteUri: uri }));
+            setRecordingInstance(null);
+            setIsRecording(false);
+        } catch (err) {
+            console.error('Failed to stop recording', err);
+        }
+    }
 
     const fmt = sec => `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
 
@@ -256,16 +291,19 @@ function ObservationFormScreen({ onBack, onNext, formState, setFormState, c }) {
                 <View style={s.recordingSection}>
                     <Text style={s.areaLabel}>Voice Notes</Text>
                     <View style={{ alignItems: 'center', marginTop: 10 }}>
-                        <Text style={s.timerText}>{recording || seconds > 0 ? fmt(seconds) : 'Press mic to record'}</Text>
-                        <TouchableOpacity onPress={toggleRecording} activeOpacity={0.85} style={{ marginTop: 16 }}>
-                            <View style={[s.micOuter, recording && { backgroundColor: 'rgba(239, 68, 68, 0.3)' }]}>
-                                <View style={[s.micMid, recording && { backgroundColor: 'rgba(239, 68, 68, 0.6)' }]}>
-                                    <View style={[s.micInner, recording && { backgroundColor: '#EF4444' }]}>
-                                        <Ionicons name={recording ? 'stop' : 'mic-outline'} size={40} color="#fff" />
+                        <Text style={s.timerText}>{isRecording || seconds > 0 ? fmt(seconds) : 'Press mic to record'}</Text>
+                        <TouchableOpacity onPress={isRecording ? stopRecording : startRecording} activeOpacity={0.85} style={{ marginTop: 16 }}>
+                            <View style={[s.micOuter, isRecording && { backgroundColor: 'rgba(239, 68, 68, 0.3)' }]}>
+                                <View style={[s.micMid, isRecording && { backgroundColor: 'rgba(239, 68, 68, 0.6)' }]}>
+                                    <View style={[s.micInner, isRecording && { backgroundColor: '#EF4444' }]}>
+                                        <Ionicons name={isRecording ? 'stop' : 'mic-outline'} size={40} color="#fff" />
                                     </View>
                                 </View>
                             </View>
                         </TouchableOpacity>
+                        {!isRecording && formState.voiceNoteUri && (
+                            <Text style={[s.helperText, { marginTop: 12, color: c.success }]}>✓ Voice note recorded successfully</Text>
+                        )}
                     </View>
                 </View>
 
@@ -292,7 +330,7 @@ function AIGenerationScreen({ onComplete, c }) {
 
     return (
         <View style={[s.container, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
-            <ActivityIndicator size="large" color={c.accentBlue} />
+            <CustomLoader size={80} color={c.accentBlue} />
             <Text style={[s.headerTitle, { marginTop: 24, textAlign: 'center' }]}>AI is analyzing your notes...</Text>
             <Text style={[s.helperText, { textAlign: 'center', marginTop: 12 }]}>
                 Generating summary, extracting improvement points, and preparing scoring rubrics.

@@ -3,7 +3,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-    Alert,
     FlatList,
     Image,
     ImageBackground,
@@ -18,6 +17,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useToast } from '@/components/common/Toast';
 
 const COUNTRIES = [
     { code: '+1', flag: '🇺🇸', name: 'United States' },
@@ -30,6 +30,7 @@ const COUNTRIES = [
 export default function FillProfile() {
     const router = useRouter();
     const { token, userId, completeProfile } = useAuth();
+    const toast = useToast();
 
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -109,12 +110,12 @@ export default function FillProfile() {
 
     const handleContinue = async () => {
         if (!firstName || !lastName || !email) {
-            Alert.alert('Required', 'Please fill in your first name, last name, and email.');
+            toast.warning('Please fill in your first name, last name, and email.', 'Required');
             return;
         }
         const ok = await saveProfile();
         if (!ok) {
-            Alert.alert('Error', 'Failed to save profile. Please try again.');
+            toast.error('Failed to save profile. Please try again.', 'Error');
             return;
         }
         completeProfile();

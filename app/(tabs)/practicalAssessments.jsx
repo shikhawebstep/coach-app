@@ -1,4 +1,5 @@
 import AssessmentCriteria from '@/components/assessments/AssessmentCriteria';
+import AssessmentDecision from '@/components/assessments/AssessmentDecision';
 import PracticalAssessmentsComponent from '@/components/assessments/PracticalAssessments';
 import SummarisePerformance from '@/components/assessments/SummarisePerformance';
 import UploadVideo from '@/components/assessments/UploadVideo';
@@ -33,6 +34,13 @@ export default function PracticalAssessmentsFlow() {
     if (currentView === 'summarisePerformance') {
         return <SummarisePerformance
             onBack={() => setCurrentView('uploadVideo')}
+            onComplete={() => setCurrentView('assessmentDecision')}
+        />;
+    }
+
+    if (currentView === 'assessmentDecision') {
+        return <AssessmentDecision
+            onBack={() => setCurrentView('summarisePerformance')}
             onComplete={() => setCurrentView('practicalAssessments')}
         />;
     }

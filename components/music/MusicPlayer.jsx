@@ -2,7 +2,8 @@ import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
+import CustomLoader from '@/components/common/CustomLoader';
 
 const { width } = Dimensions.get('window');
 
@@ -238,7 +239,7 @@ export default function MusicPlayer({ onBack }) {
 
                 {loading ? (
                     <View style={styles.centered}>
-                        <ActivityIndicator size="large" color={theme.primary} />
+                        <CustomLoader size={80} color={theme.primary} />
                     </View>
                 ) : filteredMusic.length === 0 ? (
                     <View style={styles.centered}>
@@ -340,7 +341,7 @@ export default function MusicPlayer({ onBack }) {
 
                 <TouchableOpacity style={styles.playButton} onPress={togglePlayPause} disabled={isBuffering}>
                     {isBuffering
-                        ? <ActivityIndicator color="#fff" />
+                        ? <CustomLoader size={20} color="#fff" />
                         : <Ionicons name={isPlaying ? "pause" : "play"} size={32} color="#fff" />
                     }
                 </TouchableOpacity>

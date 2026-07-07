@@ -2,7 +2,6 @@ import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Image,
   ScrollView,
   StyleSheet,
@@ -11,6 +10,7 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import CustomLoader from "@/components/common/CustomLoader";
 import AddTrialist from "../common/AddTrialist";
 
 export default function WeeklySessionTrainingDetails({
@@ -143,7 +143,7 @@ export default function WeeklySessionTrainingDetails({
           { justifyContent: "center", alignItems: "center" },
         ]}
       >
-        <ActivityIndicator size="large" color="#3B82F6" />
+        <CustomLoader size={80} color="#3B82F6" />
       </View>
     );
   }

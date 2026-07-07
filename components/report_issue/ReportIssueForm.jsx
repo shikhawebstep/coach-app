@@ -1,7 +1,8 @@
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
+import CustomLoader from '@/components/common/CustomLoader';
 const CATEGORIES = ['Equipment', 'Incident', 'Complaint', 'Coaches', 'Venue', 'Other'];
 
 const COLORS = {
@@ -195,7 +196,7 @@ export default function ReportIssueForm({ onBack }) {
                     onChangeText={handleSearchChange}
                     onFocus={() => setIsDropdownVisible(true)}
                 />
-                {loadingVenues && <ActivityIndicator size="small" color="#3B82F6" />}
+                {loadingVenues && <CustomLoader size={20} color="#3B82F6" />}
             </View>
         </View>
 
@@ -251,7 +252,7 @@ export default function ReportIssueForm({ onBack }) {
                 disabled={submitting}
             >
                 {submitting ? (
-                    <ActivityIndicator color="#fff" size="small" />
+                    <CustomLoader size={20} color="#fff" />
                 ) : (
                     <Text style={styles.submitButtonText}>Submit</Text>
                 )}

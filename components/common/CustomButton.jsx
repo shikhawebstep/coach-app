@@ -1,5 +1,6 @@
 import { Colors } from '@/constants/theme';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import CustomLoader from '@/components/common/CustomLoader';
 
 export default function CustomButton({
     title,
@@ -34,7 +35,7 @@ export default function CustomButton({
             activeOpacity={0.8}
         >
             {loading ? (
-                <ActivityIndicator color={textColor} />
+                <CustomLoader size={24} color={textColor} />
             ) : (
                 <Text style={[styles.text, { color: textColor }]}>{title}</Text>
             )}

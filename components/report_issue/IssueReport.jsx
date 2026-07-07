@@ -1,7 +1,8 @@
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import CustomLoader from '@/components/common/CustomLoader';
 
 const COLORS = {
     light: {
@@ -99,7 +100,7 @@ export default function IssueReport({ reportId, onBack }) {
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#3B82F6" />
+                <CustomLoader size={80} color="#3B82F6" />
             </View>
         );
     }

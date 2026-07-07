@@ -2,7 +2,6 @@ import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,6 +10,7 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import CustomLoader from "@/components/common/CustomLoader";
 
 export default function SelectAVenue({ onBack, onVenueSelect }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -97,7 +97,7 @@ export default function SelectAVenue({ onBack, onVenueSelect }) {
 
       {loading ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#3B82F6" />
+          <CustomLoader size={80} color="#3B82F6" />
         </View>
       ) : (
         <ScrollView

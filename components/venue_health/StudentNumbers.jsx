@@ -1,7 +1,8 @@
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import CustomLoader from '@/components/common/CustomLoader';
 import Svg, { Polyline } from 'react-native-svg';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -257,7 +258,7 @@ export default function StudentNumbers({ onBack }) {
 
             {loading ? (
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 40 }}>
-                    <ActivityIndicator size="large" color="#3B82F6" />
+                    <CustomLoader size={80} color="#3B82F6" />
                 </View>
             ) : viewMode === 'table' ? (
                 <View style={{ flex: 1 }}>

@@ -2,8 +2,6 @@ import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
   Image,
   Modal,
   ScrollView,
@@ -14,6 +12,8 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import CustomLoader from "@/components/common/CustomLoader";
+import { useToast } from "@/components/common/Toast";
 
 const MONTHS = [
   "January",
@@ -43,6 +43,7 @@ export default function PrivateStudentClassDetails({
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [updatingDate, setUpdatingDate] = useState(false);
   const { token } = useAuth();
+  const toast = useToast();
 
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -90,7 +91,7 @@ export default function PrivateStudentClassDetails({
   const handleDateChange = async () => {
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(selectedCalendarDate)) {
-      Alert.alert("Invalid Date", "Please select a valid date.");
+      toast.warning("Please select a valid date.", "Invalid Date");
       return;
     }
 
@@ -118,18 +119,15 @@ export default function PrivateStudentClassDetails({
       const result = await response.json();
 
       if (response.ok && result.status !== false) {
-        Alert.alert("Success", "Booking date changed successfully.");
+        toast.success("Booking date changed successfully.");
         setDateModalVisible(false);
         fetchBookingDetails();
       } else {
-        Alert.alert(
-          "Error",
-          result.message || "Failed to change booking date.",
-        );
+        toast.error(result.message || "Failed to change booking date.");
       }
     } catch (error) {
       console.error("Failed to update date:", error);
-      Alert.alert("Error", "Something went wrong while updating the date.");
+      toast.error("Something went wrong while updating the date.");
     } finally {
       setUpdatingDate(false);
     }
@@ -214,7 +212,7 @@ export default function PrivateStudentClassDetails({
   if (loading) {
     return (
       <View style={[styles.centered, isDark && styles.centeredDark]}>
-        <ActivityIndicator size="large" color="#3B82F6" />
+        <CustomLoader size={80} color="#3B82F6" />
       </View>
     );
   }
@@ -689,7 +687,7 @@ export default function PrivateStudentClassDetails({
               disabled={updatingDate}
             >
               {updatingDate ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <CustomLoader size={20} color="#fff" />
               ) : (
                 <Text style={styles.modalSelectBtnText}>Select date</Text>
               )}

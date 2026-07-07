@@ -1,7 +1,8 @@
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
+import CustomLoader from '@/components/common/CustomLoader';
 
 const COLORS = {
     light: {
@@ -118,7 +119,7 @@ export default function HolidayCampsList({ onBack, onCampSelect }) {
                 <Text style={styles.listTitle}>Venues</Text>
 
                 {loading ? (
-                    <ActivityIndicator size="large" color="#1CAB4B" style={{ marginTop: 40 }} />
+                    <CustomLoader size={80} color="#1CAB4B" />
                 ) : filteredVenues.length === 0 ? (
                     <Text style={styles.emptyText}>No venues found.</Text>
                 ) : (

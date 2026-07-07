@@ -10,7 +10,9 @@ import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
+import CustomLoader from '@/components/common/CustomLoader';
+import { ToastProvider } from '@/components/common/Toast';
 import 'react-native-reanimated';
 
 import { AuthProvider, useAuth } from '@/context/AuthContext';
@@ -49,7 +51,7 @@ function RootLayoutNav() {
         return (
             <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
                 <View style={{ flex: 1, backgroundColor: '#101014', justifyContent: 'center', alignItems: 'center' }}>
-                    <ActivityIndicator size="large" color="#F7D02A" />
+                    <CustomLoader size={80} color="#F7D02A" />
                 </View>
             </ThemeProvider>
         );
@@ -89,7 +91,9 @@ export default function RootLayout() {
     return (
         <RootSiblingParent>
             <AuthProvider>
-                <RootLayoutNav />
+                <ToastProvider>
+                    <RootLayoutNav />
+                </ToastProvider>
             </AuthProvider>
         </RootSiblingParent>
     );

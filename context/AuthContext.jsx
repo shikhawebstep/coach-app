@@ -16,14 +16,20 @@ export function AuthProvider({ children }) {
         const verifySession = async () => {
             try {
                 const storedToken = await AsyncStorage.getItem('userToken');
-
-                console.log('storedToken', storedToken);
                 const storedUserId = await AsyncStorage.getItem('userId');
-                console.log('storedUserId', storedUserId);
+                const storedProfileCompleted = await AsyncStorage.getItem('isProfileCompleted');
+                const storedOnboardingCompleted = await AsyncStorage.getItem('isOnboardingCompleted');
 
                 if (storedToken && storedUserId) {
                     setToken(storedToken);
                     setUserId(storedUserId);
+                }
+
+                if (storedProfileCompleted === 'true') {
+                    setIsProfileCompleted(true);
+                }
+                if (storedOnboardingCompleted === 'true') {
+                    setIsOnboardingCompleted(true);
                 }
 
                 const myHeaders = new Headers();
@@ -79,6 +85,8 @@ export function AuthProvider({ children }) {
         setUserId(null);
         await AsyncStorage.removeItem('userToken');
         await AsyncStorage.removeItem('userId');
+        await AsyncStorage.removeItem('isProfileCompleted');
+        await AsyncStorage.removeItem('isOnboardingCompleted');
         setIsLoggedIn(false);
         setIsProfileCompleted(false);
         setIsOnboardingCompleted(false);
@@ -88,15 +96,19 @@ export function AuthProvider({ children }) {
         setIsFirstTime(false);
     };
 
-    const completeProfile = () => {
+    const completeProfile = async () => {
         setIsProfileCompleted(true);
+        await AsyncStorage.setItem('isProfileCompleted', 'true');
     };
 
-    const completeOnboarding = () => {
+    const completeOnboarding = async () => {
         setIsOnboardingCompleted(true);
+        await AsyncStorage.setItem('isOnboardingCompleted', 'true');
     };
 
-    const resetAll = () => {
+    const resetAll = async () => {
+        await AsyncStorage.removeItem('isProfileCompleted');
+        await AsyncStorage.removeItem('isOnboardingCompleted');
         setIsLoggedIn(false);
         setIsFirstTime(true);
         setIsProfileCompleted(false);

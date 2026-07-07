@@ -2,7 +2,6 @@ import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Image,
   ScrollView,
   StyleSheet,
@@ -12,6 +11,7 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import CustomLoader from "@/components/common/CustomLoader";
 
 export default function PrivateClassesBookings({ onBack, onStudentSelect }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -91,7 +91,7 @@ export default function PrivateClassesBookings({ onBack, onStudentSelect }) {
   if (loading) {
     return (
       <View style={[styles.centered, isDark && styles.centeredDark]}>
-        <ActivityIndicator size="large" color="#3B82F6" />
+        <CustomLoader size={80} color="#3B82F6" />
       </View>
     );
   }

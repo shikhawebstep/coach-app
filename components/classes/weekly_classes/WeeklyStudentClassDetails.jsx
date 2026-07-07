@@ -2,8 +2,6 @@ import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,6 +10,8 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import CustomLoader from "@/components/common/CustomLoader";
+import { useToast } from "@/components/common/Toast";
 
 export default function WeeklyStudentClassDetails({
   onBack,
@@ -41,10 +41,11 @@ export default function WeeklyStudentClassDetails({
 
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+  const toast = useToast();
 
   const handleSave = async () => {
     if (!notes.trim()) {
-      Alert.alert("Validation", "Please enter a note before saving.");
+      toast.warning("Please enter a note before saving.", "Validation");
       return;
     }
     try {
@@ -64,10 +65,10 @@ export default function WeeklyStudentClassDetails({
       if (!response.ok || data?.status === false) {
         throw new Error(data?.message || "Failed to save note");
       }
-      Alert.alert("Success", "Note saved successfully.");
+      toast.success("Note saved successfully.");
       onSave?.();
     } catch (error) {
-      Alert.alert("Error", error?.message || "Something went wrong");
+      toast.error(error?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -175,7 +176,7 @@ export default function WeeklyStudentClassDetails({
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <CustomLoader size={20} color="#fff" />
             ) : (
               <Text style={styles.saveText}>Save</Text>
             )}

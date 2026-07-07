@@ -9,9 +9,9 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
-    ActivityIndicator
+    View
 } from "react-native";
+import CustomLoader from "@/components/common/CustomLoader";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 
@@ -650,7 +650,7 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
   if (isAuthLoading || (!isAuthLoading && !isLoggedIn)) {
     return (
       <View style={{ flex: 1, backgroundColor: C.bgDark, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color={C.yellow} />
+        <CustomLoader size={80} color={C.yellow} />
       </View>
     );
   }

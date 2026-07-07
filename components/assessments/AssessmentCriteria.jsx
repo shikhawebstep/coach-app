@@ -1,13 +1,12 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
-const QUESTIONS = [
-    { id: 1, text: 'Punctuality of the coach', answer: 4 },
-    { id: 2, text: 'Status of the campus', answer: 3 },
-    { id: 3, text: 'Punctuality of the coach', answer: 5 },
-    { id: 4, text: 'Punctuality of the coach', answer: 5 },
-    { id: 5, text: 'Punctuality of the coach', answer: 5 },
-    { id: 6, text: 'Punctuality of the coach', answer: 5 },
-    { id: 7, text: 'Punctuality of the coach', answer: 3 },
+import { useState } from 'react';
+
+const INITIAL_QUESTIONS = [
+    { id: 1, text: 'Energy & Enthusiasm', answer: null },
+    { id: 2, text: 'Communication Skills', answer: null },
+    { id: 3, text: 'Session/Drill Setup', answer: null },
+    { id: 4, text: 'Professionalism', answer: null },
 ];
 
 const COLORS = {
@@ -36,6 +35,14 @@ export default function AssessmentCriteria({ onBack, onNext }) {
     const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
     const styles = getStyles(theme);
 
+    const [questions, setQuestions] = useState(INITIAL_QUESTIONS);
+
+    const handleSelect = (id, val) => {
+        setQuestions(questions.map(q => q.id === id ? { ...q, answer: val } : q));
+    };
+
+    const isAllAnswered = questions.every(q => q.answer !== null);
+
     return (
         <View style={styles.container}>
             {/* Header */}
@@ -49,17 +56,17 @@ export default function AssessmentCriteria({ onBack, onNext }) {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
                 <Text style={styles.sectionTitle}>Assessment Criteria</Text>
 
-                {QUESTIONS.map((q, idx) => (
+                {questions.map((q, idx) => (
                     <View key={idx} style={styles.questionBlock}>
                         <Text style={styles.questionText}>{q.text}</Text>
                         <View style={styles.radioGroup}>
                             {[1, 2, 3, 4, 5].map(val => (
-                                <View key={val} style={styles.radioOption}>
+                                <TouchableOpacity key={val} style={styles.radioOption} onPress={() => handleSelect(q.id, val)}>
                                     <View style={[styles.outerCircle, q.answer === val && styles.outerCircleSelected]}>
                                         {q.answer === val && <View style={styles.innerCircle} />}
                                     </View>
                                     <Text style={styles.radioLabel}>{val}</Text>
-                                </View>
+                                </TouchableOpacity>
                             ))}
                         </View>
                     </View>
@@ -67,7 +74,11 @@ export default function AssessmentCriteria({ onBack, onNext }) {
 
             </ScrollView>
             <View style={styles.bottomContainer}>
-                <TouchableOpacity style={styles.nextButton} onPress={onNext}>
+                <TouchableOpacity 
+                    style={[styles.nextButton, !isAllAnswered && { opacity: 0.5 }]} 
+                    onPress={onNext}
+                    disabled={!isAllAnswered}
+                >
                     <Text style={styles.nextButtonText}>Next</Text>
                 </TouchableOpacity>
             </View>

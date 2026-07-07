@@ -9,6 +9,7 @@ export default function AuthInput({
     error,
     isPassword = false,
     style,
+    secureTextEntry, // extracted so it can't override our computed value below
     ...props
 }) {
     const [isFocused, setIsFocused] = useState(false);

@@ -1277,7 +1277,7 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
   const scheme = useColorScheme(); // triggers re-render on theme change
   const COLORS = scheme === 'light' ? LIGHT_COLORS : DARK_COLORS;
   const styles = createStyles(COLORS);
-  const { token, userId,  } = useAuth();
+  const { token, userId, completeOnboarding } = useAuth();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [showTaskPanel, setShowTaskPanel] = useState(false);
@@ -1294,6 +1294,7 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
     setCurrentStep(1);
   };
   const handleComplete = () => {
+    completeOnboarding();
     if (navigation) navigation.navigate("Home");
     else router.replace('/(tabs)');
   };

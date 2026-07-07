@@ -4,7 +4,6 @@ import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,7 +12,8 @@ import {
   View,
   useColorScheme,
 } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import CustomLoader from '@/components/common/CustomLoader';
+import MiniMapView from "./MiniMapView";
 
 export default function BirthdayPartyDetails({
   booking: initialBooking,
@@ -101,7 +101,7 @@ export default function BirthdayPartyDetails({
   if (loading) {
     return (
       <View style={[styles.centered, isDark && styles.centeredDark]}>
-        <ActivityIndicator size="large" color="#3B82F6" />
+        <CustomLoader size={80} color="#3B82F6" />
       </View>
     );
   }
@@ -221,21 +221,12 @@ export default function BirthdayPartyDetails({
         {/* Map */}
         {region ? (
           <View style={styles.mapContainer}>
-            <MapView
+            <MiniMapView
               style={styles.mapImage}
-              initialRegion={region}
-              scrollEnabled={false}
-              zoomEnabled={false}
-            >
-              <Marker
-                coordinate={{
-                  latitude: region.latitude,
-                  longitude: region.longitude,
-                }}
-                title={studentName}
-                description={address}
-              />
-            </MapView>
+              region={region}
+              studentName={studentName}
+              address={address}
+            />
           </View>
         ) : (
           <View

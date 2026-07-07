@@ -2,7 +2,8 @@ import { useAuth } from '@/context/AuthContext';
 import { getNotificationVisual } from '@/utils/notificationVisuals';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import CustomLoader from '@/components/common/CustomLoader';
 
 // Group flat notifications array into sections by category
 function groupByCategory(notifications = []) {
@@ -69,7 +70,7 @@ export default function NotificationsList({ onNotificationSelect }) {
     if (loading) {
         return (
             <View style={styles.centered}>
-                <ActivityIndicator size="large" color={isDark ? '#fff' : '#000'} />
+                <CustomLoader size={80} color={isDark ? '#fff' : '#000'} />
             </View>
         );
     }

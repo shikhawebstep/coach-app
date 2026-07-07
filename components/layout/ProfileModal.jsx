@@ -3,7 +3,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useEffect, useRef, useState } from 'react';
 import {
-    Alert,
     Animated,
     Dimensions,
     ImageBackground,
@@ -17,12 +16,14 @@ import {
     View,
     useColorScheme
 } from 'react-native';
+import { useToast } from '@/components/common/Toast';
 
 const { width } = Dimensions.get('window');
 
 export default function ProfileModal({ visible, onClose }) {
     const { token, userId } = useAuth();
     const [view, setView] = useState('profile');
+    const toast = useToast();
     const [profileData, setProfileData] = useState(null);
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
@@ -125,13 +126,13 @@ export default function ProfileModal({ visible, onClose }) {
             const result = await response.json();
             if (result.status) {
                 setProfileData(prev => ({ ...prev, firstName, lastName, email, phoneNumber, city, postalCode }));
-                Alert.alert('Success', 'Profile updated successfully.');
+                toast.success('Profile updated successfully.');
             } else {
-                Alert.alert('Error', result.message || 'Failed to update profile.');
+                toast.error(result.message || 'Failed to update profile.');
             }
         } catch (err) {
             console.error(err);
-            Alert.alert('Error', 'Something went wrong.');
+            toast.error('Something went wrong.');
         } finally {
             setProfileSaving(false);
         }
@@ -142,7 +143,7 @@ export default function ProfileModal({ visible, onClose }) {
         const { firstName: referFirstName, lastName: referLastName } = splitName(referName);
 
         if (!referFirstName || !referPhone) {
-            Alert.alert('Validation', 'Please fill in all required fields.');
+            toast.warning('Please fill in all required fields.', 'Validation');
             return;
         }
         try {
@@ -165,17 +166,17 @@ export default function ProfileModal({ visible, onClose }) {
             });
             const result = await response.json();
             if (result.status) {
-                Alert.alert('Success', 'Referral submitted successfully!');
+                toast.success('Referral submitted successfully!');
                 setReferName('');
                 setReferPhone('');
                 setReferNotes('');
                 setView('latestResults');
             } else {
-                Alert.alert('Error', result.message || 'Failed to submit referral.');
+                toast.error(result.message || 'Failed to submit referral.');
             }
         } catch (err) {
             console.error(err);
-            Alert.alert('Error', 'Something went wrong.');
+            toast.error('Something went wrong.');
         } finally {
             setReferSaving(false);
         }

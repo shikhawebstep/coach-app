@@ -3,7 +3,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
     ImageBackground,
     ScrollView,
     StatusBar,
@@ -14,6 +13,7 @@ import {
     View,
     Dimensions
 } from 'react-native';
+import CustomLoader from '@/components/common/CustomLoader';
 
 const { width } = Dimensions.get('window');
 
@@ -168,7 +168,7 @@ export default function TrainingFlow() {
 
                 {loading ? (
                     <View style={styles.centerContainer}>
-                        <ActivityIndicator size="large" color={C.yellow} />
+                        <CustomLoader size={80} color={C.yellow} />
                         <Text style={styles.infoText}>Loading courses…</Text>
                     </View>
                 ) : error ? (

@@ -1,11 +1,11 @@
 import AuthInput from '@/components/auth/AuthInput';
 import CustomButton from '@/components/common/CustomButton';
+import { useToast } from '@/components/common/Toast';
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Toast from 'react-native-root-toast';
 
 export default function Login() {
     const router = useRouter();
@@ -14,10 +14,11 @@ export default function Login() {
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const toast = useToast();
 
     const handleLogin = async () => {
         if (!email || !password) {
-            Toast.show('Please enter email and password', { duration: Toast.durations.LONG, position: Toast.positions.TOP });
+            toast.warning('Please enter email and password');
             return;
         }
 
@@ -41,17 +42,17 @@ export default function Login() {
             const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/auth/login`, requestOptions);
             const resultText = await response.text();
             console.log(resultText);
-            
+
             let resultObj = {};
             try {
                 resultObj = JSON.parse(resultText);
-            } catch (e) {}
+            } catch (e) { }
 
             if (response.ok) {
                 const token = resultObj.token || resultObj.data?.token || '';
                 const userId = resultObj.id || resultObj.userId || resultObj.data?.id || resultObj.data?.user?.id || resultObj.data?.admin?.id || resultObj.user?.id || '';
 
-                Toast.show(resultObj.message || 'Logged in successfully!', { duration: Toast.durations.LONG, position: Toast.positions.TOP });
+                toast.success(resultObj.message || 'Logged in successfully!');
                 login(token, userId);
                 if (!isProfileCompleted) {
                     router.replace('/fill-profile');
@@ -61,11 +62,11 @@ export default function Login() {
                     router.replace('/(tabs)');
                 }
             } else {
-                Toast.show(resultObj.message || 'Login failed. Please check your credentials.', { duration: Toast.durations.LONG, position: Toast.positions.TOP });
+                toast.error(resultObj.message || 'Login failed. Please check your credentials.');
             }
         } catch (error) {
             console.error(error);
-            Toast.show('An error occurred during login.', { duration: Toast.durations.LONG, position: Toast.positions.TOP });
+            toast.error('An error occurred during login.');
         } finally {
             setIsLoading(false);
         }
@@ -126,7 +127,6 @@ export default function Login() {
                             onChangeText={setPassword}
                             icon="lock-closed-outline"
                             isPassword
-                            secureTextEntry
                         />
 
                         <TouchableOpacity

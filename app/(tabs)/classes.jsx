@@ -3,6 +3,7 @@ import AssessmentResults from '@/components/assessments/AssessmentResults';
 import PracticalAssessments from '@/components/assessments/PracticalAssessments';
 import SummarisePerformance from '@/components/assessments/SummarisePerformance';
 import UploadVideo from '@/components/assessments/UploadVideo';
+import AssessmentDecision from '@/components/assessments/AssessmentDecision';
 
 import BirthdayParties from '@/components/classes/birthday_parties/BirthdayParties';
 import BirthdayPartyDetails from '@/components/classes/birthday_parties/BirthdayPartyDetails';
@@ -415,6 +416,13 @@ export default function Classes() {
     if (currentView === 'summarisePerformance') {
         return <SummarisePerformance
             onBack={() => setCurrentView('uploadVideo')}
+            onComplete={() => setCurrentView('assessmentDecision')}
+        />;
+    }
+
+    if (currentView === 'assessmentDecision') {
+        return <AssessmentDecision
+            onBack={() => setCurrentView('summarisePerformance')}
             onComplete={() => setCurrentView('practicalAssessments')}
         />;
     }
