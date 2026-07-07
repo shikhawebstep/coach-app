@@ -36,12 +36,6 @@ const CATEGORIES = [
     title: "BIRTHDAY\nPARTIES",
     image: require("../../../assets/images/bdy.png"),
   },
-  {
-    id: "club",
-    title: "CLUB",
-    image: require("../../../assets/images/club.png"),
-    labelOnly: true,
-  },
 ];
 
 export default function AppHomeCategories({ onCategorySelect }) {
@@ -89,7 +83,7 @@ export default function AppHomeCategories({ onCategorySelect }) {
           {CATEGORIES.slice(1).map((item) => (
             <TouchableOpacity
               key={item.id}
-              style={[styles.card, styles.gridCard]}
+              style={[styles.card, item.id === 'birthday' ? styles.mediumCard : styles.gridCard]}
               onPress={() => onCategorySelect && onCategorySelect(item.id)}
             >
               <Image source={item.image} style={styles.cardImage} />
@@ -148,6 +142,10 @@ const styles = StyleSheet.create({
   largeCard: {
     width: "100%",
     height: 220,
+  },
+  mediumCard: {
+    width: "100%",
+    height: 190,
   },
   gridContainer: {
     flexDirection: "row",

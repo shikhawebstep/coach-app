@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
     Dimensions,
     Image,
     Modal, ScrollView, StyleSheet, Text,
@@ -11,37 +12,23 @@ import {
 const { width } = Dimensions.get('window');
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const TOTAL_QUESTIONS = 15;
 const COACHES = ['Daniel Marcus', 'James Smith', 'Sarah Connor'];
 const VENUES = ['Chelsea', 'Hammersmith', 'King Cross', 'Acton'];
 const CLASSES = ['Class 1', 'Class 2', 'Class 3'];
 
-const QUESTIONS_DATA = Array.from({ length: TOTAL_QUESTIONS }, (_, i) => ({
-    id: i + 1,
-    text: [
-        'Punctuality of the coach',
-        'Status of the campus',
-        'Coach engagement with students',
-        'Quality of coaching drills',
-        'Safety standards observed',
-        'Equipment condition',
-        'Student participation',
-        'Communication clarity',
-        'Warm-up quality',
-        'Cool-down quality',
-        'Session planning',
-        'Feedback given to students',
-        'Parent interaction',
-        'Time management',
-        'Overall session rating',
-    ][i],
-}));
-
 const REPORTS_DATA = [
-    { id: 1, name: 'Daniel\nWalsh', date: '3rd April 2023', time: '10:30-11:30am', venue: 'King Cross', score: 75, color: '#1CAB4B' },
-    { id: 2, name: 'Clifford', date: '3rd April 2023', time: '10:30-11:30am', venue: 'Hammersmith', score: 43, color: '#EF4444' },
-    { id: 3, name: 'Curtis', date: '3rd April 2023', time: '10:30-11:30am', venue: 'King Cross', score: 75, color: '#1CAB4B' },
-    { id: 4, name: 'Joshua', date: '3rd April 2023', time: '10:30-11:30am', venue: 'Hammersmith', score: 43, color: '#EF4444' },
+    { id: 1, name: 'Daniel\nWalsh', date: '3rd April 2023', time: '10:30-11:30am', venue: 'King Cross', score: 85, color: '#1CAB4B' },
+    { id: 2, name: 'Clifford', date: '3rd April 2023', time: '10:30-11:30am', venue: 'Hammersmith', score: 65, color: '#FACC15' },
+    { id: 3, name: 'Curtis', date: '3rd April 2023', time: '10:30-11:30am', venue: 'King Cross', score: 92, color: '#1CAB4B' },
+    { id: 4, name: 'Joshua', date: '3rd April 2023', time: '10:30-11:30am', venue: 'Hammersmith', score: 45, color: '#EF4444' },
+];
+
+const SCORING_CRITERIA = [
+    'Personal qualities',
+    'Delivery qualities',
+    'Coaching standards',
+    'Educational quality',
+    'Session structure'
 ];
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
@@ -106,13 +93,13 @@ function MyReportsScreen({ onCreateNew, onBack, c }) {
                         <Ionicons name="arrow-back" size={22} color={c.icon} />
                     </TouchableOpacity>
                 )}
-                <Text style={s.headerTitle}>My reports</Text>
+                <Text style={s.headerTitle}>Observe & Develop</Text>
             </View>
             <View style={s.searchContainer}>
                 <Ionicons name="search-outline" size={20} color={c.placeholder} style={{ marginRight: 10 }} />
                 <TextInput
                     style={s.searchInput}
-                    placeholder="Select a coach..."
+                    placeholder="Search past reports..."
                     placeholderTextColor={c.placeholder}
                     value={search}
                     onChangeText={setSearch}
@@ -149,8 +136,8 @@ function MyReportsScreen({ onCreateNew, onBack, c }) {
     );
 }
 
-// ─── Screen: Create QC Report ─────────────────────────────────────────────────
-function CreateQcReport({ onBack, onStart, c }) {
+// ─── Screen: Create Report ─────────────────────────────────────────────────
+function CreateReportScreen({ onBack, onStart, c }) {
     const s = getStyles(c);
     const [coach, setCoach] = useState('');
     const [venue, setVenue] = useState('');
@@ -162,7 +149,10 @@ function CreateQcReport({ onBack, onStart, c }) {
     return (
         <View style={s.container}>
             <View style={s.header}>
-                <Text style={s.headerTitle}>Create a QC Report</Text>
+                <TouchableOpacity onPress={onBack} style={s.backBtn}>
+                    <Ionicons name="arrow-back" size={22} color={c.icon} />
+                </TouchableOpacity>
+                <Text style={s.headerTitle}>New Observation</Text>
             </View>
             <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10 }}>
                 {[
@@ -184,7 +174,7 @@ function CreateQcReport({ onBack, onStart, c }) {
                     disabled={!isReady}
                     onPress={onStart}
                 >
-                    <Text style={s.primaryBtnText}>Start report</Text>
+                    <Text style={s.primaryBtnText}>Start observation</Text>
                 </TouchableOpacity>
             </View>
 
@@ -198,151 +188,213 @@ function CreateQcReport({ onBack, onStart, c }) {
     );
 }
 
-// ─── Screen: Questionnaire ────────────────────────────────────────────────────
-function QuestionnaireScreen({ onBack, questionIndex, answers, onAnswer, onNext, c }) {
+// ─── Screen: Observation Form ────────────────────────────────────────────────────
+function ObservationFormScreen({ onBack, onNext, formState, setFormState, c }) {
     const s = getStyles(c);
-    const q = QUESTIONS_DATA[questionIndex];
-    const selected = answers[questionIndex] ?? null;
+    
+    const [recording, setRecording] = useState(false);
+    const [seconds, setSeconds] = useState(0);
 
-    return (
-        <View style={s.container}>
-            <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 40 }}>
-                <Text style={s.progressText}>Question {questionIndex + 1}/{TOTAL_QUESTIONS}</Text>
-                <Text style={s.questionText}>{q.text}</Text>
-                <View style={{ gap: 14 }}>
-                    {[1, 2, 3, 4, 5].map(val => (
-                        <TouchableOpacity
-                            key={val}
-                            style={[s.optionBtn, selected === val && s.optionBtnSelected]}
-                            onPress={() => onAnswer(questionIndex, val)}
-                        >
-                            <Text style={[s.optionText, selected === val && s.optionTextSelected]}>{val}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            </ScrollView>
-            <View style={s.bottomContainer}>
-                <TouchableOpacity
-                    style={[s.primaryBtn, selected === null && s.primaryBtnDisabled]}
-                    disabled={selected === null}
-                    onPress={onNext}
-                >
-                    <Text style={s.primaryBtnText}>
-                        {questionIndex < TOTAL_QUESTIONS - 1 ? 'Next question' : 'Next'}
-                    </Text>
-                </TouchableOpacity>
-            </View>
-        </View>
-    );
-}
+    // Audio Timer
+    useEffect(() => {
+        let interval = null;
+        if (recording) {
+            interval = setInterval(() => {
+                setSeconds(sec => sec + 1);
+            }, 1000);
+        } else {
+            clearInterval(interval);
+        }
+        return () => clearInterval(interval);
+    }, [recording]);
 
-// ─── Screen: Other Areas ──────────────────────────────────────────────────────
-function OtherAreasScreen({ onBack, onNext, c }) {
-    const s = getStyles(c);
-    const [strengths, setStrengths] = useState('');
-    const [improvements, setImprovements] = useState('');
-    const [notes, setNotes] = useState('');
+    const toggleRecording = () => {
+        if (!recording && seconds === 0) setSeconds(0);
+        setRecording(!recording);
+    };
+
+    const fmt = sec => `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
 
     return (
         <View style={s.container}>
             <View style={s.header}>
-                <Text style={s.headerTitle}>Other areas</Text>
+                <TouchableOpacity onPress={onBack} style={s.backBtn}>
+                    <Ionicons name="arrow-back" size={22} color={c.icon} />
+                </TouchableOpacity>
+                <Text style={s.headerTitle}>Observation Notes</Text>
             </View>
-            <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}>
-                {[
-                    { label: 'Enter top 3 strengths', value: strengths, setter: setStrengths },
-                    { label: 'Top 3 areas for improvement', value: improvements, setter: setImprovements },
-                    { label: 'Additional Notes', value: notes, setter: setNotes },
-                ].map(({ label, value, setter }) => (
-                    <View key={label} style={{ marginBottom: 24 }}>
-                        <Text style={s.areaLabel}>{label}</Text>
-                        <TextInput
-                            style={s.textArea}
-                            multiline
-                            textAlignVertical="top"
-                            placeholderTextColor={c.placeholder}
-                            value={value}
-                            onChangeText={setter}
-                        />
+            <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 40 }}>
+                
+                <Text style={s.helperText}>You can type your notes or record voice for AI transcription and summarization.</Text>
+
+                <View style={{ marginBottom: 24 }}>
+                    <Text style={s.areaLabel}>Positives (What's working well)</Text>
+                    <TextInput
+                        style={s.textArea}
+                        multiline
+                        textAlignVertical="top"
+                        placeholder="Great energy, engaged well with the kids..."
+                        placeholderTextColor={c.placeholder}
+                        value={formState.positives}
+                        onChangeText={(val) => setFormState({...formState, positives: val})}
+                    />
+                </View>
+
+                <View style={{ marginBottom: 32 }}>
+                    <Text style={s.areaLabel}>Areas for Improvement (Max 2)</Text>
+                    <TextInput
+                        style={s.textArea}
+                        multiline
+                        textAlignVertical="top"
+                        placeholder="1. Needs to project voice more clearly...&#10;2. Better time management during drills..."
+                        placeholderTextColor={c.placeholder}
+                        value={formState.improvements}
+                        onChangeText={(val) => setFormState({...formState, improvements: val})}
+                    />
+                </View>
+
+                <View style={s.recordingSection}>
+                    <Text style={s.areaLabel}>Voice Notes</Text>
+                    <View style={{ alignItems: 'center', marginTop: 10 }}>
+                        <Text style={s.timerText}>{recording || seconds > 0 ? fmt(seconds) : 'Press mic to record'}</Text>
+                        <TouchableOpacity onPress={toggleRecording} activeOpacity={0.85} style={{ marginTop: 16 }}>
+                            <View style={[s.micOuter, recording && { backgroundColor: 'rgba(239, 68, 68, 0.3)' }]}>
+                                <View style={[s.micMid, recording && { backgroundColor: 'rgba(239, 68, 68, 0.6)' }]}>
+                                    <View style={[s.micInner, recording && { backgroundColor: '#EF4444' }]}>
+                                        <Ionicons name={recording ? 'stop' : 'mic-outline'} size={40} color="#fff" />
+                                    </View>
+                                </View>
+                            </View>
+                        </TouchableOpacity>
                     </View>
-                ))}
+                </View>
+
             </ScrollView>
             <View style={s.bottomContainer}>
                 <TouchableOpacity style={s.primaryBtn} onPress={onNext}>
-                    <Text style={s.primaryBtnText}>Next</Text>
+                    <Text style={s.primaryBtnText}>Analyze & Continue</Text>
                 </TouchableOpacity>
             </View>
         </View>
     );
 }
 
-// ─── Screen: Summary ──────────────────────────────────────────────────────────
-function SummaryScreen({ onBack, answers, onNext, c }) {
+// ─── Screen: AI Generation Loader ──────────────────────────────────────────────
+function AIGenerationScreen({ onComplete, c }) {
     const s = getStyles(c);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            onComplete();
+        }, 3000);
+        return () => clearTimeout(timer);
+    }, []);
+
+    return (
+        <View style={[s.container, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+            <ActivityIndicator size="large" color={c.accentBlue} />
+            <Text style={[s.headerTitle, { marginTop: 24, textAlign: 'center' }]}>AI is analyzing your notes...</Text>
+            <Text style={[s.helperText, { textAlign: 'center', marginTop: 12 }]}>
+                Generating summary, extracting improvement points, and preparing scoring rubrics.
+            </Text>
+        </View>
+    );
+}
+
+// ─── Screen: AI Summary ───────────────────────────────────────────────────────
+function AISummaryScreen({ onBack, onNext, formState, c }) {
+    const s = getStyles(c);
+
+    // Mock generated data based on whatever the user typed/recorded
+    const mockSummary = formState.positives || "The coach showed excellent enthusiasm and kept the students engaged throughout the session. The warm-up was well structured.";
+    const mockImprovements = formState.improvements || "1. Ensure instructions are given clearly before breaking out into drills.\n2. Keep a closer eye on time management to avoid rushing the cool-down.";
+
     return (
         <View style={s.container}>
             <View style={s.header}>
-                <Text style={s.headerTitle}>Summary</Text>
+                <TouchableOpacity onPress={onBack} style={s.backBtn}>
+                    <Ionicons name="arrow-back" size={22} color={c.icon} />
+                </TouchableOpacity>
+                <Text style={s.headerTitle}>AI Summary</Text>
             </View>
             <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}>
-                {QUESTIONS_DATA.map((q, idx) => (
-                    <View key={q.id} style={{ marginBottom: 22 }}>
-                        <Text style={s.summaryQuestion}>{q.text}</Text>
-                        <View style={{ flexDirection: 'row' }}>
+                
+                <View style={s.summaryBox}>
+                    <View style={s.summaryHeader}>
+                        <Ionicons name="sparkles" size={18} color={c.accentBlue} style={{ marginRight: 6 }} />
+                        <Text style={s.areaLabel}>Generated Summary</Text>
+                    </View>
+                    <Text style={s.summaryContentText}>{mockSummary}</Text>
+                </View>
+
+                <View style={s.summaryBox}>
+                    <View style={s.summaryHeader}>
+                        <Ionicons name="alert-circle-outline" size={18} color="#EF4444" style={{ marginRight: 6 }} />
+                        <Text style={[s.areaLabel, { color: '#EF4444' }]}>Top 2 Improvement Points</Text>
+                    </View>
+                    <Text style={s.summaryContentText}>{mockImprovements}</Text>
+                </View>
+
+            </ScrollView>
+            <View style={s.bottomContainer}>
+                <TouchableOpacity style={s.primaryBtn} onPress={onNext}>
+                    <Text style={s.primaryBtnText}>Proceed to Scoring</Text>
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
+}
+
+// ─── Screen: Scoring ──────────────────────────────────────────────────────────
+function ScoringScreen({ onBack, onComplete, scores, setScores, c }) {
+    const s = getStyles(c);
+
+    const handleScore = (idx, val) => {
+        const newScores = [...scores];
+        newScores[idx] = val;
+        setScores(newScores);
+    };
+
+    const allScored = scores.every(s => s !== null);
+
+    return (
+        <View style={s.container}>
+            <View style={s.header}>
+                <TouchableOpacity onPress={onBack} style={s.backBtn}>
+                    <Ionicons name="arrow-back" size={22} color={c.icon} />
+                </TouchableOpacity>
+                <Text style={s.headerTitle}>Score Coach</Text>
+            </View>
+            <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}>
+                <Text style={s.helperText}>Score the coach on a scale of 1 to 5 for each criteria.</Text>
+                
+                {SCORING_CRITERIA.map((criteria, idx) => (
+                    <View key={criteria} style={{ marginBottom: 24 }}>
+                        <Text style={s.summaryQuestion}>{criteria}</Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingRight: 40 }}>
                             {[1, 2, 3, 4, 5].map(val => (
-                                <View key={val} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 18 }}>
-                                    <View style={[s.radioOuter, answers[idx] === val && s.radioOuterSelected]}>
-                                        {answers[idx] === val && <View style={s.radioInner} />}
+                                <TouchableOpacity 
+                                    key={val} 
+                                    onPress={() => handleScore(idx, val)}
+                                    style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8 }}
+                                >
+                                    <View style={[s.radioOuter, scores[idx] === val && s.radioOuterSelected]}>
+                                        {scores[idx] === val && <View style={s.radioInner} />}
                                     </View>
                                     <Text style={s.radioLabel}>{val}</Text>
-                                </View>
+                                </TouchableOpacity>
                             ))}
                         </View>
                     </View>
                 ))}
             </ScrollView>
             <View style={s.bottomContainer}>
-                <TouchableOpacity style={s.primaryBtn} onPress={onNext}>
-                    <Text style={s.primaryBtnText}>Next</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
-    );
-}
-
-// ─── Screen: Record Comments ──────────────────────────────────────────────────
-function RecordCommentsScreen({ onBack, onComplete, c }) {
-    const s = getStyles(c);
-    const [recording, setRecording] = useState(false);
-    const [seconds, setSeconds] = useState(0);
-
-    const toggle = () => {
-        setRecording(r => !r);
-        if (!recording) {
-            const t = setInterval(() => setSeconds(s => s + 1), 1000);
-        }
-    };
-
-    const fmt = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
-
-    return (
-        <View style={s.container}>
-            <Text style={s.recordTitle}>Record final comments</Text>
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={s.timer}>{fmt(seconds)}</Text>
-                <TouchableOpacity onPress={toggle} activeOpacity={0.85}>
-                    <View style={s.micOuter}>
-                        <View style={s.micMid}>
-                            <View style={s.micInner}>
-                                <Ionicons name={recording ? 'stop' : 'mic-outline'} size={54} color="#fff" />
-                            </View>
-                        </View>
-                    </View>
-                </TouchableOpacity>
-            </View>
-            <View style={s.bottomContainer}>
-                <TouchableOpacity style={s.primaryBtn} onPress={onComplete}>
-                    <Text style={s.primaryBtnText}>Complete</Text>
+                <TouchableOpacity 
+                    style={[s.primaryBtn, !allScored && s.primaryBtnDisabled]} 
+                    disabled={!allScored}
+                    onPress={onComplete}
+                >
+                    <Text style={s.primaryBtnText}>Submit Report</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -350,18 +402,33 @@ function RecordCommentsScreen({ onBack, onComplete, c }) {
 }
 
 // ─── Screen: Congratulations ──────────────────────────────────────────────────
-function CongratsScreen({ onGoHome, c }) {
+function CongratsScreen({ scores, onGoHome, c }) {
     const s = getStyles(c);
+    
+    // Calculate final grade
+    const total = scores.reduce((a, b) => a + (b || 0), 0);
+    const max = SCORING_CRITERIA.length * 5;
+    const percentage = Math.round((total / max) * 100);
+
     return (
         <View style={[s.container, { justifyContent: 'center', alignItems: 'center', padding: 32 }]}>
             <View style={s.congratsCard}>
                 <View>
                     <Image source={require('@/assets/images/congrats.png')} style={s.avatar} resizeMode="cover" />
                 </View>
-                <Text style={s.congratsTitle}>Congratulations</Text>
-                <Text style={s.congratsSub}>Report submitted</Text>
-                <TouchableOpacity style={[s.sBtn, { marginTop: 24, width: '100%' }]} onPress={onGoHome}>
-                    <Text style={s.primaryBtnText}>Go back to homepage</Text>
+                <Text style={s.congratsTitle}>Report Submitted!</Text>
+                
+                <View style={{ backgroundColor: c.bg, padding: 16, borderRadius: 12, marginVertical: 20, alignItems: 'center', width: '100%' }}>
+                    <Text style={s.congratsSub}>Final Score</Text>
+                    <Text style={[s.headerTitle, { fontSize: 36, color: c.accentBlue, marginTop: 8 }]}>{percentage}%</Text>
+                </View>
+
+                <Text style={[s.helperText, { textAlign: 'center', marginBottom: 24 }]}>
+                    The coach has been notified and the report is safely stored with the voice transcriptions.
+                </Text>
+
+                <TouchableOpacity style={[s.sBtn, { width: '100%' }]} onPress={onGoHome}>
+                    <Text style={s.primaryBtnText}>Back to Homepage</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -374,27 +441,11 @@ export default function QcReportFlow({ onBack }) {
     const isDark = colorScheme === 'dark';
     const c = getColors(isDark);
 
-    const [screen, setScreen] = useState('create');
-    const [questionIndex, setQuestionIndex] = useState(0);
-    const [answers, setAnswers] = useState({});
-
-    const handleAnswer = (idx, val) => setAnswers(a => ({ ...a, [idx]: val }));
-
-    const handleNextQuestion = () => {
-        if (questionIndex < TOTAL_QUESTIONS - 1) {
-            setQuestionIndex(i => i + 1);
-        } else {
-            setScreen('otherAreas');
-        }
-    };
-
-    const handleBackFromQuestion = () => {
-        if (questionIndex > 0) {
-            setQuestionIndex(i => i - 1);
-        } else {
-            setScreen('create');
-        }
-    };
+    const [screen, setScreen] = useState('myReports');
+    
+    // Shared State
+    const [formState, setFormState] = useState({ positives: '', improvements: '' });
+    const [scores, setScores] = useState(Array(SCORING_CRITERIA.length).fill(null));
 
     switch (screen) {
 
@@ -402,62 +453,66 @@ export default function QcReportFlow({ onBack }) {
             return (
                 <MyReportsScreen
                     c={c}
-                    onCreateNew={() => setScreen('create')}
+                    onCreateNew={() => {
+                        setFormState({ positives: '', improvements: '' });
+                        setScores(Array(SCORING_CRITERIA.length).fill(null));
+                        setScreen('create');
+                    }}
                     onBack={onBack}
                 />
             );
 
         case 'create':
             return (
-                <CreateQcReport
+                <CreateReportScreen
                     c={c}
                     onBack={() => setScreen('myReports')}
-                    onStart={() => { setQuestionIndex(0); setAnswers({}); setScreen('question'); }}
+                    onStart={() => setScreen('observation')}
                 />
             );
 
-        case 'question':
+        case 'observation':
             return (
-                <QuestionnaireScreen
+                <ObservationFormScreen
                     c={c}
-                    onBack={handleBackFromQuestion}
-                    questionIndex={questionIndex}
-                    answers={answers}
-                    onAnswer={handleAnswer}
-                    onNext={handleNextQuestion}
+                    formState={formState}
+                    setFormState={setFormState}
+                    onBack={() => setScreen('create')}
+                    onNext={() => setScreen('aiGeneration')}
                 />
             );
 
-        case 'otherAreas':
+        case 'aiGeneration':
             return (
-                <OtherAreasScreen
+                <AIGenerationScreen
                     c={c}
-                    onBack={() => { setQuestionIndex(TOTAL_QUESTIONS - 1); setScreen('question'); }}
-                    onNext={() => setScreen('summary')}
+                    onComplete={() => setScreen('aiSummary')}
                 />
             );
 
-        case 'summary':
+        case 'aiSummary':
             return (
-                <SummaryScreen
+                <AISummaryScreen
                     c={c}
-                    onBack={() => setScreen('otherAreas')}
-                    answers={answers}
-                    onNext={() => setScreen('record')}
+                    formState={formState}
+                    onBack={() => setScreen('observation')}
+                    onNext={() => setScreen('scoring')}
                 />
             );
 
-        case 'record':
+        case 'scoring':
             return (
-                <RecordCommentsScreen
+                <ScoringScreen
                     c={c}
-                    onBack={() => setScreen('summary')}
+                    scores={scores}
+                    setScores={setScores}
+                    onBack={() => setScreen('aiSummary')}
                     onComplete={() => setScreen('congrats')}
                 />
             );
 
         case 'congrats':
-            return <CongratsScreen c={c} onGoHome={() => setScreen('myReports')} />;
+            return <CongratsScreen scores={scores} c={c} onGoHome={() => setScreen('myReports')} />;
 
         default:
             return null;
@@ -471,6 +526,7 @@ const getStyles = (c) => StyleSheet.create({
     backBtn: { marginRight: 2 },
     headerTitle: { fontSize: 24, fontFamily: 'Urbanist_700Bold', color: c.text },
     bottomContainer: { paddingHorizontal: 20, paddingBottom: 40, paddingTop: 10, backgroundColor: c.bg },
+    helperText: { fontSize: 14, fontFamily: 'Urbanist_400Regular', color: c.textSecondary, marginBottom: 20, lineHeight: 20 },
 
     primaryBtn: { backgroundColor: c.primary, paddingVertical: 18, borderRadius: 30, alignItems: 'center' },
     sBtn: { backgroundColor: c.success, paddingVertical: 18, borderRadius: 30, alignItems: 'center' },
@@ -508,42 +564,52 @@ const getStyles = (c) => StyleSheet.create({
         borderColor: c.text, alignItems: 'center', justifyContent: 'center',
     },
 
-    progressText: { fontSize: 14, fontFamily: 'Urbanist_700Bold', color: c.accentBlue, marginVertical: 8 },
-    questionText: { fontSize: 24, fontFamily: 'Urbanist_700Bold', color: c.text, marginBottom: 32 },
-    optionBtn: {
-        paddingVertical: 18, borderRadius: 12, borderWidth: 1.5,
-        alignItems: 'center', borderColor: c.radioOuter, backgroundColor: c.card,
-    },
-    optionBtnSelected: { borderColor: c.accentBlue },
-    optionText: { fontSize: 16, fontFamily: 'Urbanist_700Bold', color: c.text },
-    optionTextSelected: { color: c.accentBlue },
-
-    areaLabel: { fontSize: 16, fontFamily: 'Urbanist_700Bold', color: c.accentBlue, marginBottom: 8 },
+    areaLabel: { fontSize: 16, fontFamily: 'Urbanist_700Bold', color: c.text, marginBottom: 8 },
     textArea: {
         borderWidth: 1, borderColor: c.border, borderRadius: 12, backgroundColor: c.card,
-        height: 120, padding: 20, fontSize: 15, fontFamily: 'Urbanist_400Regular', color: c.text,
+        height: 100, padding: 16, fontSize: 15, fontFamily: 'Urbanist_400Regular', color: c.text,
     },
 
-    summaryQuestion: { fontSize: 16, fontFamily: 'Urbanist_500Medium', color: c.summaryText, marginBottom: 10 },
+    recordingSection: {
+        marginTop: 10,
+        backgroundColor: c.card,
+        padding: 24,
+        borderRadius: 16,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: c.border,
+    },
+    timerText: { fontSize: 24, fontFamily: 'Urbanist_700Bold', color: c.textSecondary },
+    micOuter: { width: 120, height: 120, borderRadius: 60, backgroundColor: c.primaryDisabled, justifyContent: 'center', alignItems: 'center' },
+    micMid: { width: 90, height: 90, borderRadius: 45, backgroundColor: '#60A5FA', justifyContent: 'center', alignItems: 'center' },
+    micInner: { width: 70, height: 70, borderRadius: 35, backgroundColor: c.primary, justifyContent: 'center', alignItems: 'center' },
+
+    summaryBox: {
+        backgroundColor: c.card,
+        padding: 20,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: c.border,
+        marginBottom: 20,
+    },
+    summaryHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+    summaryContentText: { fontSize: 15, fontFamily: 'Urbanist_400Regular', color: c.textSecondary, lineHeight: 22 },
+
+    summaryQuestion: { fontSize: 16, fontFamily: 'Urbanist_600SemiBold', color: c.text, marginBottom: 14 },
     radioOuter: {
-        width: 20, height: 20, borderRadius: 10, borderWidth: 2,
-        borderColor: c.radioOuter, justifyContent: 'center', alignItems: 'center', marginRight: 6,
+        width: 22, height: 22, borderRadius: 11, borderWidth: 2,
+        borderColor: c.radioOuter, justifyContent: 'center', alignItems: 'center', marginRight: 8,
     },
     radioOuterSelected: { borderColor: c.accentBlue },
-    radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: c.accentBlue },
-    radioLabel: { fontSize: 14, fontFamily: 'Urbanist_400Regular', color: c.radioLabel },
-
-    recordTitle: { fontSize: 24, fontFamily: 'Urbanist_700Bold', color: c.text, textAlign: 'center', marginTop: 18 },
-    timer: { fontSize: 56, fontFamily: 'Urbanist_700Bold', color: c.textMuted, marginBottom: 60 },
-    micOuter: { width: 200, height: 200, borderRadius: 100, backgroundColor: '#93C5FD', justifyContent: 'center', alignItems: 'center' },
-    micMid: { width: 156, height: 156, borderRadius: 78, backgroundColor: '#60A5FA', justifyContent: 'center', alignItems: 'center' },
-    micInner: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#3B82F6', justifyContent: 'center', alignItems: 'center' },
+    radioInner: { width: 12, height: 12, borderRadius: 6, backgroundColor: c.accentBlue },
+    radioLabel: { fontSize: 16, fontFamily: 'Urbanist_500Medium', color: c.radioLabel },
 
     congratsCard: {
         backgroundColor: c.card, borderRadius: 24, padding: 28, width: '100%',
         alignItems: 'center', shadowColor: '#000',
+        elevation: 4,
     },
     congratsTitle: { fontSize: 24, fontFamily: 'Urbanist_700Bold', color: c.success, marginTop: 8 },
-    congratsSub: { fontSize: 16, fontFamily: 'Urbanist_700Bold', color: c.text, marginTop: 14 },
+    congratsSub: { fontSize: 16, fontFamily: 'Urbanist_700Bold', color: c.textSecondary, marginTop: 14 },
     avatar: { width: 160, height: 160 },
 });

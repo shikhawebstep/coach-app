@@ -34,7 +34,6 @@ const MENU_ITEMS = [
             { id: 'classes/private', title: 'Private Classes' },
             { id: 'classes/holiday', title: 'Holiday Camps' },
             { id: 'classes/birthday', title: 'Birthday Parties' },
-            { id: 'classes/club', title: 'Club' },
         ],
     },
     { id: 'training', title: 'Training', icon: 'play-circle-outline' },
