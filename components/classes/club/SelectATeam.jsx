@@ -435,7 +435,6 @@ export default function SelectATeam({
     </View>
   );
 }
-
 const getStyles = (colors) =>
   StyleSheet.create({
     container: {
@@ -454,7 +453,7 @@ const getStyles = (colors) =>
     },
     headerTitle: {
       fontSize: 24,
-      fontWeight: "bold",
+      fontFamily: "Urbanist_700Bold",
       color: colors.headerTitle,
     },
     searchContainer: {
@@ -479,6 +478,7 @@ const getStyles = (colors) =>
       flex: 1,
       fontSize: 16,
       color: colors.searchText,
+      fontFamily: "Urbanist_400Regular",
     },
     clearIcon: {
       padding: 4,
@@ -505,7 +505,7 @@ const getStyles = (colors) =>
     },
     tabText: {
       fontSize: 14,
-      fontWeight: "bold",
+      fontFamily: "Urbanist_700Bold",
     },
     activeTabText: {
       color: colors.tabActiveText,
@@ -535,7 +535,7 @@ const getStyles = (colors) =>
     },
     listTitle: {
       fontSize: 16,
-      fontWeight: "bold",
+      fontFamily: "Urbanist_700Bold",
       marginBottom: 16,
       color: colors.listTitle,
     },
@@ -565,7 +565,7 @@ const getStyles = (colors) =>
     teamCardTitle: {
       fontSize: 16,
       color: colors.teamCardTitle,
-      fontWeight: "500",
+      fontFamily: "Urbanist_400Regular",
     },
     cardImageContainer: {
       width: 32,
@@ -586,7 +586,7 @@ const getStyles = (colors) =>
     },
     cardTitle: {
       fontSize: 14,
-      fontWeight: "bold",
+      fontFamily: "Urbanist_700Bold",
       color: colors.cardTitle,
     },
     cardDetails: {
@@ -596,6 +596,7 @@ const getStyles = (colors) =>
     cardText: {
       fontSize: 13,
       color: colors.cardText,
+      fontFamily: "Urbanist_400Regular",
       lineHeight: 18,
     },
     cardBlock: {
@@ -605,7 +606,7 @@ const getStyles = (colors) =>
     },
     blockText: {
       fontSize: 13,
-      fontWeight: "bold",
+      fontFamily: "Urbanist_700Bold",
       color: colors.blockText,
       textAlign: "center",
     },
@@ -627,7 +628,7 @@ const getStyles = (colors) =>
     },
     statusText: {
       fontSize: 12,
-      fontWeight: "600",
+      fontFamily: "Urbanist_700Bold",
     },
     statusTextWhite: {
       color: colors.statusTextWhite,

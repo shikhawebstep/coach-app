@@ -2,7 +2,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
-import HolidayAddTrialist from './HolidayAddTrialist';
+import AddTrialist from '../common/AddTrialist';
 
 const COLORS = {
     light: {
@@ -138,7 +138,7 @@ export default function HolidayCampDetails({ id, onBack, onSyllabusClick, onStud
         : [];
 
     if (showAddTrialist) {
-        return <HolidayAddTrialist onBack={() => setShowAddTrialist(false)} />;
+        return <AddTrialist onBack={() => setShowAddTrialist(false)} />;
     }
 
     // Header stays visible always so back button works even while loading

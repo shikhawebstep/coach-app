@@ -69,8 +69,6 @@ function RootLayoutNav() {
                 <Stack.Screen name="first-time-onboarding" options={{ headerShown: false }} />
                 <Stack.Screen name="training" options={{ headerShown: false }} />
                 <Stack.Screen name="reportIssueList" options={{ headerShown: false }} />
-                
-                <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
             </Stack>
             <StatusBar style="auto" />
         </ThemeProvider>

@@ -502,7 +502,7 @@ const getStyles = (c) => StyleSheet.create({
         paddingHorizontal: 16, paddingVertical: 18, marginBottom: 20,
     },
     dropdownText: { fontSize: 16, fontFamily: 'Urbanist_500Medium', color: c.text },
-    placeholderText: { color: c.textSecondary, fontFamily: 'Urbanist_400Regular' },
+    placeholderText: { color: c.textSecondary, fontFamily: 'Urbanist_600SemiBold' },
     iconCircle: {
         width: 28, height: 28, borderRadius: 14, borderWidth: 1.5,
         borderColor: c.text, alignItems: 'center', justifyContent: 'center',

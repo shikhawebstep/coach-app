@@ -1,6 +1,6 @@
 import { Colors } from '@/constants/theme';
 import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
-import PercentageBar from '../layout/PercentageBar';
+import PercentageBar from '../common/PercentageBar';
 const Banner = () => {
     const colorScheme = useColorScheme();
     const theme = colorScheme ?? 'light';

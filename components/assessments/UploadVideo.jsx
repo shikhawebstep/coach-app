@@ -76,7 +76,7 @@ const getStyles = (theme) => StyleSheet.create({
         marginRight: 12,
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 26,
         color: theme.headerTitle,
         marginVertical: 24,
         fontFamily: 'Urbanist_700Bold',

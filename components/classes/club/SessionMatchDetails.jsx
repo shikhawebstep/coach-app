@@ -1,24 +1,78 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 const STUDENTS = [
     { id: '1', name: 'John Smith', age: '7 Years', attended: true },
     { id: '2', name: 'John Smith', age: '7 Years', attended: false },
     { id: '3', name: 'John Smith', age: '7 Years', attended: false },
-    { id: '4', name: 'John Smith', age: '7 Years', attended: false },
-    { id: '5', name: 'John Smith', age: '7 Years', attended: false },
 ];
 
+const COLORS = {
+    light: {
+        background: '#fff',
+        icon: '#1a1a1a',
+        headerTitle: '#1a1a1a',
+        infoCardBg: '#fff',
+        infoCardBorder: '#E5E7EB',
+        infoValue: '#1a1a1a',
+        tabsBg: '#F3F4F6',
+        inactiveTabText: '#1a1a1a',
+        listBorder: '#F3F4F6',
+        listItemBorder: '#F3F4F6',
+        listNum: '#6B7280',
+        listName: '#1a1a1a',
+        listAge: '#6B7280',
+        attendedInactiveBg: '#fff',
+        notAttendedInactiveBg: '#fff',
+        inactiveCheckColor: '#1a1a1a',
+        inactiveXColor: '#1a1a1a',
+        attendedInactiveText: '#1a1a1a',
+        notAttendedInactiveText: '#1a1a1a',
+        mapBorder: '#E5E7EB',
+    },
+    dark: {
+        background: '#121212',
+        icon: '#F5F5F5',
+        headerTitle: '#F5F5F5',
+        infoCardBg: '#1E1E1E',
+        infoCardBorder: '#2A2A2A',
+        infoValue: '#F5F5F5',
+        tabsBg: '#1E1E1E',
+        inactiveTabText: '#F5F5F5',
+        listBorder: '#2A2A2A',
+        listItemBorder: '#2A2A2A',
+        listNum: '#9CA3AF',
+        listName: '#F5F5F5',
+        listAge: '#9CA3AF',
+        attendedInactiveBg: '#1E1E1E',
+        notAttendedInactiveBg: '#1E1E1E',
+        inactiveCheckColor: '#F5F5F5',
+        inactiveXColor: '#F5F5F5',
+        attendedInactiveText: '#F5F5F5',
+        notAttendedInactiveText: '#F5F5F5',
+        mapBorder: '#2A2A2A',
+    },
+};
+
 export default function SessionMatchDetails({ onBack, onStudentSelect }) {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     const [activeTab, setActiveTab] = useState('Members');
+    const [students, setStudents] = useState(STUDENTS);
+
+    const handleAttendance = (id, attended) => {
+        setStudents(prev => prev.map(s => s.id === id ? { ...s, attended } : s));
+    };
 
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#1a1a1a" />
+                    <Ionicons name="arrow-back" size={24} color={theme.icon} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Session 1</Text>
                 <TouchableOpacity style={styles.addResultBtn}>
@@ -49,8 +103,7 @@ export default function SessionMatchDetails({ onBack, onStudentSelect }) {
                 {/* Map Area */}
                 <View style={styles.mapContainer}>
                     <Image
-                          source={require('../../../assets/images/map.png')}
-
+                        source={require('../../../assets/images/map.png')}
                         style={styles.mapImage}
                         resizeMode="cover"
                     />
@@ -58,23 +111,22 @@ export default function SessionMatchDetails({ onBack, onStudentSelect }) {
 
                 {/* Tab Controls */}
                 <View style={styles.tabsContainer}>
-                    <TouchableOpacity
-                        style={[styles.tabBtn, activeTab === 'Members' ? styles.activeTab : styles.inactiveTab]}
-                        onPress={() => setActiveTab('Members')}
-                    >
-                        <Text style={[styles.tabText, activeTab === 'Members' ? styles.activeTabText : styles.inactiveTabText]}>Members</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.tabBtn, activeTab === 'Coaches' ? styles.activeTab : styles.inactiveTab]}
-                        onPress={() => setActiveTab('Coaches')}
-                    >
-                        <Text style={[styles.tabText, activeTab === 'Coaches' ? styles.activeTabText : styles.inactiveTabText]}>Coaches</Text>
-                    </TouchableOpacity>
+                    {['Members', 'Coaches'].map(tab => (
+                        <TouchableOpacity
+                            key={tab}
+                            style={[styles.tabBtn, activeTab === tab ? styles.activeTab : styles.inactiveTab]}
+                            onPress={() => setActiveTab(tab)}
+                        >
+                            <Text style={[styles.tabText, activeTab === tab ? styles.activeTabText : styles.inactiveTabText]}>
+                                {tab}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
                 </View>
 
                 {/* Attendance List */}
                 <View style={styles.listContainer}>
-                    {STUDENTS.map((item) => (
+                    {students.map((item) => (
                         <TouchableOpacity
                             key={item.id}
                             style={styles.listItem}
@@ -86,14 +138,20 @@ export default function SessionMatchDetails({ onBack, onStudentSelect }) {
 
                             <View style={styles.actionBtns}>
                                 {/* Attended Button */}
-                                <TouchableOpacity style={[styles.actionBtn, item.attended ? styles.attendedActive : styles.attendedInactive]}>
-                                    <Ionicons name="checkmark" size={16} color={item.attended ? "#fff" : "#1a1a1a"} style={{ marginRight: 4 }} />
+                                <TouchableOpacity
+                                    style={[styles.actionBtn, item.attended ? styles.attendedActive : styles.attendedInactive]}
+                                    onPress={() => handleAttendance(item.id, true)}
+                                >
+                                    <Ionicons name="checkmark" size={16} color={item.attended ? '#fff' : theme.inactiveCheckColor} style={{ marginRight: 4 }} />
                                     <Text style={item.attended ? styles.attendedActiveText : styles.attendedInactiveText}>Attended</Text>
                                 </TouchableOpacity>
 
                                 {/* Not Attended Button */}
-                                <TouchableOpacity style={[styles.actionBtn, !item.attended ? styles.notAttendedActive : styles.notAttendedInactive]}>
-                                    <Ionicons name="close" size={16} color={!item.attended ? "#fff" : "#1a1a1a"} style={{ marginRight: 4 }} />
+                                <TouchableOpacity
+                                    style={[styles.actionBtn, !item.attended ? styles.notAttendedActive : styles.notAttendedInactive]}
+                                    onPress={() => handleAttendance(item.id, false)}
+                                >
+                                    <Ionicons name="close" size={16} color={!item.attended ? '#fff' : theme.inactiveXColor} style={{ marginRight: 4 }} />
                                     <Text style={!item.attended ? styles.notAttendedActiveText : styles.notAttendedInactiveText}>Not Attended</Text>
                                 </TouchableOpacity>
                             </View>
@@ -107,10 +165,10 @@ export default function SessionMatchDetails({ onBack, onStudentSelect }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     header: {
         flexDirection: 'row',
@@ -125,63 +183,57 @@ const styles = StyleSheet.create({
     headerTitle: {
         flex: 1,
         fontSize: 24,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
+        fontFamily: 'Urbanist_700Bold',
+        color: theme.headerTitle,
     },
     addResultBtn: {
-        backgroundColor: '#1CAB4B', // Green button
+        backgroundColor: '#1CAB4B',
         paddingHorizontal: 16,
         paddingVertical: 10,
         borderRadius: 8,
     },
     addResultText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 14,
     },
     content: {
         paddingHorizontal: 16,
+        paddingBottom: 40,
     },
     infoCard: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         padding: 16,
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: theme.infoCardBorder,
         borderRadius: 12,
+        backgroundColor: theme.infoCardBg,
         marginBottom: 20,
     },
-    infoCol: {
-        flex: 2,
-    },
-    infoColCenter: {
-        flex: 1,
-        marginHorizontal: 10,
-    },
-    infoColRight: {
-        flex: 1,
-        alignItems: 'flex-end',
-    },
+    infoCol: { flex: 2 },
+    infoColCenter: { flex: 1, marginHorizontal: 10 },
+    infoColRight: { flex: 1, alignItems: 'flex-end' },
     infoLabel: {
         fontSize: 12,
         color: '#9CA3AF',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         marginBottom: 4,
     },
     infoValue: {
         fontSize: 13,
-        color: '#1a1a1a',
-        fontWeight: '500',
+        color: theme.infoValue,
+        fontFamily: 'Urbanist_400Regular',
     },
     statusBadge: {
-        backgroundColor: '#FCD34D', // Yellow bg
-        paddingHorizontal: 12,
+        backgroundColor: '#FCD34D',
+        paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 6,
     },
     statusText: {
         fontSize: 12,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },
     mapContainer: {
@@ -191,7 +243,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         marginBottom: 20,
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: theme.mapBorder,
     },
     mapImage: {
         width: '100%',
@@ -199,10 +251,10 @@ const styles = StyleSheet.create({
     },
     tabsContainer: {
         flexDirection: 'row',
-        backgroundColor: '#F3F4F6',
+        backgroundColor: theme.tabsBg,
         borderRadius: 8,
         padding: 4,
-        marginHorizontal: 40, // Match mockup width
+        marginHorizontal: 40,
         marginBottom: 20,
     },
     tabBtn: {
@@ -211,99 +263,64 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 6,
     },
-    activeTab: {
-        backgroundColor: '#3B82F6', // Blue
-    },
-    inactiveTab: {
-        backgroundColor: 'transparent',
-    },
+    activeTab: { backgroundColor: '#3B82F6' },
+    inactiveTab: { backgroundColor: 'transparent' },
     tabText: {
         fontSize: 14,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
-    activeTabText: {
-        color: '#fff',
-    },
-    inactiveTabText: {
-        color: '#1a1a1a',
-    },
+    activeTabText: { color: '#fff' },
+    inactiveTabText: { color: theme.inactiveTabText },
     listContainer: {
         borderWidth: 1,
-        borderColor: '#F3F4F6',
+        borderColor: theme.listBorder,
         borderRadius: 12,
         overflow: 'hidden',
     },
     listItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 16,
+        paddingVertical: 14,
         paddingHorizontal: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
+        borderBottomColor: theme.listItemBorder,
     },
     listNum: {
         width: 20,
         fontSize: 13,
-        color: '#1a1a1a',
-        fontWeight: '500',
+        color: theme.listNum,
+        fontFamily: 'Urbanist_400Regular',
     },
     listName: {
         flex: 1.5,
         fontSize: 14,
-        color: '#1a1a1a',
-        fontWeight: 'bold',
+        color: theme.listName,
+        fontFamily: 'Urbanist_700Bold',
     },
     listAge: {
         flex: 1,
         fontSize: 13,
-        color: '#6B7280',
+        color: theme.listAge,
+        fontFamily: 'Urbanist_400Regular',
     },
     actionBtns: {
         flexDirection: 'row',
-        gap: 8,
+        gap: 6,
     },
     actionBtn: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
         borderRadius: 20,
         borderWidth: 1.5,
     },
-    attendedActive: {
-        backgroundColor: '#1CAB4B', // Green solid
-        borderColor: '#1CAB4B',
-    },
-    attendedInactive: {
-        backgroundColor: '#fff',
-        borderColor: '#1CAB4B', // Green outline
-    },
-    attendedActiveText: {
-        color: '#fff',
-        fontSize: 12,
-        fontWeight: 'bold',
-    },
-    attendedInactiveText: {
-        color: '#1a1a1a',
-        fontSize: 12,
-        fontWeight: 'bold',
-    },
-    notAttendedActive: {
-        backgroundColor: '#EF4444', // Red solid
-        borderColor: '#EF4444',
-    },
-    notAttendedInactive: {
-        backgroundColor: '#fff',
-        borderColor: '#EF4444', // Red outline
-    },
-    notAttendedActiveText: {
-        color: '#fff',
-        fontSize: 12,
-        fontWeight: 'bold',
-    },
-    notAttendedInactiveText: {
-        color: '#1a1a1a',
-        fontSize: 12,
-        fontWeight: 'bold',
-    },
+    attendedActive: { backgroundColor: '#1CAB4B', borderColor: '#1CAB4B' },
+    attendedInactive: { backgroundColor: theme.attendedInactiveBg, borderColor: '#1CAB4B' },
+    attendedActiveText: { color: '#fff', fontSize: 12, fontFamily: 'Urbanist_700Bold' },
+    attendedInactiveText: { color: theme.attendedInactiveText, fontSize: 12, fontFamily: 'Urbanist_700Bold' },
+    notAttendedActive: { backgroundColor: '#EF4444', borderColor: '#EF4444' },
+    notAttendedInactive: { backgroundColor: theme.notAttendedInactiveBg, borderColor: '#EF4444' },
+    notAttendedActiveText: { color: '#fff', fontSize: 12, fontFamily: 'Urbanist_700Bold' },
+    notAttendedInactiveText: { color: theme.notAttendedInactiveText, fontSize: 12, fontFamily: 'Urbanist_700Bold' },
 });

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import AddTrialist from '../common/AddTrialist';
 
 const MEMBERS_DATA = [
     { id: 1, name: 'John Smith', age: '7 Years', status: 'attended' },
@@ -64,10 +65,15 @@ export default function SessionDetails({ onBack, onSessionPlanClick, onStudentSe
 
     const [activeTab, setActiveTab] = useState('Coaches');
     const [members, setMembers] = useState(MEMBERS_DATA);
+    const [showAddTrialist, setShowAddTrialist] = useState(false);
 
     const handleAttendance = (id, status) => {
         setMembers(prev => prev.map(m => m.id === id ? { ...m, status } : m));
     };
+
+    if (showAddTrialist) {
+        return <AddTrialist onBack={() => setShowAddTrialist(false)} />;
+    }
 
     return (
         <View style={styles.container}>
@@ -183,7 +189,10 @@ export default function SessionDetails({ onBack, onSessionPlanClick, onStudentSe
                 </View>
 
                 {/* Add Trialist Button */}
-                <TouchableOpacity style={styles.addTrialistButton}>
+                <TouchableOpacity
+                    style={styles.addTrialistButton}
+                    onPress={() => setShowAddTrialist(true)}
+                >
                     <Ionicons name="add" size={24} color="#3B82F6" style={styles.addIcon} />
                     <Text style={styles.addTrialistText}>Add walk by trialist</Text>
                 </TouchableOpacity>
@@ -219,7 +228,7 @@ const getStyles = (theme) => StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: theme.headerTitle,
     },
     sessionPlanButton: {
@@ -230,7 +239,7 @@ const getStyles = (theme) => StyleSheet.create({
     },
     sessionPlanText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 14,
     },
     scrollContent: {
@@ -264,13 +273,14 @@ const getStyles = (theme) => StyleSheet.create({
     },
     infoLabel: {
         fontSize: 13,
-        fontWeight: '600',
+        fontFamily: 'Urbanist_700Bold',
         color: theme.infoLabel,
         marginBottom: 4,
     },
     infoValue: {
         fontSize: 14,
         color: theme.infoValue,
+        fontFamily: 'Urbanist_400Regular',
         lineHeight: 20,
     },
     statusBadge: {
@@ -282,7 +292,7 @@ const getStyles = (theme) => StyleSheet.create({
     },
     statusText: {
         fontSize: 12,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: theme.statusText,
     },
     mapContainer: {
@@ -317,7 +327,7 @@ const getStyles = (theme) => StyleSheet.create({
     },
     tabText: {
         fontSize: 15,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
     activeTabText: {
         color: '#fff',
@@ -340,6 +350,7 @@ const getStyles = (theme) => StyleSheet.create({
         width: 24,
         fontSize: 14,
         color: theme.memberIndex,
+        fontFamily: 'Urbanist_400Regular',
     },
     memberInfo: {
         flex: 1,
@@ -348,13 +359,14 @@ const getStyles = (theme) => StyleSheet.create({
     },
     memberName: {
         fontSize: 12,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: theme.memberName,
         width: 90,
     },
     memberAge: {
         fontSize: 12,
         color: theme.memberAge,
+        fontFamily: 'Urbanist_400Regular',
         marginLeft: 8,
     },
     attendanceButtons: {
@@ -390,7 +402,7 @@ const getStyles = (theme) => StyleSheet.create({
     },
     btnText: {
         fontSize: 12,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
     btnTextWhite: {
         color: '#fff',
@@ -417,7 +429,7 @@ const getStyles = (theme) => StyleSheet.create({
     },
     addTrialistText: {
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#3B82F6',
     },
     confirmButton: {
@@ -428,7 +440,8 @@ const getStyles = (theme) => StyleSheet.create({
     },
     confirmButtonText: {
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#fff',
     },
 });
+

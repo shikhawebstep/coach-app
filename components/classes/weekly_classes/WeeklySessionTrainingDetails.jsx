@@ -11,7 +11,7 @@ import {
   View,
   useColorScheme,
 } from "react-native";
-import WeeklyAddTrialist from "./WeeklyAddTrialist";
+import AddTrialist from "../common/AddTrialist";
 
 export default function WeeklySessionTrainingDetails({
   sessionId,
@@ -131,7 +131,7 @@ export default function WeeklySessionTrainingDetails({
   };
 
   if (showAddTrialist) {
-    return <WeeklyAddTrialist onBack={() => setShowAddTrialist(false)} />;
+    return <AddTrialist onBack={() => setShowAddTrialist(false)} />;
   }
 
   if (loading) {

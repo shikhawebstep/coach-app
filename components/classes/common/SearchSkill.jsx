@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 const SKILLS_DATA = [
     { id: 1, name: 'Fatia', level: 'Beginner', image: require('../../../assets/images/skill1.png') },
@@ -9,7 +9,42 @@ const SKILLS_DATA = [
     { id: 4, name: 'Gancho', level: 'Intermediate', image: require('../../../assets/images/skill4.png') },
 ];
 
+const COLORS = {
+    light: {
+        background: '#fff',
+        icon: '#000',
+        headerTitle: '#1a1a1a',
+        searchBg: '#fff',
+        searchBorder: '#E5E7EB',
+        searchText: '#000',
+        placeholderText: '#a0a0a0',
+        filterPillBg: '#fff',
+        filterPillBorder: '#3B82F6',
+        filterPillText: '#3B82F6',
+        activeFilterPillBg: '#EBF5FF',
+        activeFilterText: '#2563EB',
+    },
+    dark: {
+        background: '#121212',
+        icon: '#F5F5F5',
+        headerTitle: '#F5F5F5',
+        searchBg: '#1E1E1E',
+        searchBorder: '#2A2A2A',
+        searchText: '#F5F5F5',
+        placeholderText: '#9CA3AF',
+        filterPillBg: '#1E1E1E',
+        filterPillBorder: '#3B82F6',
+        filterPillText: '#3B82F6',
+        activeFilterPillBg: '#1E3A8A',
+        activeFilterText: '#60A5FA',
+    },
+};
+
 export default function SearchSkill({ onBack }) {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('All');
 
@@ -20,18 +55,18 @@ export default function SearchSkill({ onBack }) {
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
+                    <Ionicons name="arrow-back" size={24} color={theme.icon} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Search a skill</Text>
             </View>
 
             {/* Search Input */}
             <View style={styles.searchContainer}>
-                <Ionicons name="search-outline" size={20} color="#a0a0a0" style={styles.searchIcon} />
+                <Ionicons name="search-outline" size={20} color={theme.placeholderText} style={styles.searchIcon} />
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Search a skill..."
-                    placeholderTextColor="#a0a0a0"
+                    placeholderTextColor={theme.placeholderText}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
@@ -47,10 +82,18 @@ export default function SearchSkill({ onBack }) {
                     {filters.map(filter => (
                         <TouchableOpacity
                             key={filter}
-                            style={[styles.filterPill, activeFilter === filter ? styles.activeFilterPill : null]}
+                            style={[
+                                styles.filterPill,
+                                activeFilter === filter ? styles.activeFilterPill : null
+                            ]}
                             onPress={() => setActiveFilter(filter)}
                         >
-                            <Text style={[styles.filterText, activeFilter === filter ? styles.activeFilterText : null]}>{filter}</Text>
+                            <Text style={[
+                                styles.filterText,
+                                activeFilter === filter ? styles.activeFilterText : null
+                            ]}>
+                                {filter}
+                            </Text>
                         </TouchableOpacity>
                     ))}
                 </ScrollView>
@@ -69,7 +112,7 @@ export default function SearchSkill({ onBack }) {
 
                         <View style={styles.playButtonOverlay}>
                             <View style={styles.playButtonCircle}>
-                                <Ionicons name="play" size={24} color="#fff" />
+                                <Ionicons name="play" size={24} color="#fff" style={styles.playIcon} />
                             </View>
                         </View>
                     </TouchableOpacity>
@@ -79,10 +122,10 @@ export default function SearchSkill({ onBack }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     header: {
         flexDirection: 'row',
@@ -96,16 +139,16 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
+        fontFamily: 'Urbanist_700Bold',
+        color: theme.headerTitle,
     },
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         marginHorizontal: 16,
-        backgroundColor: '#fff',
+        backgroundColor: theme.searchBg,
         borderWidth: 1,
-        borderColor: '#E5E7EB', // Gray border
+        borderColor: theme.searchBorder,
         borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 12,
@@ -117,7 +160,8 @@ const styles = StyleSheet.create({
     searchInput: {
         flex: 1,
         fontSize: 16,
-        color: '#000',
+        color: theme.searchText,
+        fontFamily: 'Urbanist_400Regular',
     },
     filtersWrapper: {
         marginBottom: 24,
@@ -129,23 +173,21 @@ const styles = StyleSheet.create({
     filterPill: {
         paddingHorizontal: 20,
         paddingVertical: 8,
-        borderRadius: 20, // Rounded outline
+        borderRadius: 20,
         borderWidth: 1.5,
-        borderColor: '#3B82F6', // Blue Border
-        backgroundColor: '#fff',
+        borderColor: theme.filterPillBorder,
+        backgroundColor: theme.filterPillBg,
     },
     activeFilterPill: {
-        // According to the image, all have a white bg and blue border, maybe "All" lacks the blue color or is bold? 
-        // In the mock "All" seems the same style. I will just make it slightly bolder or standard. Let's make active stand out safely.
-        backgroundColor: '#EBF5FF', // Very light blue as active state just to differentiate locally
+        backgroundColor: theme.activeFilterPillBg,
     },
     filterText: {
-        color: '#3B82F6',
+        color: theme.filterPillText,
         fontSize: 14,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
     activeFilterText: {
-        color: '#2563EB',
+        color: theme.activeFilterText,
     },
     gridContainer: {
         flexDirection: 'row',
@@ -155,7 +197,7 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
     gridItem: {
-        width: '48%', // Approx 2 columns
+        width: '48%',
         height: 200,
         borderRadius: 24,
         overflow: 'hidden',
@@ -175,18 +217,18 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingBottom: 16,
         paddingTop: 30,
-        // Mock a darkening gradient using a background color
         backgroundColor: 'rgba(0,0,0,0.3)',
     },
     skillName: {
         color: '#fff',
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         marginBottom: 4,
     },
     skillLevel: {
         color: '#fff',
         fontSize: 12,
+        fontFamily: 'Urbanist_400Regular',
     },
     playButtonOverlay: {
         position: 'absolute',
@@ -197,12 +239,12 @@ const styles = StyleSheet.create({
     playButtonCircle: {
         width: 48,
         height: 48,
-        backgroundColor: 'rgba(0,0,0,0.4)', // semi-transparent black
+        backgroundColor: 'rgba(0,0,0,0.4)',
         borderRadius: 24,
         justifyContent: 'center',
         alignItems: 'center',
     },
     playIcon: {
-        marginLeft: 4, // Center align the triangle visually
+        marginLeft: 4,
     },
 });

@@ -3,245 +3,157 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 const RESULTS_DATA = [
-    { id: 1, name: 'Daniel\nWalsh',  date: '3rd April 2023', time: '10:30-11:30am', venue: 'King Cross',   score: 75, color: '#1CAB4B' },
-    { id: 2, name: 'Clifford',       date: '3rd April 2023', time: '10:30-11:30am', venue: 'Hammersmith',  score: 43, color: '#EF4444' },
-    { id: 3, name: 'Curtis',         date: '3rd April 2023', time: '10:30-11:30am', venue: 'King Cross',   score: 75, color: '#1CAB4B' },
-    { id: 4, name: 'Joshua',         date: '3rd April 2023', time: '10:30-11:30am', venue: 'Hammersmith',  score: 43, color: '#EF4444' },
+    { id: 1, name: 'Daniel\nWalsh', date: '3rd April 2023', time: '10:30-11:30am', venue: 'King Cross', score: 75, color: '#1CAB4B' },
+    { id: 2, name: 'Clifford', date: '3rd April 2023', time: '10:30-11:30am', venue: 'Hammersmith', score: 43, color: '#EF4444' },
+    { id: 3, name: 'Curtis', date: '3rd April 2023', time: '10:30-11:30am', venue: 'King Cross', score: 75, color: '#1CAB4B' },
+    { id: 4, name: 'Joshua', date: '3rd April 2023', time: '10:30-11:30am', venue: 'Hammersmith', score: 43, color: '#EF4444' },
 ];
 
-// ── Theme tokens ────────────────────────────────────────────────────────────
-const palettes = {
-    light: {
-        background: '#fff',
-        headerTitle: '#111827',
-        backIcon: '#111827',
-        searchBg: '#F6F6F7',
-        searchBorder: '#E5E7EB',
-        searchIcon: '#9CA3AF',
-        searchPlaceholder: '#9CA3AF',
-        searchText: '#111827',
-        cardBg: '#fff',
-        cardBorder: '#F3F4F6',
-        nameText: '#111827',
-        dateText: '#6B7280',
-        timeText: '#6B7280',
-        venueText: '#111827',
-        scoreText: '#fff',
-        chevron: '#111827',
-        shadowOpacity: 0.05,
-    },
-    dark: {
-        background: '#0B0F14',
-        headerTitle: '#F3F4F6',
-        backIcon: '#F3F4F6',
-        searchBg: '#1A1F26',
-        searchBorder: '#2A313B',
-        searchIcon: '#7D8590',
-        searchPlaceholder: '#7D8590',
-        searchText: '#F3F4F6',
-        cardBg: '#151A21',
-        cardBorder: '#242B33',
-        nameText: '#F3F4F6',
-        dateText: '#9CA3AF',
-        timeText: '#9CA3AF',
-        venueText: '#F3F4F6',
-        scoreText: '#fff',
-        chevron: '#F3F4F6',
-        shadowOpacity: 0.3,
-    },
-};
-
-export default function CoachResults({ onBack, title = 'My results' }) {
+export default function CoachResults({ onBack, title = "My results" }) {
     const [searchQuery, setSearchQuery] = useState('');
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
-    const theme = isDark ? palettes.dark : palettes.light;
-    const styles = getStyles(theme);
-
-    const filtered = RESULTS_DATA.filter(item =>
-        (item?.name || '').toLowerCase().includes((searchQuery || '').toLowerCase())
-    );
+    const styles = getStyles(isDark);
 
     return (
         <View style={styles.container}>
-
-            {/* ── Header ── */}
+            {/* Header */}
             <View style={styles.header}>
                 {onBack && (
-                    <TouchableOpacity onPress={onBack} style={styles.backButton} activeOpacity={0.7}>
-                        <Ionicons name="arrow-back" size={24} color={theme.backIcon} />
+                    <TouchableOpacity onPress={onBack} style={styles.backButton}>
+                        <Ionicons name="arrow-back" size={24} color={isDark ? '#fff' : '#000'} />
                     </TouchableOpacity>
                 )}
                 <Text style={styles.headerTitle}>{title}</Text>
             </View>
 
-            {/* ── Search ── */}
+            {/* Search Input */}
             <View style={styles.searchContainer}>
-                <Ionicons name="search-outline" size={20} color={theme.searchIcon} style={styles.searchIcon} />
+                <Ionicons name="search-outline" size={20} color={isDark ? '#6B7280' : '#a0a0a0'} style={styles.searchIcon} />
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Select a coach..."
-                    placeholderTextColor={theme.searchPlaceholder}
+                    placeholderTextColor={isDark ? '#6B7280' : '#a0a0a0'}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
             </View>
 
-            {/* ── Cards ── */}
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.listContent}
-            >
-                {filtered.map(item => (
-                    <TouchableOpacity key={item?.id ?? Math.random()} style={styles.card} activeOpacity={0.85}>
-
-                        {/* Name */}
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
+                {RESULTS_DATA.map(item => (
+                    <TouchableOpacity key={item.id} style={styles.card}>
                         <View style={styles.colName}>
-                            <Text style={styles.nameText}>{item?.name || '-'}</Text>
+                            <Text style={styles.nameText}>{item.name}</Text>
                         </View>
 
-                        {/* Date / Time */}
                         <View style={styles.colDateTime}>
-                            <Text style={styles.dateText}>{item?.date || '-'}</Text>
-                            <Text style={styles.timeText}>{item?.time || '-'}</Text>
+                            <Text style={styles.dateTimeText}>{item.date}</Text>
+                            <Text style={styles.dateTimeText}>{item.time}</Text>
                         </View>
 
-                        {/* Venue */}
                         <View style={styles.colVenue}>
-                            <Text style={styles.venueText}>{item?.venue || '-'}</Text>
+                            <Text style={styles.venueText}>{item.venue}</Text>
                         </View>
 
-                        {/* Score + Chevron */}
                         <View style={styles.colScore}>
-                            <View style={[styles.scoreBadge, { backgroundColor: item?.color || '#6B7280' }]}>
-                                <Text style={styles.scoreText}>
-                                    {item?.score !== undefined && item?.score !== null ? `${item.score}%` : '-'}
-                                </Text>
+                            <View style={[styles.scoreBadge, { backgroundColor: item.color }]}>
+                                <Text style={styles.scoreText}>{item.score}%</Text>
                             </View>
-                            <Ionicons name="chevron-forward" size={18} color={theme.chevron} style={styles.chevron} />
+                            <Ionicons name="chevron-forward" size={16} color={isDark ? '#fff' : '#000'} style={styles.chevron} />
                         </View>
-
                     </TouchableOpacity>
                 ))}
-                <View style={{ height: 48 }} />
+                <View style={{ height: 40 }} />
             </ScrollView>
         </View>
     );
 }
 
-const getStyles = (theme) => StyleSheet.create({
+const getStyles = (isDark) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: theme.background,
+        backgroundColor: isDark ? '#121212' : '#fff',
     },
-
-    /* Header */
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: 20,
-        paddingBottom: 20,
+        paddingHorizontal: 16,
+        paddingTop: 16,
+        paddingBottom: 24,
     },
     backButton: {
-        marginRight: 10,
-        padding: 2,
+        marginRight: 12,
     },
     headerTitle: {
         fontSize: 26,
         fontFamily: 'Urbanist_700Bold',
-        color: theme.headerTitle,
-        letterSpacing: -0.3,
+        color: isDark ? '#fff' : '#1a1a1a',
     },
-
-    /* Search */
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginHorizontal: 20,
-        backgroundColor: theme.searchBg,
-        borderWidth: 1.5,
-        borderColor: theme.searchBorder,
-        borderRadius: 14,
+        marginHorizontal: 16,
+        backgroundColor: isDark ? '#1E1E1E' : '#F9FAFB',
+        borderWidth: 1,
+        borderColor: isDark ? '#2C2C2E' : '#E5E7EB',
+        borderRadius: 12,
         paddingHorizontal: 16,
         paddingVertical: 10,
-        marginBottom: 22,
+        marginBottom: 24,
     },
     searchIcon: {
         marginRight: 10,
     },
     searchInput: {
         flex: 1,
-        fontSize: 15,
-        fontFamily: 'Urbanist_400Regular',
-        color: theme.searchText,
+        fontSize: 16,
+        fontFamily: 'Urbanist_500Medium',
+        color: isDark ? '#fff' : '#000',
     },
-
-    /* List */
     listContent: {
-        paddingHorizontal: 20,
+        paddingHorizontal: 16,
     },
-
-    /* Card */
     card: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: theme.cardBg,
+        backgroundColor: isDark ? '#1E1E1E' : '#fff',
         borderRadius: 16,
-        paddingVertical: 18,
+        paddingVertical: 16,
         paddingHorizontal: 16,
-        marginBottom: 14,
+        marginBottom: 16,
         borderWidth: 1,
-        borderColor: theme.cardBorder,
+        borderColor: isDark ? '#2C2C2E' : '#F9FAFB',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: theme.shadowOpacity,
+        shadowOpacity: isDark ? 0 : 0.03,
         shadowRadius: 8,
-        elevation: 2,
+        elevation: isDark ? 0 : 1,
     },
-
-    /* Col: Name */
     colName: {
         flex: 1,
     },
     nameText: {
         fontSize: 12,
         fontFamily: 'Urbanist_700Bold',
-        color: theme.nameText,
-        lineHeight: 18,
+        color: isDark ? '#fff' : '#1a1a1a',
     },
-
-    /* Col: Date/Time */
     colDateTime: {
-        flex: 1.3,
-        paddingRight: 4,
-    },
-    dateText: {
-        fontSize: 12,
-        fontFamily: 'Urbanist_400Regular',
-        color: theme.dateText,
-        lineHeight: 18,
-    },
-    timeText: {
-        fontSize: 12,
-        fontFamily: 'Urbanist_400Regular',
-        color: theme.timeText,
-        lineHeight: 18,
-    },
-
-    /* Col: Venue */
-    colVenue: {
         flex: 1.5,
+    },
+    dateTimeText: {
+        fontSize: 12,
+        fontFamily: 'Urbanist_500Medium',
+        color: isDark ? '#9CA3AF' : '#6B7280',
+        lineHeight: 18,
+    },
+    colVenue: {
+        flex: 1,
     },
     venueText: {
         fontSize: 12,
         fontFamily: 'Urbanist_700Bold',
-        color: theme.venueText,
-        textAlign: 'center',
-        paddingRight: 10,
+        color: isDark ? '#fff' : '#1a1a1a',
     },
-
-    /* Col: Score */
     colScore: {
         flex: 1,
         flexDirection: 'row',
@@ -251,16 +163,14 @@ const getStyles = (theme) => StyleSheet.create({
     scoreBadge: {
         paddingHorizontal: 12,
         paddingVertical: 6,
-        borderRadius: 8,
-        minWidth: 52,
-        alignItems: 'center',
+        borderRadius: 6,
     },
     scoreText: {
-        color: theme.scoreText,
-        fontSize: 13,
+        color: '#fff',
         fontFamily: 'Urbanist_700Bold',
+        fontSize: 12,
     },
     chevron: {
-        marginLeft: 6,
+        marginLeft: 8,
     },
 });

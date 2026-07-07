@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import { useState } from 'react';
 import { Image } from 'react-native';
 
-import { HapticTab } from '@/components/haptic-tab';
+import { HapticTab } from '@/components/common/haptic-tab';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import Header from '../../components/layout/Header';

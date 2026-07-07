@@ -3,56 +3,54 @@ import AssessmentResults from '@/components/assessments/AssessmentResults';
 import PracticalAssessments from '@/components/assessments/PracticalAssessments';
 import SummarisePerformance from '@/components/assessments/SummarisePerformance';
 import UploadVideo from '@/components/assessments/UploadVideo';
+
 import BirthdayParties from '@/components/classes/birthday_parties/BirthdayParties';
 import BirthdayPartyDetails from '@/components/classes/birthday_parties/BirthdayPartyDetails';
-import BirthdaySessionExercise from '@/components/classes/birthday_parties/BirthdaySessionExercise';
 import BirthdaySyllabus from '@/components/classes/birthday_parties/BirthdaySyllabus';
+
 import ClassDetails from '@/components/classes/club/ClassDetails';
-import ClubSearchSkill from '@/components/classes/club/ClubSearchSkill';
-import ClubSessionExercise from '@/components/classes/club/ClubSessionExercise';
 import ClubStudentClassDetails from '@/components/classes/club/ClubStudentClassDetails';
-import ClubStudentInformation from '@/components/classes/club/ClubStudentInformation';
 import ClubSyllabus from '@/components/classes/club/ClubSyllabus';
 import SelectATeam from '@/components/classes/club/SelectATeam';
 import SessionDetails from '@/components/classes/club/SessionDetails';
 import SessionMatchDetails from '@/components/classes/club/SessionMatchDetails';
+
 import AddTrialist from '@/components/classes/common/AddTrialist';
 import AppHomeCategories from '@/components/classes/common/AppHomeCategories';
-import CoachResults from '@/components/classes/common/CoachResults';
 import GameDetails from '@/components/classes/common/GameDetails';
 import GameDetailsSearch from '@/components/classes/common/GameDetailsSearch';
-import HomeDashboard from '@/components/classes/common/HomeDashboard';
-import MusicPlayer from '@/components/classes/common/MusicPlayer';
 import Notes from '@/components/classes/common/Notes';
-import NotificationDetails from '@/components/classes/common/NotificationDetails';
-import NotificationsList from '@/components/classes/common/NotificationsList';
+import SearchSkill from '@/components/classes/common/SearchSkill';
+import SessionExercise from '@/components/classes/common/SessionExercise';
 import SessionPlanList from '@/components/classes/common/SessionPlanList';
+import StudentInformation from '@/components/classes/common/StudentInformation';
 import SyllabusSkill from '@/components/classes/common/SyllabusSkill';
 import VenuesFilter from '@/components/classes/common/VenuesFilter';
+import NotificationDetails from '@/components/notifications/NotificationDetails';
+import NotificationsList from '@/components/notifications/NotificationsList';
+
 import HolidayCampDetails from '@/components/classes/holiday_camps/HolidayCampDetails';
 import HolidayCampsList from '@/components/classes/holiday_camps/HolidayCampsList';
-import HolidaySearchSkill from '@/components/classes/holiday_camps/HolidaySearchSkill';
-import HolidaySessionExercise from '@/components/classes/holiday_camps/HolidaySessionExercise';
 import HolidayStudentClassDetails from '@/components/classes/holiday_camps/HolidayStudentClassDetails';
-import HolidayStudentInformation from '@/components/classes/holiday_camps/HolidayStudentInformation';
 import HolidaySyllabus from '@/components/classes/holiday_camps/HolidaySyllabus';
+
 import PrivateClassesBookings from '@/components/classes/private_classes/PrivateClassesBookings';
 import PrivateStudentClassDetails from '@/components/classes/private_classes/PrivateStudentClassDetails';
+
 import SelectAVenue from '@/components/classes/weekly_classes/SelectAVenue';
 import SelectAVenueList from '@/components/classes/weekly_classes/SelectAVenueList';
-import WeeklySearchSkill from '@/components/classes/weekly_classes/WeeklySearchSkill';
-import WeeklySessionExercise from '@/components/classes/weekly_classes/WeeklySessionExercise';
 import WeeklySessionTrainingDetails from '@/components/classes/weekly_classes/WeeklySessionTrainingDetails';
 import WeeklyStudentClassDetails from '@/components/classes/weekly_classes/WeeklyStudentClassDetails';
-import WeeklyStudentInformation from '@/components/classes/weekly_classes/WeeklyStudentInformation';
 import WeeklySyllabusDayDetails from '@/components/classes/weekly_classes/WeeklySyllabusDayDetails';
+
 import QcReportFlow from '@/components/quality_control/CreateQcReport';
 import MyReports from '@/components/quality_control/MyReports';
+
 import CustomerFeedback from '@/components/venue_health/CustomerFeedback';
 import StudentNumbers from '@/components/venue_health/StudentNumbers';
 
-import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
-import { useEffect, useState, useCallback } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Classes() {
@@ -72,6 +70,7 @@ export default function Classes() {
     const [weeklyExcercises, setWeeklyExcercises] = useState(null);
     const [selectedPrivateBookingId, setSelectedPrivateBookingId] = useState(null);
     const [selectedReportId, setSelectedReportId] = useState(null);
+    const [notesBackView, setNotesBackView] = useState('studentClass');
     console.log('currentView', currentView)
 
     useFocusEffect(
@@ -126,8 +125,8 @@ export default function Classes() {
     }
 
     if (currentView === 'holidaySessionExercise') {
-        return <HolidaySessionExercise
-            exercise={weeklyExcercises}         // ← pass it down
+        return <SessionExercise
+            exerciseData={weeklyExcercises}
             onBack={() => setCurrentView('holidaySyllabus')}
             onSearchSkillClick={() => setCurrentView('holidaySearchSkill')}
         />;
@@ -135,7 +134,7 @@ export default function Classes() {
 
 
     if (currentView === 'holidaySearchSkill') {
-        return <HolidaySearchSkill onBack={() => setCurrentView('holidaySessionExercise')} />;
+        return <SearchSkill onBack={() => setCurrentView('holidaySessionExercise')} />;
     }
 
     if (currentView === 'private') {
@@ -152,7 +151,10 @@ export default function Classes() {
         return <PrivateStudentClassDetails
             bookingId={selectedPrivateBookingId}
             onBack={() => setCurrentView('private')}
-            onNotesClick={() => setCurrentView('notes')}
+            onNotesClick={() => {
+                setNotesBackView('privateStudentClass');
+                setCurrentView('notes');
+            }}
         />;
     }
 
@@ -197,24 +199,27 @@ export default function Classes() {
     }
 
     if (currentView === 'clubSessionExercise') {
-        return <ClubSessionExercise
+        return <SessionExercise
             onBack={() => setCurrentView('clubSyllabus')}
             onSearchSkillClick={() => setCurrentView('clubSearchSkill')}
         />;
     }
 
     if (currentView === 'clubSearchSkill') {
-        return <ClubSearchSkill onBack={() => setCurrentView('clubSessionExercise')} />;
+        return <SearchSkill onBack={() => setCurrentView('clubSessionExercise')} />;
     }
 
     if (currentView === 'clubStudentInformation') {
-        return <ClubStudentInformation onBack={() => setCurrentView('session')} />;
+        return <StudentInformation onBack={() => setCurrentView('session')} />;
     }
 
     if (currentView === 'clubStudentClass') {
         return <ClubStudentClassDetails
             onBack={() => setCurrentView('sessionMatchDetails')}
-            onNotesClick={() => setCurrentView('notes')}
+            onNotesClick={() => {
+                setNotesBackView('clubStudentClass');
+                setCurrentView('notes');
+            }}
         />;
     }
 
@@ -226,14 +231,17 @@ export default function Classes() {
     }
 
     if (currentView === 'holidayStudentInformation') {
-        return <HolidayStudentInformation onBack={() => setCurrentView('holidayStudentClass')} />;
+        return <StudentInformation onBack={() => setCurrentView('holidayStudentClass')} />;
     }
 
     if (currentView === 'studentClass') {
         return <WeeklyStudentClassDetails
             student={selectedStudent}
             onBack={() => setCurrentView('sessionTrainingDetails')}
-            onNotesClick={() => setCurrentView('notes')}
+            onNotesClick={() => {
+                setNotesBackView('studentClass');
+                setCurrentView('notes');
+            }}
         />;
     }
 
@@ -291,10 +299,9 @@ export default function Classes() {
         />;
     }
 
-    // 6. Fix birthdaySessionExercise — selectedBirthdaySessionData is now correctly populated
     if (currentView === 'birthdaySessionExercise') {
-        return <BirthdaySessionExercise
-            sessionData={selectedBirthdaySessionData}
+        return <SessionExercise
+            exerciseData={selectedBirthdaySessionData}
             onBack={() => setCurrentView('birthdaySyllabus')}
         />;
     }
@@ -309,7 +316,7 @@ export default function Classes() {
     }
     if (currentView === 'notes') {
         return <Notes
-            onBack={() => setCurrentView('studentClass')}
+            onBack={() => setCurrentView(notesBackView)}
             onClassClick={() => setCurrentView('class')}
         />;
     }
@@ -344,15 +351,15 @@ export default function Classes() {
     }
 
     if (currentView === 'sessionExercise') {
-        return <WeeklySessionExercise
-            excercise={weeklyExcercises}
+        return <SessionExercise
+            exerciseData={weeklyExcercises}
             onBack={() => setCurrentView('syllabusDayDetails')}
             onSearchSkillClick={() => setCurrentView('searchSkill')}
         />;
     }
 
     if (currentView === 'searchSkill') {
-        return <WeeklySearchSkill onBack={() => setCurrentView('sessionExercise')} />;
+        return <SearchSkill onBack={() => setCurrentView('sessionExercise')} />;
     }
 
     if (currentView === 'syllabusSkill') {
@@ -399,17 +406,7 @@ export default function Classes() {
         />;
     }
 
-
-    if (currentView === 'myResults') {
-        return <CoachResults onBack={() => router.back()} title="My results" />;
-    }
-
-
-
-    if (currentView === 'musicPlayer') {
-        return <MusicPlayer onBack={() => router.back()} />;
-    }
-
+ 
 
     if (currentView === 'customerFeedback') {
         return <CustomerFeedback onBack={() => router.back()} />;
@@ -473,11 +470,6 @@ export default function Classes() {
             onBack={() => setCurrentView('session')}
             onSessionSelect={() => setCurrentView('gameDetails')}
         />;
-    }
-
-
-    if (currentView === 'homeDashboard') {
-        return <HomeDashboard onBack={() => setCurrentView('dashboard')} />;
     }
 
     if (currentView === 'dashboard') {

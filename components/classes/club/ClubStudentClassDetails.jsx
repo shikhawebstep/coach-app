@@ -1,14 +1,57 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
+
+const COLORS = {
+    light: {
+        background: '#fff',
+        icon: '#000',
+        headerTitle: '#1a1a1a',
+        infoCardBg: '#fff',
+        infoCardBorder: '#F0F0F0',
+        infoIcon: '#666',
+        infoLabel: '#666',
+        infoValue: '#1a1a1a',
+        locationText: '#4B5563',
+        sectionTitle: '#4B5563',
+        inputLabel: '#4B5563',
+        inputBorder: '#9CA3AF',
+        inputBg: '#FAFAFA',
+        inputText: '#1a1a1a',
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+    },
+    dark: {
+        background: '#121212',
+        icon: '#F5F5F5',
+        headerTitle: '#F5F5F5',
+        infoCardBg: '#1E1E1E',
+        infoCardBorder: '#2A2A2A',
+        infoIcon: '#9CA3AF',
+        infoLabel: '#9CA3AF',
+        infoValue: '#F5F5F5',
+        locationText: '#D1D5DB',
+        sectionTitle: '#D1D5DB',
+        inputLabel: '#D1D5DB',
+        inputBorder: '#3A3A3A',
+        inputBg: '#1E1E1E',
+        inputText: '#F5F5F5',
+        shadowColor: '#000',
+        shadowOpacity: 0.3,
+    },
+};
 
 export default function ClubStudentClassDetails({ onBack, onNotesClick, studentName = "John Smith" }) {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 <View style={styles.headerLeft}>
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color="#000" />
+                        <Ionicons name="arrow-back" size={24} color={theme.icon} />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>{studentName} class</Text>
                 </View>
@@ -28,21 +71,21 @@ export default function ClubStudentClassDetails({ onBack, onNotesClick, studentN
                     <View style={styles.infoRow}>
                         <View style={styles.infoItem}>
                             <View style={styles.infoLabelContainer}>
-                                <Ionicons name="calendar-outline" size={16} color="#666" style={styles.infoIcon} />
+                                <Ionicons name="calendar-outline" size={16} color={theme.infoIcon} style={styles.infoIcon} />
                                 <Text style={styles.infoLabel}>Date</Text>
                             </View>
                             <Text style={styles.infoValue}>Sat 3rd Apr</Text>
                         </View>
                         <View style={styles.infoItem}>
                             <View style={styles.infoLabelContainer}>
-                                <Ionicons name="time-outline" size={16} color="#666" style={styles.infoIcon} />
+                                <Ionicons name="time-outline" size={16} color={theme.infoIcon} style={styles.infoIcon} />
                                 <Text style={styles.infoLabel}>Time</Text>
                             </View>
                             <Text style={styles.infoValue}>9:30am</Text>
                         </View>
                         <View style={styles.infoItem}>
                             <View style={styles.infoLabelContainer}>
-                                <Ionicons name="person-outline" size={16} color="#666" style={styles.infoIcon} />
+                                <Ionicons name="person-outline" size={16} color={theme.infoIcon} style={styles.infoIcon} />
                                 <Text style={styles.infoLabel}>Students</Text>
                             </View>
                             <Text style={styles.infoValue}>3-to-1</Text>
@@ -59,7 +102,7 @@ export default function ClubStudentClassDetails({ onBack, onNotesClick, studentN
 
                     {/* Location */}
                     <View style={styles.locationContainer}>
-                        <Ionicons name="location-outline" size={18} color="#666" />
+                        <Ionicons name="location-outline" size={18} color={theme.infoIcon} />
                         <Text style={styles.locationText}>Kings Cross, Grays Inn Road, London WC2H 9HE [Outdoor Park]</Text>
                     </View>
                 </View>
@@ -135,10 +178,10 @@ export default function ClubStudentClassDetails({ onBack, onNotesClick, studentN
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     header: {
         flexDirection: 'row',
@@ -158,8 +201,8 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 22,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
+        fontFamily: 'Urbanist_700Bold',
+        color: theme.headerTitle,
     },
     headerRight: {
         flexDirection: 'row',
@@ -174,7 +217,7 @@ const styles = StyleSheet.create({
     },
     progressText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 12,
     },
     statusBadgeCompleted: {
@@ -185,7 +228,7 @@ const styles = StyleSheet.create({
     },
     statusTextWhite: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 12,
     },
     scrollContent: {
@@ -193,15 +236,15 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
     infoCard: {
-        backgroundColor: '#fff',
+        backgroundColor: theme.infoCardBg,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: '#F0F0F0',
+        borderColor: theme.infoCardBorder,
         padding: 16,
         marginBottom: 24,
-        shadowColor: '#000',
+        shadowColor: theme.shadowColor,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: theme.shadowOpacity,
         shadowRadius: 8,
         elevation: 2,
     },
@@ -224,13 +267,14 @@ const styles = StyleSheet.create({
     },
     infoLabel: {
         fontSize: 13,
-        color: '#666',
+        color: theme.infoLabel,
+        fontFamily: 'Urbanist_400Regular',
         marginBottom: 4,
     },
     infoValue: {
         fontSize: 14,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
+        fontFamily: 'Urbanist_700Bold',
+        color: theme.infoValue,
     },
     changeDateBtn: {
         backgroundColor: '#FF4C4C',
@@ -240,7 +284,7 @@ const styles = StyleSheet.create({
     },
     changeDateText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 13,
     },
     mapContainer: {
@@ -248,7 +292,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         overflow: 'hidden',
         marginBottom: 16,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: theme.inputBg,
     },
     mapImage: {
         width: '100%',
@@ -262,13 +306,14 @@ const styles = StyleSheet.create({
     locationText: {
         marginLeft: 8,
         fontSize: 13,
-        color: '#4B5563',
+        color: theme.locationText,
+        fontFamily: 'Urbanist_400Regular',
         lineHeight: 18,
     },
     sectionTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
-        color: '#4B5563',
+        fontFamily: 'Urbanist_700Bold',
+        color: theme.sectionTitle,
         marginBottom: 16,
     },
     formRow: {
@@ -280,21 +325,22 @@ const styles = StyleSheet.create({
     },
     inputLabel: {
         fontSize: 15,
-        fontWeight: 'bold',
-        color: '#4B5563',
+        fontFamily: 'Urbanist_700Bold',
+        color: theme.inputLabel,
         marginBottom: 8,
     },
     inputContainer: {
         borderWidth: 1,
-        borderColor: '#9CA3AF',
+        borderColor: theme.inputBorder,
         borderRadius: 8,
-        backgroundColor: '#FAFAFA',
+        backgroundColor: theme.inputBg,
     },
     input: {
         paddingHorizontal: 16,
         paddingVertical: 12,
         fontSize: 16,
-        color: '#1a1a1a',
+        color: theme.inputText,
+        fontFamily: 'Urbanist_400Regular',
     },
     textAreaContainer: {
         height: 100,
@@ -314,7 +360,7 @@ const styles = StyleSheet.create({
     },
     viewNotesBtnText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 16,
         marginRight: 8,
     },

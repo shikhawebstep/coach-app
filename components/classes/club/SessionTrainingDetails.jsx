@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
-import ClubAddTrialist from './ClubAddTrialist';
+import AddTrialist from '../common/AddTrialist';
 
 const MEMBERS_DATA = [
     { id: 1, name: 'John Smith', age: '7 Years', status: 'attended' },
@@ -72,7 +72,7 @@ export default function SessionTrainingDetails({ onBack, onStudentSelect, sessio
     };
 
     if (showAddTrialist) {
-        return <ClubAddTrialist onBack={() => setShowAddTrialist(false)} />;
+        return <AddTrialist onBack={() => setShowAddTrialist(false)} />;
     }
 
     return (
@@ -177,12 +177,12 @@ export default function SessionTrainingDetails({ onBack, onStudentSelect, sessio
                                     <Ionicons
                                         name="close"
                                         size={18}
-                                        color={member.status === 'not_attended' ? '#fff' : '#E53E3E'}
+                                        color={member.status === 'not_attended' ? '#fff' : theme.btnTextBlack}
                                         style={styles.btnIcon}
                                     />
                                     <Text style={[
                                         styles.btnText,
-                                        member.status === 'not_attended' ? styles.btnTextWhite : styles.btnTextRed
+                                        member.status === 'not_attended' ? styles.btnTextWhite : styles.btnTextBlack
                                     ]}>
                                         Not Attended
                                     </Text>
@@ -251,7 +251,6 @@ const getStyles = (theme) => StyleSheet.create({
         fontSize: 14,
     },
     scrollContent: {
-        paddingHorizontal: 16,
         paddingBottom: 40,
     },
     infoCard: {
@@ -261,6 +260,7 @@ const getStyles = (theme) => StyleSheet.create({
         borderColor: theme.infoCardBorder,
         padding: 16,
         marginBottom: 24,
+        marginHorizontal: 16,
         shadowColor: theme.shadowColor,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: theme.shadowOpacity,
@@ -307,6 +307,7 @@ const getStyles = (theme) => StyleSheet.create({
         marginBottom: 20,
         borderRadius: 12,
         overflow: 'hidden',
+        marginHorizontal: 16,
     },
     mapImage: {
         width: '100%',
@@ -319,6 +320,7 @@ const getStyles = (theme) => StyleSheet.create({
         backgroundColor: theme.tabsBg,
         borderRadius: 8,
         padding: 4,
+        marginHorizontal: 16,
     },
     tab: {
         flex: 1,
@@ -350,6 +352,7 @@ const getStyles = (theme) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 16,
+        paddingHorizontal: 16,
         borderBottomWidth: 1,
         borderBottomColor: theme.memberBorder,
     },
@@ -428,6 +431,7 @@ const getStyles = (theme) => StyleSheet.create({
         borderColor: '#3B82F6',
         backgroundColor: theme.addTrialistBg,
         marginBottom: 24,
+        marginHorizontal: 16,
     },
     addIcon: {
         marginRight: 8,
@@ -442,10 +446,11 @@ const getStyles = (theme) => StyleSheet.create({
         paddingVertical: 16,
         borderRadius: 30,
         alignItems: 'center',
+        marginHorizontal: 16,
     },
     confirmButtonText: {
         fontSize: 16,
         fontWeight: 'bold',
         color: '#fff',
     },
-});
+});

@@ -1,6 +1,5 @@
-import { StyleSheet } from 'react-native';
 
-import CalendarSchedule from '@/components/classes/CalendarSchedule';
+import CalendarSchedule from '@/components/calender/CalendarSchedule';
 
 export default function Calendar() {
     return <CalendarSchedule />;

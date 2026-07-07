@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
         marginBottom: 24,
     },
@@ -69,9 +69,9 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     label: {
-        fontSize: 14,
+        fontSize: 16,
         color: '#3B82F6', // Blue color matched
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         marginBottom: 8,
     },
     textArea: {
@@ -99,6 +99,6 @@ const styles = StyleSheet.create({
     nextButtonText: {
         fontSize: 16,
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
 });

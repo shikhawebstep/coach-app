@@ -48,13 +48,13 @@ const styles = StyleSheet.create({
     },
     progressText: {
         fontSize: 14,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#3B82F6', // Blue color for counter
         marginBottom: 8,
     },
     questionText: {
-        fontSize: 22,
-        fontWeight: 'bold',
+        fontSize: 24,
+        fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
         marginBottom: 32,
     },
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     },
     optionText: {
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
     optionTextDefault: {
         color: '#1a1a1a', // Black text
@@ -100,6 +100,6 @@ const styles = StyleSheet.create({
     nextButtonText: {
         fontSize: 16,
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
 });

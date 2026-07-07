@@ -1,56 +1,61 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Image,ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 const SESSION_ITEMS = [
-    {
-        id: 1,
-        title: 'Small-side games',
-        desc: 'This skills tutorial will help you understand how to perform the Pinguim.',
-        time: '10 mins',
-        image: 'https://via.placeholder.com/300x200/4ADE80/ffffff?text=Small-side+games'
-    },
-    {
-        id: 2,
-        title: 'Introduction (Head coach)',
-        desc: 'This skills tutorial will help you understand how to perform the Pinguim.',
-        time: '2 mins',
-        image: 'https://via.placeholder.com/300x200/4ADE80/ffffff?text=Introduction'
-    },
-    {
-        id: 3,
-        title: 'Warm up activity',
-        desc: 'This skills tutorial will help you understand how to perform the Pinguim.',
-        time: '10 mins',
-        image: 'https://via.placeholder.com/300x200/4ADE80/ffffff?text=Warm+up'
-    },
-    {
-        id: 4,
-        title: 'Technical exercise',
-        desc: 'This skills tutorial will help you understand how to perform the Pinguim.',
-        time: '12 mins',
-        image: 'https://via.placeholder.com/300x200/4ADE80/ffffff?text=Technical+exercise'
-    },
-    {
-        id: 5,
-        title: 'Tactical exercise',
-        desc: 'This skills tutorial will help you understand how to perform the Pinguim.',
-        time: '12 mins',
-        image: 'https://via.placeholder.com/300x200/4ADE80/ffffff?text=Tactical+exercise'
-    },
+    { id: 1, title: 'Small-side games', desc: 'This skills tutorial will help you understand how to perform the Pinguim.', time: '10 mins', image: 'https://via.placeholder.com/300x200/4ADE80/ffffff?text=Small-side+games' },
+    { id: 2, title: 'Introduction (Head coach)', desc: 'This skills tutorial will help you understand how to perform the Pinguim.', time: '2 mins', image: 'https://via.placeholder.com/300x200/4ADE80/ffffff?text=Introduction' },
+    { id: 3, title: 'Warm up activity', desc: 'This skills tutorial will help you understand how to perform the Pinguim.', time: '10 mins', image: 'https://via.placeholder.com/300x200/4ADE80/ffffff?text=Warm+up' },
+    { id: 4, title: 'Technical exercise', desc: 'This skills tutorial will help you understand how to perform the Pinguim.', time: '12 mins', image: 'https://via.placeholder.com/300x200/4ADE80/ffffff?text=Technical+exercise' },
+    { id: 5, title: 'Tactical exercise', desc: 'This skills tutorial will help you understand how to perform the Pinguim.', time: '12 mins', image: 'https://via.placeholder.com/300x200/4ADE80/ffffff?text=Tactical+exercise' },
 ];
 
+const COLORS = {
+    light: {
+        background: '#fff',
+        tabsBg: '#F3F4F6',
+        inactiveTabText: '#6B7280',
+        bannerBg: '#F3F4F6',
+        skillTitle: '#1a1a1a',
+        skillName: '#4B5563',
+        skillDesc: '#6B7280',
+        divider: '#E5E7EB',
+        cardTitle: '#1a1a1a',
+        cardDesc: '#6B7280',
+        cardTime: '#1a1a1a',
+        cardBg: '#F3F4F6',
+    },
+    dark: {
+        background: '#121212',
+        tabsBg: '#1E1E1E',
+        inactiveTabText: '#9CA3AF',
+        bannerBg: '#2A2A2A',
+        skillTitle: '#F5F5F5',
+        skillName: '#D1D5DB',
+        skillDesc: '#9CA3AF',
+        divider: '#2A2A2A',
+        cardTitle: '#F5F5F5',
+        cardDesc: '#9CA3AF',
+        cardTime: '#F5F5F5',
+        cardBg: '#2A2A2A',
+    },
+};
+
 export default function SyllabusSkill({ onBack }) {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     const [activeTab, setActiveTab] = useState('Beginners [4-5]');
 
     return (
         <View style={styles.container}>
             {/* Green Header */}
             <View style={styles.greenHeaderContainer}>
-             <ImageBackground
+                <ImageBackground
                     source={require('@/assets/images/greenoverlay.png')}
                     style={styles.greenHeader}
-                    imageStyle={{ borderRadius: 20, }}
+                    imageStyle={{ borderRadius: 20 }}
                 >
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#fff" />
@@ -62,24 +67,27 @@ export default function SyllabusSkill({ onBack }) {
 
             {/* Package Tabs */}
             <View style={styles.packageTabs}>
-                <TouchableOpacity
-                    style={[styles.packageTab, activeTab === 'Beginners [4-5]' ? styles.activePackage : styles.inactivePackage]}
-                    onPress={() => setActiveTab('Beginners [4-5]')}
-                >
-                    <Text style={[styles.packageTabText, activeTab === 'Beginners [4-5]' ? styles.activePackageText : styles.inactivePackageText]}>Beginners [4-5]</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.packageTab, activeTab === 'Intermediate [6-7]' ? styles.activePackage : styles.inactivePackage]}
-                    onPress={() => setActiveTab('Intermediate [6-7]')}
-                >
-                    <Text style={[styles.packageTabText, activeTab === 'Intermediate [6-7]' ? styles.activePackageText : styles.inactivePackageText]}>Intermediate [6-7]</Text>
-                </TouchableOpacity>
+                {['Beginners [4-5]', 'Intermediate [6-7]'].map(tab => (
+                    <TouchableOpacity
+                        key={tab}
+                        style={[styles.packageTab, activeTab === tab ? styles.activePackage : styles.inactivePackage]}
+                        onPress={() => setActiveTab(tab)}
+                    >
+                        <Text style={[styles.packageTabText, activeTab === tab ? styles.activePackageText : styles.inactivePackageText]}>
+                            {tab}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
                 {/* Promo Banner */}
                 <View style={styles.bannerContainer}>
-                    <Image source={{ uri: 'https://via.placeholder.com/800x200/4ADE80/ffffff?text=PLAY+LIKE+PELE' }} style={styles.bannerImage} resizeMode="cover" />
+                    <Image
+                        source={{ uri: 'https://via.placeholder.com/800x200/4ADE80/ffffff?text=PLAY+LIKE+PELE' }}
+                        style={styles.bannerImage}
+                        resizeMode="cover"
+                    />
                 </View>
 
                 {/* Skill Of The Day */}
@@ -92,7 +100,11 @@ export default function SyllabusSkill({ onBack }) {
 
                 {/* Video Player Placeholder */}
                 <View style={styles.videoContainer}>
-                    <Image source={{ uri: 'https://via.placeholder.com/600x400/333333/ffffff?text=Video+Player' }} style={styles.videoImage} resizeMode="cover" />
+                    <Image
+                        source={{ uri: 'https://via.placeholder.com/600x400/333333/ffffff?text=Video+Player' }}
+                        style={styles.videoImage}
+                        resizeMode="cover"
+                    />
                     <View style={styles.videoControlsOverlay}>
                         <View style={styles.videoCenter}>
                             <Ionicons name="pause-circle" size={48} color="#fff" />
@@ -136,10 +148,10 @@ export default function SyllabusSkill({ onBack }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     greenHeaderContainer: {
         paddingHorizontal: 16,
@@ -155,18 +167,18 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 16,
     },
-    backButton: {
-        padding: 4,
-    },
+    backButton: { padding: 4 },
     headerTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: '#fff',
+        flex: 1,
+        textAlign: 'center',
     },
     packageTabs: {
         flexDirection: 'row',
         marginHorizontal: 16,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: theme.tabsBg,
         borderRadius: 8,
         padding: 4,
         marginBottom: 16,
@@ -177,22 +189,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 6,
     },
-    activePackage: {
-        backgroundColor: '#3B82F6',
-    },
-    inactivePackage: {
-        backgroundColor: 'transparent',
-    },
+    activePackage: { backgroundColor: '#3B82F6' },
+    inactivePackage: { backgroundColor: 'transparent' },
     packageTabText: {
         fontSize: 14,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
-    activePackageText: {
-        color: '#fff',
-    },
-    inactivePackageText: {
-        color: '#6B7280',
-    },
+    activePackageText: { color: '#fff' },
+    inactivePackageText: { color: theme.inactiveTabText },
     content: {
         paddingHorizontal: 16,
         paddingBottom: 40,
@@ -202,7 +206,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         overflow: 'hidden',
         marginBottom: 20,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: theme.bannerBg,
     },
     bannerImage: {
         width: '100%',
@@ -210,8 +214,8 @@ const styles = StyleSheet.create({
     },
     skillTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
+        fontFamily: 'Urbanist_700Bold',
+        color: theme.skillTitle,
         marginBottom: 4,
     },
     skillSubTitleContainer: {
@@ -221,14 +225,14 @@ const styles = StyleSheet.create({
     },
     skillName: {
         fontSize: 16,
-        color: '#4B5563',
+        fontFamily: 'Urbanist_400Regular',
+        color: theme.skillName,
     },
-    volumeIcon: {
-        marginLeft: 6,
-    },
+    volumeIcon: { marginLeft: 6 },
     skillDesc: {
         fontSize: 14,
-        color: '#6B7280',
+        fontFamily: 'Urbanist_400Regular',
+        color: theme.skillDesc,
         marginBottom: 16,
     },
     videoContainer: {
@@ -262,21 +266,10 @@ const styles = StyleSheet.create({
         padding: 8,
         borderRadius: 8,
     },
-    videoRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    playIcon: {
-        marginRight: 8,
-    },
-    videoTime: {
-        color: '#fff',
-        fontSize: 12,
-    },
-    progressBarContainer: {
-        flex: 1,
-        marginHorizontal: 12,
-    },
+    videoRow: { flexDirection: 'row', alignItems: 'center' },
+    playIcon: { marginRight: 8 },
+    videoTime: { color: '#fff', fontSize: 12, fontFamily: 'Urbanist_400Regular' },
+    progressBarContainer: { flex: 1, marginHorizontal: 12 },
     progressBarBackground: {
         height: 4,
         backgroundColor: 'rgba(255,255,255,0.3)',
@@ -297,17 +290,11 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         marginLeft: -6,
     },
-    videoRowRight: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-    },
-    controlIcon: {
-        opacity: 0.9,
-    },
+    videoRowRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    controlIcon: { opacity: 0.9 },
     divider: {
         height: 1,
-        backgroundColor: '#E5E7EB',
+        backgroundColor: theme.divider,
         marginBottom: 20,
     },
     sessionCard: {
@@ -319,13 +306,10 @@ const styles = StyleSheet.create({
         height: 90,
         borderRadius: 8,
         overflow: 'hidden',
-        backgroundColor: '#F3F4F6',
+        backgroundColor: theme.cardBg,
         marginRight: 16,
     },
-    cardImage: {
-        width: '100%',
-        height: '100%',
-    },
+    cardImage: { width: '100%', height: '100%' },
     cardContent: {
         flex: 1,
         justifyContent: 'space-between',
@@ -333,19 +317,20 @@ const styles = StyleSheet.create({
     },
     cardTitle: {
         fontSize: 15,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
+        fontFamily: 'Urbanist_700Bold',
+        color: theme.cardTitle,
         marginBottom: 4,
     },
     cardDesc: {
         fontSize: 13,
-        color: '#6B7280',
+        fontFamily: 'Urbanist_400Regular',
+        color: theme.cardDesc,
         lineHeight: 18,
         marginBottom: 8,
     },
     cardTime: {
         fontSize: 13,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
+        fontFamily: 'Urbanist_700Bold',
+        color: theme.cardTime,
     },
 });

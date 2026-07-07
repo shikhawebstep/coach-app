@@ -1,13 +1,46 @@
 import { Ionicons } from '@expo/vector-icons';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
+
+const COLORS = {
+    light: {
+        background: '#fff',
+        icon: '#000',
+        headerTitle: '#1a1a1a',
+        divider: '#F3F4F6',
+        sectionTitle: '#4B5563',
+        label: '#6B7280',
+        value: '#1a1a1a',
+        notesBorder: '#D1D5DB',
+        notesBg: '#FCFCFD',
+        notesText: '#1a1a1a',
+        cancelBtnBg: '#fff',
+    },
+    dark: {
+        background: '#121212',
+        icon: '#F5F5F5',
+        headerTitle: '#F5F5F5',
+        divider: '#2A2A2A',
+        sectionTitle: '#D1D5DB',
+        label: '#9CA3AF',
+        value: '#F5F5F5',
+        notesBorder: '#3A3A3A',
+        notesBg: '#1E1E1E',
+        notesText: '#F5F5F5',
+        cancelBtnBg: '#121212',
+    },
+};
 
 export default function StudentInformation({ onBack }) {
+    const colorScheme = useColorScheme();
+    const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
+    const styles = getStyles(theme);
+
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#1a1a1a" />
+                    <Ionicons name="arrow-back" size={24} color={theme.icon} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>John Smith information</Text>
             </View>
@@ -69,15 +102,17 @@ export default function StudentInformation({ onBack }) {
                         multiline={true}
                         numberOfLines={8}
                         textAlignVertical="top"
+                        placeholderTextColor={theme.label}
+                        placeholder="Add some student notes..."
                     />
                 </View>
 
                 {/* Buttons */}
                 <View style={styles.buttonRow}>
-                    <TouchableOpacity style={styles.cancelBtn}>
+                    <TouchableOpacity style={styles.cancelBtn} onPress={onBack}>
                         <Text style={styles.cancelBtnText}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.saveBtn}>
+                    <TouchableOpacity style={styles.saveBtn} onPress={onBack}>
                         <Text style={styles.saveBtnText}>Save</Text>
                     </TouchableOpacity>
                 </View>
@@ -88,10 +123,10 @@ export default function StudentInformation({ onBack }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: theme.background,
     },
     header: {
         flexDirection: 'row',
@@ -105,15 +140,15 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 22,
-        fontWeight: 'bold',
-        color: '#1a1a1a',
+        fontFamily: 'Urbanist_700Bold',
+        color: theme.headerTitle,
     },
     content: {
         paddingHorizontal: 20,
     },
     divider: {
         height: 1,
-        backgroundColor: '#F3F4F6', // Light gray divider
+        backgroundColor: theme.divider,
         marginBottom: 20,
     },
     sectionHeader: {
@@ -121,8 +156,8 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 16,
-        color: '#4B5563',
-        fontWeight: '600',
+        color: theme.sectionTitle,
+        fontFamily: 'Urbanist_700Bold',
     },
     rowWrapper: {
         flexDirection: 'row',
@@ -133,17 +168,19 @@ const styles = StyleSheet.create({
     },
     label: {
         fontSize: 14,
-        color: '#6B7280',
-        fontWeight: 'bold',
+        color: theme.label,
+        fontFamily: 'Urbanist_700Bold',
         marginBottom: 6,
     },
     value: {
         fontSize: 16,
-        color: '#1a1a1a',
+        color: theme.value,
+        fontFamily: 'Urbanist_400Regular',
     },
     linkValue: {
         fontSize: 14,
-        color: '#3B82F6', // Blue link color
+        color: '#3B82F6',
+        fontFamily: 'Urbanist_400Regular',
     },
     notesContainer: {
         marginTop: 10,
@@ -151,13 +188,14 @@ const styles = StyleSheet.create({
     },
     notesInput: {
         borderWidth: 1,
-        borderColor: '#D1D5DB', // Gray border
+        borderColor: theme.notesBorder,
         borderRadius: 12,
         padding: 16,
-        height: 180, // rough height approximation based on mock
+        height: 180,
         fontSize: 16,
-        color: '#1a1a1a',
-        backgroundColor: '#FCFCFD',
+        color: theme.notesText,
+        backgroundColor: theme.notesBg,
+        fontFamily: 'Urbanist_400Regular',
     },
     buttonRow: {
         flexDirection: 'row',
@@ -167,26 +205,27 @@ const styles = StyleSheet.create({
     cancelBtn: {
         flex: 1,
         borderWidth: 1.5,
-        borderColor: '#3B82F6', // Blue border
+        borderColor: '#3B82F6',
         paddingVertical: 16,
         borderRadius: 30,
         alignItems: 'center',
+        backgroundColor: theme.cancelBtnBg,
     },
     cancelBtnText: {
-        color: '#3B82F6', // match border
-        fontWeight: 'bold',
+        color: '#3B82F6',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 16,
     },
     saveBtn: {
         flex: 1,
-        backgroundColor: '#3B82F6', // Solid blue
+        backgroundColor: '#3B82F6',
         paddingVertical: 16,
         borderRadius: 30,
         alignItems: 'center',
     },
     saveBtnText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 16,
     },
 });

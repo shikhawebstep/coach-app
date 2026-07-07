@@ -2,8 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, ImageBackground, Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
-import NotificationDetails from '../classes/common/NotificationDetails';
-import NotificationsList from '../classes/common/NotificationsList';
+import NotificationDetails from '../notifications/NotificationDetails';
+import NotificationsList from '../notifications/NotificationsList';
 import ProfileModal from './ProfileModal';
 
 export default function Header({ title, showBack = false, onMenuPress }) {
