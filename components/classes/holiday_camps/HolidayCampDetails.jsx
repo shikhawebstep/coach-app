@@ -1,8 +1,8 @@
+import CustomLoader from '@/components/common/CustomLoader';
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
-import CustomLoader from '@/components/common/CustomLoader';
 import AddTrialist from '../common/AddTrialist';
 
 const COLORS = {
@@ -13,7 +13,7 @@ const COLORS = {
         infoCardBg: '#fff',
         infoCardBorder: '#F0F0F0',
         infoIcon: '#666',
-        infoLabel: '#666',
+        infoLabel: '#989898',
         infoValue: '#1a1a1a',
         statusBadgeBg: '#FFD700',
         statusText: '#1a1a1a',
@@ -196,6 +196,7 @@ export default function HolidayCampDetails({ sessionId, onBack, onSyllabusClick,
                         <Ionicons name="arrow-back" size={24} color={theme.icon} />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Holiday camps</Text>
+                  
                 </View>
                 {!loading && (
                     <TouchableOpacity style={styles.syllabusButton} onPress={() => onSyllabusClick(data)}>
@@ -205,7 +206,7 @@ export default function HolidayCampDetails({ sessionId, onBack, onSyllabusClick,
             </View>
 
             {loading ? (
-                <View style={styles.loaderContainer}>
+                <View style={[styles.loaderContainer, { flex: 1 }]}>
                     <CustomLoader size={80} color={theme.loaderTint} />
                     <Text style={styles.loaderText}>Loading camp details...</Text>
                 </View>
@@ -320,10 +321,10 @@ export default function HolidayCampDetails({ sessionId, onBack, onSyllabusClick,
                                                 <Ionicons
                                                     name="close"
                                                     size={18}
-                                                    color={student.status === 'not attended' ? '#fff' : '#E53E3E'}
+                                                    color={student.status === 'not attended' ? '#fff' : '#000'}
                                                     style={styles.btnIcon}
                                                 />
-                                                <Text style={[styles.btnText, student.status === 'not attended' ? styles.btnTextWhite : styles.btnTextRed]}>
+                                                <Text style={[styles.btnText, student.status === 'not attended' ? styles.btnTextWhite : styles.btnTextBlack]}>
                                                     Not Attended
                                                 </Text>
                                             </TouchableOpacity>
@@ -351,7 +352,10 @@ const getStyles = (theme) => StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 16,
         paddingTop: 16,
-        paddingBottom: 24,
+        paddingBottom: 10,
+        borderBottomColor: theme.infoCardBorder,
+        borderBottomWidth: 1,
+        marginBottom: 16,
     },
     headerLeft: {
         flexDirection: 'row',
@@ -407,10 +411,8 @@ const getStyles = (theme) => StyleSheet.create({
     infoRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 16,
     },
     infoItem: {
-        flex: 1,
     },
     infoLabelContainer: {
         flexDirection: 'row',
@@ -421,10 +423,10 @@ const getStyles = (theme) => StyleSheet.create({
         marginRight: 4,
     },
     infoLabel: {
-        fontSize: 13,
+        fontSize: 12,
         color: theme.infoLabel,
         marginBottom: 4,
-        fontFamily: 'Urbanist_400Regular',
+        fontFamily: 'Urbanist_700Bold',
     },
     infoValue: {
         fontSize: 14,
@@ -465,7 +467,7 @@ const getStyles = (theme) => StyleSheet.create({
         fontSize: 13,
         color: theme.locationText,
         lineHeight: 18,
-        fontFamily: 'Urbanist_400Regular',
+        fontFamily: 'Urbanist_500Medium',
     },
     tabsContainer: {
         flexDirection: 'row',
@@ -518,6 +520,7 @@ const getStyles = (theme) => StyleSheet.create({
     },
     studentName: {
         fontSize: 12,
+        textTransform: 'capitalize',
         color: theme.studentName,
         width: 80,
         fontFamily: 'Urbanist_700Bold',
@@ -536,7 +539,7 @@ const getStyles = (theme) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 12,
-        paddingVertical: 8,
+        paddingVertical: 6,
         borderRadius: 20,
         borderWidth: 1.5,
     },
@@ -569,8 +572,8 @@ const getStyles = (theme) => StyleSheet.create({
     btnTextBlack: {
         color: theme.btnTextBlack,
     },
-    btnTextRed: {
-        color: '#E53E3E',
+    btnTextBlack: {
+        color: '#000',
     },
     addTrialistButton: {
         flexDirection: 'row',

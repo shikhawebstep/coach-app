@@ -1,3 +1,4 @@
+import { useToast } from '@/components/common/Toast';
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -17,7 +18,6 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import { useToast } from '@/components/common/Toast';
 
 const COUNTRIES = [
     { code: '+1', flag: '🇺🇸', name: 'United States' },
@@ -119,12 +119,12 @@ export default function FillProfile() {
             return;
         }
         completeProfile();
-        router.replace('/first-time-onboarding');
+        router.replace('/onboarding');
     };
 
     const handleSkip = () => {
         completeProfile();
-        router.replace('/first-time-onboarding');
+        router.replace('/onboarding');
     };
 
     return (

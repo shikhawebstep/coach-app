@@ -57,7 +57,7 @@ export default function Login() {
                 if (!isProfileCompleted) {
                     router.replace('/fill-profile');
                 } else if (!isOnboardingCompleted) {
-                    router.replace('/first-time-onboarding');
+                    router.replace('/onboarding');
                 } else {
                     router.replace('/(tabs)');
                 }

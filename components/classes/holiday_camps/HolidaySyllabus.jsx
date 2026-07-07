@@ -1,8 +1,8 @@
+import CustomLoader from '@/components/common/CustomLoader';
+import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
 import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
-import CustomLoader from '@/components/common/CustomLoader';
 
 const COLORS = {
     light: {

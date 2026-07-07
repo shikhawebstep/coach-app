@@ -1,3 +1,5 @@
+import CustomLoader from '@/components/common/CustomLoader';
+import { ToastProvider } from '@/components/common/Toast';
 import { LuckiestGuy_400Regular } from '@expo-google-fonts/luckiest-guy';
 import {
     Urbanist_400Regular,
@@ -11,8 +13,6 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { View } from 'react-native';
-import CustomLoader from '@/components/common/CustomLoader';
-import { ToastProvider } from '@/components/common/Toast';
 import 'react-native-reanimated';
 
 import { AuthProvider, useAuth } from '@/context/AuthContext';
@@ -29,7 +29,7 @@ function RootLayoutNav() {
     const segments = useSegments();
     const router = useRouter();
 
-    const inAuthGroup = segments[0] === '(tabs)' || !segments[0] || segments[0] === 'index' || segments[0] === 'first-time-onboarding' || segments[0] === 'fill-profile' || segments[0] === 'success';
+    const inAuthGroup = segments[0] === '(tabs)' || !segments[0] || segments[0] === 'index' || segments[0] === 'onboarding' || segments[0] === 'fill-profile' || segments[0] === 'success';
 
     useEffect(() => {
         if (isAuthLoading) return;
@@ -40,7 +40,7 @@ function RootLayoutNav() {
             if (!isProfileCompleted) {
                 router.replace('/fill-profile');
             } else if (!isOnboardingCompleted) {
-                router.replace('/first-time-onboarding');
+                router.replace('/onboarding');
             } else {
                 router.replace('/(tabs)');
             }
@@ -68,7 +68,6 @@ function RootLayoutNav() {
                 <Stack.Screen name="success" options={{ headerShown: false }} />
                 <Stack.Screen name="create-new-password" options={{ headerShown: false }} />
                 <Stack.Screen name="fill-profile" options={{ headerShown: false }} />
-                <Stack.Screen name="first-time-onboarding" options={{ headerShown: false }} />
                 <Stack.Screen name="training" options={{ headerShown: false }} />
                 <Stack.Screen name="reportIssueList" options={{ headerShown: false }} />
             </Stack>

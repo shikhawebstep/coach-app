@@ -1,3 +1,4 @@
+import CustomLoader from '@/components/common/CustomLoader';
 import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
@@ -10,7 +11,6 @@ import {
   View,
   useColorScheme,
 } from "react-native";
-import CustomLoader from '@/components/common/CustomLoader';
 
 export default function SelectHolidayCampSessionList({ venueId, onBack, onSessionSelect }) {
   const { token } = useAuth();
@@ -52,26 +52,29 @@ export default function SelectHolidayCampSessionList({ venueId, onBack, onSessio
   const renderList = () => {
     if (loading)
       return (
-        <CustomLoader size={80} color="#3B82F6" />
+        <View style={[styles.loaderContainer, { flex: 1 }]}>
+          <CustomLoader size={80} color="#3B82F6" />
+
+        </View>
       );
 
     const formatTimeRange = (startTime, endTime) => {
       if (!startTime || !endTime) return "";
       const formatTime = (timeString) => {
-          const [hours, minutes] = timeString.split(':');
-          let h = parseInt(hours, 10);
-          const ampm = h >= 12 ? 'pm' : 'am';
-          h = h % 12 || 12;
-          return { time: `${h}:${minutes}`, ampm };
+        const [hours, minutes] = timeString.split(':');
+        let h = parseInt(hours, 10);
+        const ampm = h >= 12 ? '' : '';
+        h = h % 12 || 12;
+        return { time: `${h}:${minutes}`, ampm };
       };
-      
+
       const s = formatTime(startTime);
       const e = formatTime(endTime);
-      
+
       if (s.ampm === e.ampm) {
-          return `${s.time}-${e.time}${e.ampm}`;
+        return `${s.time}-${e.time}${e.ampm}`;
       } else {
-          return `${s.time}${s.ampm}-${e.time}${e.ampm}`;
+        return `${s.time}${s.ampm}-${e.time}${e.ampm}`;
       }
     };
 
@@ -134,7 +137,7 @@ export default function SelectHolidayCampSessionList({ venueId, onBack, onSessio
                     isDark && styles.sessionLabelDark,
                   ]}
                 >
-                  Day {index + 1}
+                  Session {index + 1}
                 </Text>
               </View>
 
@@ -330,7 +333,7 @@ const styles = StyleSheet.create({
     width: 78,
   },
   sessionLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: "Urbanist_700Bold",
     color: "#1a1a1a",
   },
@@ -342,6 +345,7 @@ const styles = StyleSheet.create({
   },
   cardText: {
     fontSize: 12,
+    textTransform: "lowercase",
     fontFamily: "Urbanist_400Regular",
     color: "#666",
     lineHeight: 18,
@@ -354,7 +358,7 @@ const styles = StyleSheet.create({
     paddingRight: 8,
   },
   playerText: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: "Urbanist_600SemiBold",
     color: "#1a1a1a",
   },
@@ -389,5 +393,11 @@ const styles = StyleSheet.create({
   },
   chevron: {
     marginLeft: 4,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
   },
 });

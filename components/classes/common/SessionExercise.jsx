@@ -158,7 +158,7 @@ export default function SessionExercise({
           {onSearchSkillClick && (
             <TouchableOpacity
               style={[styles.searchButton, isDark && styles.searchButtonDark]}
-              onPress={onSearchSkillClick}
+              onPress={()=>onSearchSkillClick(exerciseData)}
             >
               <Text
                 style={[

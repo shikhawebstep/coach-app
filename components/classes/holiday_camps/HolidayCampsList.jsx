@@ -1,8 +1,8 @@
+import CustomLoader from '@/components/common/CustomLoader';
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
-import CustomLoader from '@/components/common/CustomLoader';
 
 const COLORS = {
     light: {
@@ -16,7 +16,7 @@ const COLORS = {
         listTitle: '#1a1a1a',
         emptyText: '#666',
         cardBg: '#fff',
-        cardBorder: '#F0F0F0',
+        cardBorder: '#F2F2F2',
         cardTitle: '#1a1a1a',
         cardText: '#666',
         durationText: '#1a1a1a',
@@ -102,7 +102,7 @@ export default function HolidayCampsList({ onBack, onCampSelect }) {
                 <Ionicons name="search-outline" size={20} color={theme.searchPlaceholder} style={styles.searchIcon} />
                 <TextInput
                     style={styles.searchInput}
-                    placeholder="Search by venue or area..."
+                    placeholder="Search by camp or area..."
                     placeholderTextColor={theme.searchPlaceholder}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
@@ -116,10 +116,12 @@ export default function HolidayCampsList({ onBack, onCampSelect }) {
 
             {/* List */}
             <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
-                <Text style={styles.listTitle}>Venues</Text>
+                <Text style={styles.listTitle}>Camps</Text>
 
                 {loading ? (
-                    <CustomLoader size={80} color="#1CAB4B" />
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+                        <CustomLoader size={80} color="#1CAB4B" />
+                    </View>
                 ) : filteredVenues.length === 0 ? (
                     <Text style={styles.emptyText}>No venues found.</Text>
                 ) : (
@@ -143,7 +145,7 @@ export default function HolidayCampsList({ onBack, onCampSelect }) {
                             const formatTime = (timeString) => {
                                 const [hours, minutes] = timeString.split(':');
                                 let h = parseInt(hours, 10);
-                                const ampm = h >= 12 ? 'pm' : 'am';
+                                const ampm = h >= 12 ? '' : '';
                                 h = h % 12 || 12;
                                 return { time: `${h}:${minutes}`, ampm };
                             };
@@ -209,7 +211,7 @@ const getStyles = (theme) => StyleSheet.create({
         marginRight: 12,
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 26,
         fontFamily: 'Urbanist_700Bold',
         color: theme.headerTitle,
     },
@@ -272,17 +274,18 @@ const getStyles = (theme) => StyleSheet.create({
         marginRight: 16,
     },
     cardTitle: {
-        fontSize: 14,
+        fontSize: 13,
         fontFamily: 'Urbanist_700Bold',
         color: theme.cardTitle,
-        lineHeight: 20,
+        lineHeight: 18,
     },
     cardDetails: {
         flex: 1,
         marginRight: 8,
     },
     cardText: {
-        fontSize: 13,
+        fontSize: 12,
+        textTransform: 'lowercase',
         fontFamily: 'Urbanist_400Regular',
         color: theme.cardText,
         lineHeight: 18,
@@ -293,7 +296,7 @@ const getStyles = (theme) => StyleSheet.create({
         marginRight: 8,
     },
     durationText: {
-        fontSize: 13,
+        fontSize: 12,
         fontFamily: 'Urbanist_700Bold',
         color: theme.durationText,
     },
@@ -311,7 +314,7 @@ const getStyles = (theme) => StyleSheet.create({
         backgroundColor: theme.statusPendingBg,
     },
     statusText: {
-        fontSize: 13,
+        fontSize: 12,
         fontFamily: 'Urbanist_600SemiBold',
         color: theme.statusText,
     },

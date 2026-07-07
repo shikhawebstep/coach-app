@@ -1,0 +1,168 @@
+import { StyleSheet } from "react-native";
+
+// ─────────────────────────────────────────────
+// STYLES FACTORY
+// ─────────────────────────────────────────────
+
+const createStyles = (C) =>
+  StyleSheet.create({
+    safe: { flex: 1, backgroundColor: C.screenBg },
+    backgroundImage: { flex: 1 },
+    stepContainer: { flex: 1, backgroundColor: C.contractBg },
+    stepFooter: { padding: 16 },
+
+    primaryBtn: { backgroundColor: "#2F5FE5", borderRadius: 15, paddingHorizontal: 60, paddingVertical: 15, alignItems: "center" },
+    greenBtn: { backgroundColor: "#1BAC4B", borderRadius: 40, paddingHorizontal: 60, paddingVertical: 23, alignItems: "center" },
+    redBtn: { backgroundColor: "#FF5252" },
+    yellowBtn: { backgroundColor: "#F7D02A", borderRadius: 40, paddingHorizontal: 70, paddingVertical: 18, alignItems: "center" },
+    primaryBtnDisabled: { backgroundColor: '#2f5fe575' },
+    primaryBtnText: { color: '#FFF', fontFamily: 'Urbanist_700Bold', fontSize: 16 },
+    yellowBtnText: { color: '#000', fontFamily: 'Urbanist_700Bold', fontSize: 16 },
+
+    // Task Panel Overlay
+    taskPanelOverlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.65)", zIndex: 100, justifyContent: "flex-end" },
+    taskPanel: { backgroundColor: C.darkCard, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: "70%" },
+    taskPanelHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 16 },
+    taskPanelTitle: { color: C.textPrimary, fontSize: 16, fontFamily: 'Urbanist_700Bold' },
+    taskPanelClose: { color: C.textSecondary, fontSize: 20 },
+
+    // Task List
+    taskList: { gap: 10 },
+    taskItem: { flexDirection: "row", alignItems: "center", backgroundColor: C.surface, borderRadius: 12, padding: 12, gap: 12, borderWidth: 1, borderColor: C.border },
+    taskItemActive: { borderColor: C.primary, backgroundColor: "rgba(245,197,24,0.07)" },
+    taskIconWrap: { width: 36, height: 36, borderRadius: 18, backgroundColor: C.surface, justifyContent: "center", alignItems: "center" },
+    taskIconActive: { backgroundColor: C.primary },
+    taskIconDone: { backgroundColor: C.success },
+    taskIcon: { width: 20, height: 20 },
+    taskTitle: { color: '#fff', fontSize: 14, fontFamily: 'Urbanist_600SemiBold' },
+    taskTitleActive: { color: '#fff' },
+    taskSub: { color: C.textSecondary, fontSize: 12, fontFamily: 'Urbanist_400Regular', marginTop: 2 },
+    taskBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+    taskBadgePending: { backgroundColor: C.border },
+    taskBadgeActive: { backgroundColor: C.primary },
+    taskBadgeDone: { backgroundColor: C.success },
+    taskBadgeText: { fontSize: 10, color: "#fff", fontFamily: 'Urbanist_700Bold' },
+
+    // Welcome
+    welcomeHeroImage: { width: 115, height: 155 },
+    welcomeContent: { flex: 1, flexDirection: "column", justifyContent: "flex-end", alignItems: "center", padding: 20, paddingBottom: 100 },
+    welcomeGreeting: { color: "#fff", fontSize: 24, fontFamily: 'Urbanist_700Bold', paddingTop: 20 },
+    welcomeBrand: { color: C.primary, fontSize: 24, fontFamily: 'Urbanist_700Bold', lineHeight: 32, marginBottom: 12, textAlign: "center" },
+    welcomeBody: { fontFamily: 'Urbanist_500Medium', color: "#fdfdffd8", fontSize: 16, textAlign: "center", lineHeight: 21, marginBottom: 20 },
+    welcomeOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0, 0, 0, 0.45)' },
+
+    // Dashboard
+    dashProgressCard: { flexDirection: "row", alignItems: "center", backgroundColor: C.darkCard, borderRadius: 32, padding: 14, marginHorizontal: 18, marginBottom: 16, gap: 14 },
+    dashCircleWrap: { width: 120, height: 120, justifyContent: "center", alignItems: "center", position: "relative" },
+    dashCircleLabel: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: "center", alignItems: "center" },
+    dashCirclePercent: { color: '#fff', fontSize: 24, fontFamily: 'Urbanist_700Bold' },
+    dashProgressTitle: { color: '#fff', fontSize: 19, fontFamily: 'Urbanist_700Bold', lineHeight: 25 },
+    dashProgressSub: { color: '#fff', fontSize: 16, fontFamily: 'Urbanist_400Regular', marginTop: 10 },
+    dashSectionLabel: { color: '#fff', fontSize: 20, fontFamily: 'Urbanist_700Bold', letterSpacing: 1.2, paddingHorizontal: 18, marginBottom: 10 },
+    dashTaskList: { paddingHorizontal: 18, gap: 10 },
+    dashTaskRow: { flexDirection: "row", alignItems: "center", backgroundColor: C.darkCard, borderRadius: 14, padding: 13, gap: 12, marginBottom: 10 },
+    dashTaskIcon: { width: 50, height: 50, borderRadius: 21, justifyContent: "center", alignItems: "center" },
+    dashTaskTitle: { color: '#fff', fontSize: 20, fontFamily: 'Urbanist_600SemiBold' },
+    dashTaskDur: { color: '#fff', fontSize: 14, fontFamily: 'Urbanist_400Regular', marginTop: 2 },
+    dashBadge: { backgroundColor: C.primary, paddingHorizontal: 9, paddingVertical: 4, borderRadius: 20 },
+    dashBadgeDone: { backgroundColor: C.success },
+    dashBadgeText: { color: '#000', fontSize: 10, fontFamily: 'Urbanist_700Bold' },
+    dashBadgeTextDone: { color: '#000' },
+
+    // Contract / shared header
+    contractHeader: { flexDirection: "row", alignItems: "center", padding: 14, borderBottomWidth: 0.5, borderBottomColor: C.contractBorderBottom, backgroundColor: C.contractHeaderBg, gap: 10 },
+    backArrow: { fontSize: 20, color: C.textPrimary },
+    contractHeaderTitle: { flex: 1, fontSize: 22, fontFamily: 'Urbanist_700Bold', color: C.contractTitleText },
+    pendingBadge: { backgroundColor: C.pendingBadgeBg, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 5 },
+    pendingBadgeText: { fontSize: 13, fontFamily: 'Urbanist_700Bold', color: C.pendingBadgeText },
+    contractBtnRow: { flexDirection: "row", gap: 8, padding: 10, borderBottomWidth: 0.5, borderBottomColor: C.contractBorderBottom, backgroundColor: C.contractBtnRowBg },
+    contractBtn: { backgroundColor: "#2F5FE5", borderRadius: 20, paddingHorizontal: 16, paddingVertical: 7 },
+    contractBtnText: { color: "#fff", fontSize: 13, fontFamily: 'Urbanist_600SemiBold' },
+    contractScroll: { flex: 1, paddingHorizontal: 18, paddingTop: 18 },
+    contractDocTitle: { fontSize: 16, fontFamily: 'Urbanist_700Bold', color: C.contractTitleText, marginBottom: 12, textTransform: "uppercase", letterSpacing: 0.3 },
+    contractIntroRow: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", marginBottom: 6 },
+    contractNameInput: { borderWidth: 1, borderColor: C.contractNameInputBorder, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, fontSize: 13, width: 80, color: C.contractNameInputText, backgroundColor: C.contractNameInputBg },
+    contractBody: { color: C.contractBodyText, fontSize: 14, fontFamily: 'Urbanist_400Regular', lineHeight: 25 },
+    contractSection: { marginBottom: 18, marginTop: 10 },
+    contractHeading: { fontSize: 17, fontFamily: 'Urbanist_700Bold', color: C.contractTitleText, marginBottom: 6 },
+    checkRow: { flexDirection: "row", alignItems: "flex-start", gap: 12, padding: 14, marginTop: 8, marginBottom: 20 },
+    checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: C.checkboxBorder, justifyContent: "center", alignItems: "center", marginTop: 1 },
+    checkboxChecked: { backgroundColor: "#2563EB", borderColor: "#2563EB" },
+    checkMark: { color: "#fff", fontWeight: "800", fontSize: 13 },
+    checkLabel: { color: C.checkLabel, fontSize: 13, fontFamily: 'Urbanist_400Regular', flex: 1, lineHeight: 25 },
+
+    // Qualifications
+    qualIntro: { fontSize: 15, color: C.qualIntro, fontFamily: 'Urbanist_400Regular', marginBottom: 16 },
+    qualFieldLabel: { fontSize: 14, fontFamily: 'Urbanist_700Bold', color: C.qualFieldLabel, marginBottom: 6 },
+    uploadField: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: C.uploadFieldBorder, borderRadius: 8, padding: 10, backgroundColor: C.uploadFieldBg, marginBottom: 6 },
+    uploadFieldFilled: { borderColor: "#bbb" },
+    uploadFieldText: { flex: 1, fontSize: 13, fontFamily: 'Urbanist_400Regular', color: C.uploadFieldText },
+    uploadIcon: { height: 20, width: 20 },
+    notPossessRow: { flexDirection: "row", alignItems: "center", justifyContent: 'flex-start', gap: 4, marginBottom: 16 },
+    notPossessText: { fontSize: 12, marginRight: 10, fontFamily: 'Urbanist_700Bold', color: C.notPossessText },
+    npCheckbox: { width: 16, height: 16, borderWidth: 1.5, borderColor: "#bbb", borderRadius: 3, justifyContent: "center", alignItems: "center" },
+    npCheckboxChecked: { backgroundColor: "#2563EB", borderColor: "#2563EB" },
+    npCheckMark: { color: "#fff", fontSize: 10, fontWeight: "700" },
+    notesInput: { borderWidth: 1, borderColor: C.notesInputBorder, borderRadius: 8, padding: 10, backgroundColor: C.notesInputBg, fontSize: 13, color: C.notesInputText, marginBottom: 18, minHeight: 48 },
+    uploadBtn: { backgroundColor: "#2563EB", borderRadius: 10, padding: 15, alignItems: "center" },
+    uploadBtnText: { color: "#fff", fontSize: 15, fontFamily: 'Urbanist_600SemiBold' },
+
+    // Uniform
+    uniformNotice: { fontSize: 15, color: C.uniformNotice, fontFamily: 'Urbanist_400Regular', lineHeight: 22, marginBottom: 14 },
+    uniformGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+    uniformGridItem: { width: "47%" },
+    uniformGridImage: { width: "100%", aspectRatio: 1, backgroundColor: C.surface, marginBottom: 6 },
+    uniformGridName: { fontSize: 13, fontFamily: 'Urbanist_500Medium', color: C.uniformGridName, marginBottom: 2 },
+    uniformGridPrice: { fontSize: 13, fontFamily: 'Urbanist_700Bold', color: C.uniformGridPrice, marginBottom: 6 },
+    sizeRow: { flexDirection: "row", gap: 6 },
+    sizeBtn: { width: 34, height: 30, borderRadius: 8, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border, justifyContent: "center", alignItems: "center" },
+    sizeBtnActive: { backgroundColor: "#2563EB", borderColor: "#2563EB" },
+    sizeBtnText: { color: C.textSecondary, fontSize: 12, fontFamily: 'Urbanist_600SemiBold' },
+    sizeBtnTextActive: { color: "#fff" },
+
+    // Training
+    searchBar: { flexDirection: "row", alignItems: "center", gap: 8, margin: 10, borderWidth: 1, borderColor: C.searchBarBorder, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, backgroundColor: C.searchBarBg },
+    searchInput: { flex: 1, fontSize: 14, fontFamily: 'Urbanist_400Regular', color: C.searchInputText },
+    searchIcon: { width: 20, height: 20 },
+    courseListCard: { borderRadius: 20, overflow: "hidden", marginBottom: 8, height: 150 },
+    courseListImage: { flex: 1, justifyContent: "flex-end" },
+    courseListOverlay: { backgroundColor: "rgba(0, 0, 0, 0.29)", padding: 20, justifyContent: "flex-end", height: "100%" },
+    courseListTitle: { color: "#fff", fontSize: 24, fontFamily: 'Urbanist_700Bold', marginBottom: 2, textShadowColor: 'rgba(24, 23, 23, 0.5)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 6 },
+    courseListMeta: { color: "rgba(255,255,255,0.8)", fontFamily: 'Urbanist_500Medium', fontSize: 14 },
+    courseListBadgeWrap: { position: "absolute", top: 8, right: 8 },
+    courseBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 },
+    courseBadgePending: { backgroundColor: "#F7D02A" },
+    courseBadgePassed: { backgroundColor: "#22c55e" },
+    courseBadgeRetake: { backgroundColor: "#ef4444" },
+    courseBadgeText: { fontSize: 14, fontFamily: 'Urbanist_700Bold', color: "#fff" },
+    videoGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: 'space-between', gap: 20, padding: 10 },
+    videoGridThumb: { width: "47%", borderRadius: 18, overflow: "hidden" },
+    videoGridImage: { width: '100%', height: 180, justifyContent: "flex-end" },
+    videoGridOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0,0,0,0.2)" },
+    playBtnSmall: { width: 50, height: 50, borderRadius: 25, backgroundColor: "rgba(0,0,0,0.16)", justifyContent: "center", alignItems: "center" },
+    videoGridLabel: { color: "#fff", fontSize: 18, fontFamily: 'Urbanist_700Bold', paddingHorizontal: 6 },
+    videoGridDur: { color: "rgba(255,255,255,0.8)", fontSize: 10, fontFamily: 'Urbanist_500Medium', paddingHorizontal: 6, paddingBottom: 6 },
+    darkOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.26)', borderRadius: 12 },
+
+    // Assessment
+    timerBar: { backgroundColor: C.timerBarBg, padding: 13, alignItems: "center" },
+    timerText: { fontSize: 16, color: C.timerText, fontFamily: 'Urbanist_700Bold' },
+    qLabel: { color: C.qLabel, fontSize: 16, fontFamily: 'Urbanist_600SemiBold', marginBottom: 6 },
+    qText: { color: C.qText, fontSize: 24, fontFamily: 'Urbanist_700Bold', lineHeight: 27, marginVertical: 26 },
+    assessOption: { borderWidth: 1, borderColor: C.assessOptionBorder, borderRadius: 8, padding: 15, alignItems: "center", marginBottom: 14, backgroundColor: C.assessOptionBg },
+    assessOptionSelected: { borderColor: C.assessOptionSelectedBorder, backgroundColor: C.assessOptionSelectedBg },
+    assessOptionText: { fontSize: 18, color: C.assessOptionText, fontFamily: 'Urbanist_700Bold' },
+    assessOptionTextSelected: { color: C.assessOptionSelectedText, fontWeight: "500" },
+
+    // Results
+    resultContainer: { flex: 1, justifyContent: "center", alignItems: "center", padding: 32, backgroundColor: C.contractBg },
+    resultCircle: { justifyContent: "center", alignItems: "center", marginBottom: 20 },
+    resultCirclePass: { marginVertical: 10 },
+    resultCircleFail: {},
+    resultTitle: { color: '#1BAC4B', fontSize: 24, fontFamily: 'Urbanist_700Bold', marginBottom: 10, textAlign: "center" },
+    resultTitleFail: { color: '#FF5252' },
+    resultSub: { color: C.resultSubText, fontSize: 16, fontFamily: 'Urbanist_400Regular', lineHeight: 21, textAlign: "center" },
+    avatar: { width: 160, height: 160 },
+  });
+
+export default createStyles;

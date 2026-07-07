@@ -89,7 +89,9 @@ export default function SelectAVenueList({ venueId, onBack, onSessionSelect }) {
   const renderList = () => {
     if (loading)
       return (
-        <CustomLoader size={80} color="#3B82F6" />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+          <CustomLoader size={80} color="#3B82F6" />
+        </View>
       );
     const formatTimeRange = (startTime, endTime) => {
       if (!startTime || !endTime) return "";

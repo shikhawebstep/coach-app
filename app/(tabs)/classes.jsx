@@ -1,9 +1,9 @@
 import AssessmentCriteria from '@/components/assessments/AssessmentCriteria';
+import AssessmentDecision from '@/components/assessments/AssessmentDecision';
 import AssessmentResults from '@/components/assessments/AssessmentResults';
 import PracticalAssessments from '@/components/assessments/PracticalAssessments';
 import SummarisePerformance from '@/components/assessments/SummarisePerformance';
 import UploadVideo from '@/components/assessments/UploadVideo';
-import AssessmentDecision from '@/components/assessments/AssessmentDecision';
 
 import BirthdayParties from '@/components/classes/birthday_parties/BirthdayParties';
 import BirthdayPartyDetails from '@/components/classes/birthday_parties/BirthdayPartyDetails';
@@ -52,7 +52,7 @@ import CustomerFeedback from '@/components/venue_health/CustomerFeedback';
 import StudentNumbers from '@/components/venue_health/StudentNumbers';
 
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Classes() {
@@ -73,19 +73,17 @@ export default function Classes() {
     const [selectedPrivateBookingId, setSelectedPrivateBookingId] = useState(null);
     const [selectedReportId, setSelectedReportId] = useState(null);
     const [notesBackView, setNotesBackView] = useState('studentClass');
-    console.log('currentView', currentView)
 
+    if (__DEV__) console.log('currentView', currentView);
+
+    // Single source of truth for syncing the `view` param → local state.
+    // (Previously had both useFocusEffect AND a separate useEffect doing
+    // the exact same thing — redundant and could double-fire.)
     useFocusEffect(
         useCallback(() => {
             setCurrentView(params.view || 'dashboard');
         }, [params.view])
     );
-
-    useEffect(() => {
-        if (params.view) {
-            setCurrentView(params.view);
-        }
-    }, [params.view]);
 
     if (currentView === 'camps' || currentView === 'holiday') {
         return <HolidayCampsList
@@ -113,21 +111,20 @@ export default function Classes() {
         return <HolidayCampDetails
             sessionId={selectedSessionId}
             onBack={() => setCurrentView('campSessionList')}
-            onSyllabusClick={(data) =>{ 
+            onSyllabusClick={(data) => {
                 setCurrentView('holidaySyllabus');
                 setSyllabusDetails(data)
             }}
             onStudentSelect={(student) => {
-                setSelectedStudent(student);         // ← store it
+                setSelectedStudent(student);
                 setCurrentView('holidayStudentInformation');
             }}
         />;
     }
 
-    // classes.js
     if (currentView === 'holidaySyllabus') {
         return <HolidaySyllabus
-            venueId={selectedVenuenId}          // ← pass so it can fetch
+            venueId={selectedVenuenId}
             onBack={() => setCurrentView('campDetails')}
             onSessionSelect={(exercise) => {
                 setWeeklyExcercises(exercise);
@@ -145,9 +142,10 @@ export default function Classes() {
         />;
     }
 
-
     if (currentView === 'holidaySearchSkill') {
-        return <SearchSkill onBack={() => setCurrentView('holidaySessionExercise')} />;
+        return <SearchSkill
+            onBack={() => setCurrentView('holidaySessionExercise')}
+            sessionPlan={weeklyExcercises} />;
     }
 
     if (currentView === 'private') {
@@ -183,27 +181,13 @@ export default function Classes() {
         return <SessionDetails
             onBack={() => setCurrentView('team')}
             onSessionPlanClick={() => setCurrentView('clubSyllabus')}
-            onStudentSelect={(id) => setCurrentView('clubStudentInformation')}
+            onStudentSelect={(id) => {
+                setSelectedStudent(id); // was previously dropped on the floor
+                setCurrentView('clubStudentInformation');
+            }}
         />;
     }
 
-    if (currentView === 'sessionTrainingDetails') {
-        return <WeeklySessionTrainingDetails
-            sessionId={selectedSessionId}
-            sessionDate={selectedSessionDate}
-            onBack={() => setCurrentView('venueList')}
-            onStudentSelect={(student) => {
-                setSelectedStudent(student);
-                setCurrentView('studentClass');
-            }}
-            onSessionClick={(view) => setCurrentView(view)}
-            onSessionPlanClick={(sessionData) => {        // ← receive sessionData here
-                setSelectedSessionData(sessionData);
-                setCurrentView('syllabusDayDetails');
-            }}
-            sessionTitle="Session"
-        />;
-    }
     if (currentView === 'clubSyllabus') {
         return <ClubSyllabus
             onBack={() => setCurrentView('session')}
@@ -215,15 +199,22 @@ export default function Classes() {
         return <SessionExercise
             onBack={() => setCurrentView('clubSyllabus')}
             onSearchSkillClick={() => setCurrentView('clubSearchSkill')}
+            sessionPlan={selectedSessionData?.sessionPlan}
         />;
     }
 
     if (currentView === 'clubSearchSkill') {
-        return <SearchSkill onBack={() => setCurrentView('clubSessionExercise')} />;
+        return <SearchSkill
+            onBack={() => setCurrentView('clubSessionExercise')}
+            sessionPlan={selectedSessionData?.sessionPlan} // was missing entirely
+        />;
     }
 
     if (currentView === 'clubStudentInformation') {
-        return <StudentInformation onBack={() => setCurrentView('session')} />;
+        return <StudentInformation
+            student={selectedStudent} // was missing
+            onBack={() => setCurrentView('session')}
+        />;
     }
 
     if (currentView === 'clubStudentClass') {
@@ -270,9 +261,9 @@ export default function Classes() {
         return <SelectAVenueList
             venueId={selectedVenue?.id}
             onBack={() => setCurrentView('venue')}
-            onSessionSelect={(sessionId, sessionDate) => {    // ← receive date too
+            onSessionSelect={(sessionId, sessionDate) => {
                 setSelectedSessionId(sessionId);
-                setSelectedSessionDate(sessionDate);          // ← store it
+                setSelectedSessionDate(sessionDate);
                 setCurrentView('sessionTrainingDetails');
             }}
         />;
@@ -288,26 +279,23 @@ export default function Classes() {
         />
     }
 
-    // 4. Fix birthdayDetails — pass actual booking object, not the string 'booking'
     if (currentView === 'birthdayDetails') {
         return <BirthdayPartyDetails
             booking={selectedBirthdayBooking}
             onBack={() => setCurrentView('birthday')}
             onSyllabusClick={(booking) => {
-                setSelectedBirthdayBooking(booking);   // ← was setSelectedBirthdayBooking('booking')
+                setSelectedBirthdayBooking(booking);
                 setCurrentView('birthdaySyllabus');
             }}
         />
     }
 
-    // 5. Fix birthdaySyllabus — pass selectedBirthdayBooking (not selectedBirthdaySyllabus)
-    //    Fix onSessionSelect — store exercise in selectedBirthdaySessionData
     if (currentView === 'birthdaySyllabus') {
         return <BirthdaySyllabus
-            booking={selectedBirthdayBooking}          // ← was selectedBirthdaySyllabus
+            booking={selectedBirthdayBooking}
             onBack={() => setCurrentView('birthdayDetails')}
             onSessionSelect={(exerciseItem) => {
-                setSelectedBirthdaySessionData(exerciseItem);  // ← was setSelectedBirthdaySyllabus
+                setSelectedBirthdaySessionData(exerciseItem);
                 setCurrentView('birthdaySessionExercise');
             }}
         />;
@@ -319,15 +307,17 @@ export default function Classes() {
             onBack={() => setCurrentView('birthdaySyllabus')}
         />;
     }
+
     if (currentView === 'venue' || currentView === 'weekly') {
         return <SelectAVenue
             onBack={() => setCurrentView('dashboard')}
             onVenueSelect={(venue) => {
-                setSelectedVenue(venue);        // ← store it
+                setSelectedVenue(venue);
                 setCurrentView('venueList');
             }}
         />;
     }
+
     if (currentView === 'notes') {
         return <Notes
             onBack={() => setCurrentView(notesBackView)}
@@ -339,16 +329,23 @@ export default function Classes() {
         return <AddTrialist onBack={() => setCurrentView('dashboard')} />;
     }
 
+    // NOTE: the duplicate 'sessionTrainingDetails' block that existed here
+    // (identical to the one above but missing sessionDate) has been removed —
+    // it was unreachable dead code since the first match always wins.
     if (currentView === 'sessionTrainingDetails') {
         return <WeeklySessionTrainingDetails
             sessionId={selectedSessionId}
+            sessionDate={selectedSessionDate}
             onBack={() => setCurrentView('venueList')}
             onStudentSelect={(student) => {
                 setSelectedStudent(student);
-                setCurrentView('studentClass'); // changed from studentInformation to studentClass so we can see the student details and notes UI
+                setCurrentView('studentClass');
             }}
             onSessionClick={(view) => setCurrentView(view)}
-            onSessionPlanClick={() => setCurrentView('syllabusDayDetails')}
+            onSessionPlanClick={(sessionData) => {
+                setSelectedSessionData(sessionData);
+                setCurrentView('syllabusDayDetails');
+            }}
             sessionTitle="Session"
         />;
     }
@@ -373,16 +370,15 @@ export default function Classes() {
     }
 
     if (currentView === 'searchSkill') {
-        return <SearchSkill onBack={() => setCurrentView('sessionExercise')} />;
+        return <SearchSkill
+            onBack={() => setCurrentView('sessionExercise')}
+            sessionPlan={selectedSessionData?.sessionPlan}
+        />;
     }
 
     if (currentView === 'syllabusSkill') {
         return <SyllabusSkill onBack={() => setCurrentView('dashboard')} />;
     }
-
-
-
-
 
     if (currentView === 'notificationsList') {
         return <NotificationsList onNotificationSelect={() => setCurrentView('notificationDetails')} />;
@@ -427,8 +423,6 @@ export default function Classes() {
         />;
     }
 
- 
-
     if (currentView === 'customerFeedback') {
         return <CustomerFeedback onBack={() => router.back()} />;
     }
@@ -453,13 +447,9 @@ export default function Classes() {
         return <VenuesFilter onBack={() => router.back()} />;
     }
 
-
-
     if (currentView === 'studentInformation') {
-        return <WeeklyStudentInformation student={selectedStudent} onBack={() => setCurrentView('sessionTrainingDetails')} />;
+        return <StudentInformation student={selectedStudent} onBack={() => setCurrentView('sessionTrainingDetails')} />;
     }
-
-
 
     if (currentView === 'appHomeCategories') {
         return <AppHomeCategories />;
@@ -480,8 +470,6 @@ export default function Classes() {
         />;
     }
 
-
-
     if (currentView === 'gameDetailsSearch') {
         return <GameDetailsSearch onBack={() => setCurrentView('dashboard')} />;
     }
@@ -497,6 +485,11 @@ export default function Classes() {
         return <AppHomeCategories onCategorySelect={(id) => setCurrentView(id === 'club' ? 'team' : id)} />;
     }
 
+    // ⚠️ NOTE: currentView === 'club' can never reach this point — the
+    // `if (currentView === 'team' || currentView === 'club')` block above
+    // always intercepts it first. This renderButtons()/switch case is
+    // effectively dead/unreachable code as written. Left as-is pending your
+    // call on whether to rewire it under a new key or remove it.
     const renderButtons = () => {
         switch (currentView) {
             case 'club':
@@ -513,7 +506,6 @@ export default function Classes() {
                         <TouchableOpacity style={styles.navButtonBatch7} onPress={() => setCurrentView('practicalAssessments')}>
                             <Text style={styles.navButtonText}>View Practical Assessments UI</Text>
                         </TouchableOpacity>
-
 
                         <TouchableOpacity style={styles.navButtonBatch8} onPress={() => setCurrentView('myResults')}>
                             <Text style={styles.navButtonText}>View My Results UI</Text>
@@ -536,10 +528,6 @@ export default function Classes() {
                         <TouchableOpacity style={styles.navButtonBatch9} onPress={() => setCurrentView('venuesFilter')}>
                             <Text style={styles.navButtonText}>View Venues Filter UI</Text>
                         </TouchableOpacity>
-
-
-
-
                     </>
                 );
             default:
@@ -626,7 +614,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     navButtonAlt: {
-        backgroundColor: '#1CAB4B', // Green to differentiate
+        backgroundColor: '#1CAB4B',
         paddingVertical: 14,
         paddingHorizontal: 16,
         borderRadius: 8,
@@ -634,7 +622,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     navButtonBatch3: {
-        backgroundColor: '#8B5CF6', // Purple 
+        backgroundColor: '#8B5CF6',
         paddingVertical: 14,
         paddingHorizontal: 16,
         borderRadius: 8,
@@ -642,7 +630,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     navButtonBatch4: {
-        backgroundColor: '#F59E0B', // Amber/Orange
+        backgroundColor: '#F59E0B',
         paddingVertical: 14,
         paddingHorizontal: 16,
         borderRadius: 8,
@@ -650,7 +638,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     navButtonBatch5: {
-        backgroundColor: '#EC4899', // Pink
+        backgroundColor: '#EC4899',
         paddingVertical: 14,
         paddingHorizontal: 16,
         borderRadius: 8,
@@ -658,7 +646,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     navButtonBatch6: {
-        backgroundColor: '#14B8A6', // Teal
+        backgroundColor: '#14B8A6',
         paddingVertical: 14,
         paddingHorizontal: 16,
         borderRadius: 8,
@@ -666,7 +654,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     navButtonBatch7: {
-        backgroundColor: '#6366F1', // Indigo
+        backgroundColor: '#6366F1',
         paddingVertical: 14,
         paddingHorizontal: 16,
         borderRadius: 8,
@@ -674,7 +662,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     navButtonBatch8: {
-        backgroundColor: '#8B5CF6', // Purple
+        backgroundColor: '#8B5CF6',
         paddingVertical: 14,
         paddingHorizontal: 16,
         borderRadius: 8,
@@ -682,7 +670,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     navButtonBatch9: {
-        backgroundColor: '#F43F5E', // Rose
+        backgroundColor: '#F43F5E',
         paddingVertical: 14,
         paddingHorizontal: 16,
         borderRadius: 8,
@@ -690,7 +678,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     navButtonBatch10: {
-        backgroundColor: '#0EA5E9', // Sky Blue
+        backgroundColor: '#0EA5E9',
         paddingVertical: 14,
         paddingHorizontal: 16,
         borderRadius: 8,
@@ -698,7 +686,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     navButtonBatch11: {
-        backgroundColor: '#F59E0B', // Amber
+        backgroundColor: '#F59E0B',
         paddingVertical: 14,
         paddingHorizontal: 16,
         borderRadius: 8,
@@ -706,7 +694,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     navButtonBatch12: {
-        backgroundColor: '#8B5CF6', // Purple
+        backgroundColor: '#8B5CF6',
         paddingVertical: 14,
         paddingHorizontal: 16,
         borderRadius: 8,
@@ -714,7 +702,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     navButtonBatch13: {
-        backgroundColor: '#14B8A6', // Teal
+        backgroundColor: '#14B8A6',
         paddingVertical: 14,
         paddingHorizontal: 16,
         borderRadius: 8,
