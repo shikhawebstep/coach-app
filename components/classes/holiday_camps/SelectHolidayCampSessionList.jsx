@@ -3,13 +3,13 @@ import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  useColorScheme,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+    useColorScheme,
 } from "react-native";
 
 export default function SelectHolidayCampSessionList({ venueId, onBack, onSessionSelect }) {
@@ -31,7 +31,7 @@ export default function SelectHolidayCampSessionList({ venueId, onBack, onSessio
     try {
       setLoading(true);
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/holiday-camp/${venueId}/detail`,
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/classes/holiday-camp/${venueId}/detail`,
         { method: "GET", headers: { Authorization: `Bearer ${token}` } },
       );
       const result = await response.json();

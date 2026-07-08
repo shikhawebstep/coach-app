@@ -1,28 +1,23 @@
+import CustomLoader from '@/components/common/CustomLoader';
+import { useAuth } from '@/context/AuthContext'; // ⚠️ ADJUST: use your actual useAuth import path
 import { Ionicons } from '@expo/vector-icons';
+import { Audio } from 'expo-av';
 import { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
+    Alert,
     Dimensions,
     Image,
     Modal, ScrollView, StyleSheet, Text,
     TextInput, TouchableOpacity, useColorScheme,
     View
 } from 'react-native';
-import CustomLoader from '@/components/common/CustomLoader';
-import { Audio } from 'expo-av';
+import MyReports from './MyReports';
 
 const { width } = Dimensions.get('window');
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-const COACHES = ['Daniel Marcus', 'James Smith', 'Sarah Connor'];
-const VENUES = ['Chelsea', 'Hammersmith', 'King Cross', 'Acton'];
-const CLASSES = ['Class 1', 'Class 2', 'Class 3'];
-
-const REPORTS_DATA = [
-    { id: 1, name: 'Daniel\nWalsh', date: '3rd April 2023', time: '10:30-11:30am', venue: 'King Cross', score: 85, color: '#1CAB4B' },
-    { id: 2, name: 'Clifford', date: '3rd April 2023', time: '10:30-11:30am', venue: 'Hammersmith', score: 65, color: '#FACC15' },
-    { id: 3, name: 'Curtis', date: '3rd April 2023', time: '10:30-11:30am', venue: 'King Cross', score: 92, color: '#1CAB4B' },
-    { id: 4, name: 'Joshua', date: '3rd April 2023', time: '10:30-11:30am', venue: 'Hammersmith', score: 45, color: '#EF4444' },
-];
+// ─── API ──────────────────────────────────────────────────────────────────────
+const BASE_URL = `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro`;
 
 const SCORING_CRITERIA = [
     'Personal qualities',
@@ -57,6 +52,7 @@ const getColors = (isDark) => ({
 });
 
 // ─── Dropdown Modal ───────────────────────────────────────────────────────────
+// Options are now objects: { id, label }. onSelect receives the whole object.
 function DropdownModal({ visible, options, onSelect, onClose, title, c }) {
     const dd = getDdStyles(c);
     return (
@@ -64,9 +60,12 @@ function DropdownModal({ visible, options, onSelect, onClose, title, c }) {
             <TouchableOpacity style={dd.overlay} onPress={onClose} activeOpacity={1}>
                 <View style={dd.sheet}>
                     <Text style={dd.sheetTitle}>{title}</Text>
+                    {options.length === 0 && (
+                        <Text style={dd.optionText}>No options available</Text>
+                    )}
                     {options.map(opt => (
-                        <TouchableOpacity key={opt} style={dd.option} onPress={() => { onSelect(opt); onClose(); }}>
-                            <Text style={dd.optionText}>{opt}</Text>
+                        <TouchableOpacity key={opt.id} style={dd.option} onPress={() => { onSelect(opt); onClose(); }}>
+                            <Text style={dd.optionText}>{opt.label}</Text>
                         </TouchableOpacity>
                     ))}
                 </View>
@@ -85,67 +84,32 @@ const getDdStyles = (c) => StyleSheet.create({
 // ─── Screen: My Reports ───────────────────────────────────────────────────────
 function MyReportsScreen({ onCreateNew, onBack, c }) {
     const s = getStyles(c);
-    const [search, setSearch] = useState('');
     return (
         <View style={s.container}>
-            <View style={s.header}>
-                {onBack && (
-                    <TouchableOpacity onPress={onBack} style={s.backBtn}>
-                        <Ionicons name="arrow-back" size={22} color={c.icon} />
-                    </TouchableOpacity>
-                )}
-                <Text style={s.headerTitle}>Observe & Develop</Text>
-            </View>
-            <View style={s.searchContainer}>
-                <Ionicons name="search-outline" size={20} color={c.placeholder} style={{ marginRight: 10 }} />
-                <TextInput
-                    style={s.searchInput}
-                    placeholder="Search past reports..."
-                    placeholderTextColor={c.placeholder}
-                    value={search}
-                    onChangeText={setSearch}
-                />
-            </View>
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}>
-                {REPORTS_DATA.map(item => (
-                    <TouchableOpacity key={item.id} style={s.reportCard}>
-                        <View style={{ flex: 1 }}>
-                            <Text style={s.reportName}>{item.name}</Text>
-                        </View>
-                        <View style={{ flex: 1.5 }}>
-                            <Text style={s.reportMeta}>{item.date}</Text>
-                            <Text style={s.reportMeta}>{item.time}</Text>
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <Text style={s.reportVenue}>{item.venue}</Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <View style={[s.scoreBadge, { backgroundColor: item.color }]}>
-                                <Text style={s.scoreText}>{item.score}%</Text>
-                            </View>
-                            <Ionicons name="chevron-forward" size={16} color={c.text} style={{ marginLeft: 6 }} />
-                        </View>
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
-            <View style={s.bottomContainer}>
-                <TouchableOpacity style={s.primaryBtn} onPress={onCreateNew}>
-                    <Text style={s.primaryBtnText}>Create new report</Text>
-                </TouchableOpacity>
-            </View>
+            <MyReports />
+            <TouchableOpacity style={s.fab} onPress={onCreateNew} activeOpacity={0.85}>
+                <Ionicons name="add" size={28} color="#fff" />
+            </TouchableOpacity>
         </View>
     );
 }
 
 // ─── Screen: Create Report ─────────────────────────────────────────────────
-function CreateReportScreen({ onBack, onStart, c }) {
+// Selections are now controlled from the parent (QcReportFlow) so the ids
+// survive into the final submit call.
+function CreateReportScreen({
+    onBack, onStart, c,
+    options, optionsLoading, optionsError, onRetryOptions,
+    coach, venue, classVal, setCoach, setVenue, setClassVal,
+}) {
     const s = getStyles(c);
-    const [coach, setCoach] = useState('');
-    const [venue, setVenue] = useState('');
-    const [classVal, setClassVal] = useState('');
     const [modal, setModal] = useState(null);
 
     const isReady = coach && venue && classVal;
+    const availableClasses = venue?.classes || [];
+    const showCoachDropdown = options.coaches.length !==0;
+    const noCoachAvailable = !optionsLoading && !optionsError && options.coaches.length === 0;
+
 
     return (
         <View style={s.container}>
@@ -155,20 +119,66 @@ function CreateReportScreen({ onBack, onStart, c }) {
                 </TouchableOpacity>
                 <Text style={s.headerTitle}>New Observation</Text>
             </View>
-            <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10 }}>
-                {[
-                    { label: 'Select a coach', value: coach, key: 'coach' },
-                    { label: 'Select a venue', value: venue, key: 'venue' },
-                    { label: 'Select a class', value: classVal, key: 'class' },
-                ].map(({ label, value, key }) => (
-                    <TouchableOpacity key={key} style={s.dropdown} onPress={() => setModal(key)}>
-                        <Text style={[s.dropdownText, !value && s.placeholderText]}>{value || label}</Text>
+
+            {optionsLoading ? (
+                <View style={{ paddingTop: 40, alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color={c.primary} />
+                    <Text style={[s.helperText, { marginTop: 12 }]}>Loading coaches, venues & classes...</Text>
+                </View>
+            ) : optionsError ? (
+                <View style={{ paddingHorizontal: 20, paddingTop: 20 }}>
+                    <Text style={[s.helperText, { color: '#EF4444' }]}>{optionsError}</Text>
+                    <TouchableOpacity style={s.primaryBtn} onPress={onRetryOptions}>
+                        <Text style={s.primaryBtnText}>Retry</Text>
+                    </TouchableOpacity>
+                </View>
+            ) : (
+                <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10 }}>
+
+                    {noCoachAvailable && (
+                        <Text style={[s.helperText, { color: '#EF4444' }]}>
+                            No coach found for this account. Please contact admin.
+                        </Text>
+                    )}
+
+                    {showCoachDropdown && (
+                        <TouchableOpacity style={s.dropdown} onPress={() => setModal('coach')}>
+                            <Text style={[s.dropdownText, !coach && s.placeholderText]}>
+                                {coach?.label || 'Select a coach'}
+                            </Text>
+                            <View style={s.iconCircle}>
+                                <Ionicons name="chevron-down" size={16} color={c.icon} />
+                            </View>
+                        </TouchableOpacity>
+                    )}
+
+                    {/* Venue dropdown */}
+                    <TouchableOpacity style={s.dropdown} onPress={() => setModal('venue')}>
+                        <Text style={[s.dropdownText, !venue && s.placeholderText]}>
+                            {venue?.label || 'Select a venue'}
+                        </Text>
                         <View style={s.iconCircle}>
                             <Ionicons name="chevron-down" size={16} color={c.icon} />
                         </View>
                     </TouchableOpacity>
-                ))}
-            </ScrollView>
+
+                    {/* Class dropdown — venue select hone ke baad hi enable */}
+                    <TouchableOpacity
+                        style={[s.dropdown, !venue && { opacity: 0.5 }]}
+                        disabled={!venue}
+                        onPress={() => venue && setModal('class')}
+                    >
+                        <Text style={[s.dropdownText, !classVal && s.placeholderText]}>
+                            {classVal?.label || (venue ? 'Select a class' : 'Select a venue first')}
+                        </Text>
+                        <View style={s.iconCircle}>
+                            <Ionicons name="chevron-down" size={16} color={c.icon} />
+                        </View>
+                    </TouchableOpacity>
+
+                </ScrollView>
+            )}
+
             <View style={s.bottomContainer}>
                 <TouchableOpacity
                     style={[s.primaryBtn, !isReady && s.primaryBtnDisabled]}
@@ -179,11 +189,11 @@ function CreateReportScreen({ onBack, onStart, c }) {
                 </TouchableOpacity>
             </View>
 
-            <DropdownModal c={c} visible={modal === 'coach'} options={COACHES} title="Select a coach"
+            <DropdownModal c={c} visible={modal === 'coach'} options={options.coaches} title="Select a coach"
                 onSelect={setCoach} onClose={() => setModal(null)} />
-            <DropdownModal c={c} visible={modal === 'venue'} options={VENUES} title="Select a venue"
-                onSelect={setVenue} onClose={() => setModal(null)} />
-            <DropdownModal c={c} visible={modal === 'class'} options={CLASSES} title="Select a class"
+            <DropdownModal c={c} visible={modal === 'venue'} options={options.venues} title="Select a venue"
+                onSelect={(v) => { setVenue(v); setClassVal(null); }} onClose={() => setModal(null)} />
+            <DropdownModal c={c} visible={modal === 'class'} options={availableClasses} title="Select a class"
                 onSelect={setClassVal} onClose={() => setModal(null)} />
         </View>
     );
@@ -192,12 +202,11 @@ function CreateReportScreen({ onBack, onStart, c }) {
 // ─── Screen: Observation Form ────────────────────────────────────────────────────
 function ObservationFormScreen({ onBack, onNext, formState, setFormState, c }) {
     const s = getStyles(c);
-    
+
     const [recordingInstance, setRecordingInstance] = useState(null);
     const [isRecording, setIsRecording] = useState(false);
     const [seconds, setSeconds] = useState(0);
 
-    // Audio Timer
     useEffect(() => {
         let interval = null;
         if (isRecording) {
@@ -226,7 +235,7 @@ function ObservationFormScreen({ onBack, onNext, formState, setFormState, c }) {
             const { recording } = await Audio.Recording.createAsync(
                 Audio.RecordingOptionsPresets.HIGH_QUALITY
             );
-            
+
             setRecordingInstance(recording);
             setSeconds(0);
             setIsRecording(true);
@@ -259,7 +268,7 @@ function ObservationFormScreen({ onBack, onNext, formState, setFormState, c }) {
                 <Text style={s.headerTitle}>Observation Notes</Text>
             </View>
             <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 40 }}>
-                
+
                 <Text style={s.helperText}>You can type your notes or record voice for AI transcription and summarization.</Text>
 
                 <View style={{ marginBottom: 24 }}>
@@ -271,7 +280,7 @@ function ObservationFormScreen({ onBack, onNext, formState, setFormState, c }) {
                         placeholder="Great energy, engaged well with the kids..."
                         placeholderTextColor={c.placeholder}
                         value={formState.positives}
-                        onChangeText={(val) => setFormState({...formState, positives: val})}
+                        onChangeText={(val) => setFormState({ ...formState, positives: val })}
                     />
                 </View>
 
@@ -284,7 +293,7 @@ function ObservationFormScreen({ onBack, onNext, formState, setFormState, c }) {
                         placeholder="1. Needs to project voice more clearly...&#10;2. Better time management during drills..."
                         placeholderTextColor={c.placeholder}
                         value={formState.improvements}
-                        onChangeText={(val) => setFormState({...formState, improvements: val})}
+                        onChangeText={(val) => setFormState({ ...formState, improvements: val })}
                     />
                 </View>
 
@@ -343,7 +352,8 @@ function AIGenerationScreen({ onComplete, c }) {
 function AISummaryScreen({ onBack, onNext, formState, c }) {
     const s = getStyles(c);
 
-    // Mock generated data based on whatever the user typed/recorded
+    // NOTE: still mock — plug your real AI summary endpoint response into
+    // formState.aiSummary / formState.aiImprovements once that API exists.
     const mockSummary = formState.positives || "The coach showed excellent enthusiasm and kept the students engaged throughout the session. The warm-up was well structured.";
     const mockImprovements = formState.improvements || "1. Ensure instructions are given clearly before breaking out into drills.\n2. Keep a closer eye on time management to avoid rushing the cool-down.";
 
@@ -356,7 +366,7 @@ function AISummaryScreen({ onBack, onNext, formState, c }) {
                 <Text style={s.headerTitle}>AI Summary</Text>
             </View>
             <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}>
-                
+
                 <View style={s.summaryBox}>
                     <View style={s.summaryHeader}>
                         <Ionicons name="sparkles" size={18} color={c.accentBlue} style={{ marginRight: 6 }} />
@@ -375,7 +385,7 @@ function AISummaryScreen({ onBack, onNext, formState, c }) {
 
             </ScrollView>
             <View style={s.bottomContainer}>
-                <TouchableOpacity style={s.primaryBtn} onPress={onNext}>
+                <TouchableOpacity style={s.primaryBtn} onPress={() => onNext(mockSummary)}>
                     <Text style={s.primaryBtnText}>Proceed to Scoring</Text>
                 </TouchableOpacity>
             </View>
@@ -384,7 +394,7 @@ function AISummaryScreen({ onBack, onNext, formState, c }) {
 }
 
 // ─── Screen: Scoring ──────────────────────────────────────────────────────────
-function ScoringScreen({ onBack, onComplete, scores, setScores, c }) {
+function ScoringScreen({ onBack, onComplete, scores, setScores, c, submitting }) {
     const s = getStyles(c);
 
     const handleScore = (idx, val) => {
@@ -405,14 +415,14 @@ function ScoringScreen({ onBack, onComplete, scores, setScores, c }) {
             </View>
             <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}>
                 <Text style={s.helperText}>Score the coach on a scale of 1 to 5 for each criteria.</Text>
-                
+
                 {SCORING_CRITERIA.map((criteria, idx) => (
                     <View key={criteria} style={{ marginBottom: 24 }}>
                         <Text style={s.summaryQuestion}>{criteria}</Text>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingRight: 40 }}>
                             {[1, 2, 3, 4, 5].map(val => (
-                                <TouchableOpacity 
-                                    key={val} 
+                                <TouchableOpacity
+                                    key={val}
                                     onPress={() => handleScore(idx, val)}
                                     style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8 }}
                                 >
@@ -427,12 +437,14 @@ function ScoringScreen({ onBack, onComplete, scores, setScores, c }) {
                 ))}
             </ScrollView>
             <View style={s.bottomContainer}>
-                <TouchableOpacity 
-                    style={[s.primaryBtn, !allScored && s.primaryBtnDisabled]} 
-                    disabled={!allScored}
+                <TouchableOpacity
+                    style={[s.primaryBtn, (!allScored || submitting) && s.primaryBtnDisabled]}
+                    disabled={!allScored || submitting}
                     onPress={onComplete}
                 >
-                    <Text style={s.primaryBtnText}>Submit Report</Text>
+                    {submitting
+                        ? <ActivityIndicator color="#fff" />
+                        : <Text style={s.primaryBtnText}>Submit Report</Text>}
                 </TouchableOpacity>
             </View>
         </View>
@@ -442,8 +454,7 @@ function ScoringScreen({ onBack, onComplete, scores, setScores, c }) {
 // ─── Screen: Congratulations ──────────────────────────────────────────────────
 function CongratsScreen({ scores, onGoHome, c }) {
     const s = getStyles(c);
-    
-    // Calculate final grade
+
     const total = scores.reduce((a, b) => a + (b || 0), 0);
     const max = SCORING_CRITERIA.length * 5;
     const percentage = Math.round((total / max) * 100);
@@ -455,11 +466,11 @@ function CongratsScreen({ scores, onGoHome, c }) {
                     <Image source={require('@/assets/images/congrats.png')} style={s.avatar} resizeMode="cover" />
                 </View>
                 <Text style={s.congratsTitle}>Report Submitted!</Text>
-                
-                <View style={{ backgroundColor: c.bg, padding: 16, borderRadius: 12, marginVertical: 20, alignItems: 'center', width: '100%' }}>
+
+                {/* <View style={{ backgroundColor: c.bg, padding: 16, borderRadius: 12, marginVertical: 20, alignItems: 'center', width: '100%' }}>
                     <Text style={s.congratsSub}>Final Score</Text>
                     <Text style={[s.headerTitle, { fontSize: 36, color: c.accentBlue, marginTop: 8 }]}>{percentage}%</Text>
-                </View>
+                </View> */}
 
                 <Text style={[s.helperText, { textAlign: 'center', marginBottom: 24 }]}>
                     The coach has been notified and the report is safely stored with the voice transcriptions.
@@ -478,12 +489,163 @@ export default function QcReportFlow({ onBack }) {
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
     const c = getColors(isDark);
+    const { token } = useAuth(); // ⚠️ ADJUST: match your useAuth() shape (token / userToken / accessToken etc.)
 
     const [screen, setScreen] = useState('myReports');
-    
     // Shared State
-    const [formState, setFormState] = useState({ positives: '', improvements: '' });
+    const [formState, setFormState] = useState({ positives: '', improvements: '', voiceNoteUri: null, aiSummary: '' });
     const [scores, setScores] = useState(Array(SCORING_CRITERIA.length).fill(null));
+    const [submitting, setSubmitting] = useState(false);
+
+    // Dropdown selections (lifted up so ids survive to the final submit call)
+    const [coach, setCoach] = useState(null);
+    const [venue, setVenue] = useState(null);
+    const [classVal, setClassVal] = useState(null);
+
+    // Options fetched from the API
+    const [options, setOptions] = useState({ coaches: [], venues: [] });
+    const [optionsLoading, setOptionsLoading] = useState(false);
+    const [optionsError, setOptionsError] = useState(null);
+
+    // ─── fetchOptions (corrected) ──────────────────────────────────────────────
+    // ─── fetchOptions (future-proof for coach as object OR array) ─────────────
+    const fetchOptions = async () => {
+        setOptionsLoading(true);
+        setOptionsError(null);
+        try {
+            const res = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/observation/venues-coaches`, {
+                method: 'GET',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json?.message || 'Failed to load options');
+
+            const data = json.data || json;
+
+            // Normalize: coach could be a single object today, or an array tomorrow
+            const rawCoach = data.coach ?? data.coaches;
+            const coachList = Array.isArray(rawCoach) ? rawCoach : (rawCoach ? [rawCoach] : []);
+
+            const coaches = coachList.map(item => ({
+                id: item.id,
+                label: `${item.firstName ?? ''} ${item.lastName ?? ''}`.trim() || item.name,
+            }));
+
+            const venues = (data.venues || []).map(v => ({
+                id: v.id,
+                label: v.name,
+                area: v.area,
+                classes: (v.classSchedules || []).map(cs => ({
+                    id: cs.id,
+                    label: `${cs.className} (${cs.startTime} - ${cs.endTime})`,
+                })),
+            }));
+
+            setOptions({ coaches, venues });
+
+            // Agar sirf ek hi coach hai, use auto-select kar do (dropdown skip ho jayega UX me)
+            // Agar future me multiple ho gaye, auto-select nahi hoga aur dropdown khulega
+            if (coaches.length === 1) {
+                setCoach(coaches[0]);
+            }
+        } catch (err) {
+            console.error('Failed to fetch venues-coaches', err);
+            setOptionsError('Could not load coaches/venues/classes. Pull to retry.');
+        } finally {
+            setOptionsLoading(false);
+        }
+    };
+    useEffect(() => {
+        fetchOptions();
+    }, []);
+
+    const resetFlow = () => {
+        setFormState({ positives: '', improvements: '', voiceNoteUri: null, aiSummary: '' });
+        setScores(Array(SCORING_CRITERIA.length).fill(null));
+        setCoach(null);
+        setVenue(null);
+        setClassVal(null);
+    };
+
+    const submitReport = async () => {
+    setSubmitting(true);
+    try {
+        const improvementsArray = (formState.improvements || '')
+            .split('\n')
+            .map(line => line.replace(/^\d+\.\s*/, '').trim())
+            .filter(Boolean);
+
+        const form = new FormData();
+        form.append('coachId', String(coach.id));
+        form.append('venueId', String(venue.id));
+        form.append('classScheduleId', String(classVal.id));
+        form.append('positives', formState.positives);
+        form.append('areasForImprovement', JSON.stringify(improvementsArray));
+        form.append('aiSummary', formState.aiSummary || formState.positives);
+
+        const fieldNames = [
+            'personalQualitiesScore',
+            'deliveryQualitiesScore',
+            'coachingStandardsScore',
+            'educationalQualityScore',
+            'sessionStructureScore',
+        ];
+        SCORING_CRITERIA.forEach((_, idx) => {
+            form.append(fieldNames[idx], String(scores[idx]));
+        });
+
+        if (formState.voiceNoteUri) {
+            const ext = formState.voiceNoteUri.split('.').pop() || 'm4a';
+            form.append('voiceNote', {
+                uri: formState.voiceNoteUri,
+                name: `voice-note-${Date.now()}.${ext}`,
+                type: `audio/${ext}`,
+            });
+        }
+
+        // ─── DEBUG: log the exact payload before sending ──────────────────
+        // FormData can't be JSON.stringify'd directly — iterate entries()
+        const debugPayload = {};
+        for (const [key, value] of form.entries()) {
+            debugPayload[key] = value;
+        }
+        console.log('📤 Submitting observation report with payload:', debugPayload);
+        // ────────────────────────────────────────────────────────────────
+
+        // ⚠️ TEST MODE: set to true to skip the real network call and just
+        // verify the payload/flow works end-to-end. Set back to false before shipping.
+        const TEST_MODE = false;
+
+        if (TEST_MODE) {
+            console.log('🧪 TEST_MODE active — skipping real API call, simulating success');
+            await new Promise(resolve => setTimeout(resolve, 1000)); // fake latency
+            setScreen('congrats');
+            return;
+        }
+
+        const res = await fetch(`${BASE_URL}/observation/create`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                // NOTE: do NOT set Content-Type manually for FormData — RN sets
+                // the correct multipart boundary itself; adding it breaks upload.
+            },
+            body: form,
+        });
+
+        const json = await res.json();
+        console.log('📥 Server response:', json);
+
+        if (!res.ok) throw new Error(json?.message || 'Failed to submit report');
+
+        setScreen('congrats');
+    } catch (err) {
+        console.error('❌ Failed to submit observation report', err);
+        Alert.alert('Submission failed', err.message || 'Something went wrong. Please try again.');
+    } finally {
+        setSubmitting(false);
+    }
+};
 
     switch (screen) {
 
@@ -492,8 +654,7 @@ export default function QcReportFlow({ onBack }) {
                 <MyReportsScreen
                     c={c}
                     onCreateNew={() => {
-                        setFormState({ positives: '', improvements: '' });
-                        setScores(Array(SCORING_CRITERIA.length).fill(null));
+                        resetFlow();
                         setScreen('create');
                     }}
                     onBack={onBack}
@@ -504,11 +665,16 @@ export default function QcReportFlow({ onBack }) {
             return (
                 <CreateReportScreen
                     c={c}
+                    options={options}
+                    optionsLoading={optionsLoading}
+                    optionsError={optionsError}
+                    onRetryOptions={fetchOptions}
+                    coach={coach} venue={venue} classVal={classVal}
+                    setCoach={setCoach} setVenue={setVenue} setClassVal={setClassVal}
                     onBack={() => setScreen('myReports')}
                     onStart={() => setScreen('observation')}
                 />
             );
-
         case 'observation':
             return (
                 <ObservationFormScreen
@@ -534,7 +700,10 @@ export default function QcReportFlow({ onBack }) {
                     c={c}
                     formState={formState}
                     onBack={() => setScreen('observation')}
-                    onNext={() => setScreen('scoring')}
+                    onNext={(aiSummary) => {
+                        setFormState(prev => ({ ...prev, aiSummary }));
+                        setScreen('scoring');
+                    }}
                 />
             );
 
@@ -544,13 +713,14 @@ export default function QcReportFlow({ onBack }) {
                     c={c}
                     scores={scores}
                     setScores={setScores}
+                    submitting={submitting}
                     onBack={() => setScreen('aiSummary')}
-                    onComplete={() => setScreen('congrats')}
+                    onComplete={submitReport}
                 />
             );
 
         case 'congrats':
-            return <CongratsScreen scores={scores} c={c} onGoHome={() => setScreen('myReports')} />;
+            return <CongratsScreen scores={scores} c={c} onGoHome={() => { resetFlow(); setScreen('myReports'); }} />;
 
         default:
             return null;
@@ -570,6 +740,18 @@ const getStyles = (c) => StyleSheet.create({
     sBtn: { backgroundColor: c.success, paddingVertical: 18, borderRadius: 30, alignItems: 'center' },
     primaryBtnDisabled: { backgroundColor: c.primaryDisabled },
     primaryBtnText: { fontSize: 16, fontFamily: 'Urbanist_700Bold', color: '#fff' },
+
+    createReportBtn: {
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+        backgroundColor: c.primary, paddingVertical: 16, borderRadius: 14,
+    },
+    fab: {
+        position: 'absolute', right: 20, bottom: 30,
+        width: 56, height: 56, borderRadius: 28,
+        backgroundColor: c.primary, alignItems: 'center', justifyContent: 'center',
+        shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.2,
+        shadowRadius: 6, elevation: 5,
+    },
 
     searchContainer: {
         flexDirection: 'row', alignItems: 'center', marginHorizontal: 16,
@@ -647,7 +829,7 @@ const getStyles = (c) => StyleSheet.create({
         alignItems: 'center', shadowColor: '#000',
         elevation: 4,
     },
-    congratsTitle: { fontSize: 24, fontFamily: 'Urbanist_700Bold', color: c.success, marginTop: 8 },
+    congratsTitle: { fontSize: 24, fontFamily: 'Urbanist_700Bold', color: c.success, marginVertical: 8 },
     congratsSub: { fontSize: 16, fontFamily: 'Urbanist_700Bold', color: c.textSecondary, marginTop: 14 },
     avatar: { width: 160, height: 160 },
 });

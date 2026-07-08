@@ -67,7 +67,7 @@ export default function HolidayCampsList({ onBack, onCampSelect }) {
         try {
             setLoading(true);
             const response = await fetch(
-                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/holiday-camp/venues`,
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/classes/holiday-camp/venues`,
                 {
                     method: 'GET',
                     headers: { Authorization: `Bearer ${token}` },

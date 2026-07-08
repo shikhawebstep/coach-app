@@ -301,7 +301,7 @@ export default function CalendarSchedule() {
 
         try {
             setLoading(true);
-            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/my-calender?date=${dateISO}`, requestOptions);
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/my-calender?date=${dateISO}`, requestOptions);
             const textResult = await response.text();
 
             try {

@@ -58,7 +58,7 @@ export default function HolidaySyllabus({ venueId, onBack, onSessionSelect }) {
         try {
             setLoading(true);
             const response = await fetch(
-                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/holiday-camp/${venueId}/detail`,
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/classes/holiday-camp/${venueId}/detail`,
                 { method: 'GET', headers: { Authorization: `Bearer ${token}` } }
             );
             const result = await response.json();

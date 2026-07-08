@@ -1,13 +1,10 @@
+// MyReports.js
+import CustomLoader from '@/components/common/CustomLoader';
+import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
-
-const RESULTS_DATA = [
-    { id: 1, name: 'Daniel\nWalsh', date: '3rd April 2023', time: '10:30-11:30am', venue: 'King Cross', score: 75, color: '#1CAB4B' },
-    { id: 2, name: 'Clifford', date: '3rd April 2023', time: '10:30-11:30am', venue: 'Hammersmith', score: 43, color: '#EF4444' },
-    { id: 3, name: 'Curtis', date: '3rd April 2023', time: '10:30-11:30am', venue: 'King Cross', score: 75, color: '#1CAB4B' },
-    { id: 4, name: 'Joshua', date: '3rd April 2023', time: '10:30-11:30am', venue: 'Hammersmith', score: 43, color: '#EF4444' },
-];
+import ObservationDetail from './ObservationDetail';
 
 const LIGHT = {
     background: '#fff',
@@ -25,6 +22,9 @@ const LIGHT = {
     venueText: '#1a1a1a',
     chevron: '#000',
     backIcon: '#000',
+    textSecondary: '#6B7280',
+    primary: '#3B82F6',
+    error: '#EF4444',
 };
 
 const DARK = {
@@ -43,14 +43,94 @@ const DARK = {
     venueText: '#FFFFFF',
     chevron: '#FFFFFF',
     backIcon: '#FFFFFF',
+    textSecondary: '#9CA3AF',
+    primary: '#5B9CFF',
+    error: '#F87171',
+};
+
+// score >= threshold -> green badge, else red
+const SCORE_PASS_THRESHOLD = 50;
+
+const formatDate = (isoString) => {
+    if (!isoString) return '-';
+    try {
+        const d = new Date(isoString);
+        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    } catch {
+        return '-';
+    }
 };
 
 export default function MyReports({ onBack, title = "My reports" }) {
     const [searchQuery, setSearchQuery] = useState('');
+    const [reportsData, setReportsData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Tracks which report's issue detail is currently open
+const [selectedObservationId, setSelectedObservationId] = useState(null);
+
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
     const colors = isDark ? DARK : LIGHT;
     const styles = createStyles(colors);
+
+    const { token } = useAuth();
+
+    useEffect(() => {
+        fetchReports();
+    }, []);
+
+    const fetchReports = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await fetch(
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/observation/list`,
+                {
+                    method: "GET",
+                    headers: { Authorization: `Bearer ${token || ""}` },
+                    redirect: "follow",
+                }
+            );
+
+            const result = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                const list = Array.isArray(result?.data) ? result.data : [];
+                setReportsData(list);
+            } else {
+                setError(result?.message || "Failed to load reports.");
+            }
+        } catch (err) {
+            console.error("Failed to fetch reports:", err);
+            setError("Something went wrong while loading reports.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getScoreColor = (score) => {
+        // score aata hai as string "76%" — % hata ke number nikaalo
+        const numericScore = parseFloat(String(score).replace('%', '')) || 0;
+        return numericScore >= SCORE_PASS_THRESHOLD ? '#1CAB4B' : '#EF4444';
+    };
+
+    const filteredReports = reportsData.filter(item => {
+        const name = item?.coachName || '';
+        return name.toLowerCase().includes((searchQuery || '').toLowerCase());
+    });
+
+    // Agar koi report select ho chuki hai, uska issue detail screen dikhao
+ if (selectedObservationId) {
+    return (
+        <ObservationDetail
+            observationId={selectedObservationId}
+            onBack={() => setSelectedObservationId(null)}
+        />
+    );
+}
 
     return (
         <View style={styles.container}>
@@ -69,39 +149,65 @@ export default function MyReports({ onBack, title = "My reports" }) {
                 <Ionicons name="search-outline" size={20} color={colors.searchIcon} style={styles.searchIcon} />
                 <TextInput
                     style={styles.searchInput}
-                    placeholder="Select a coach..."
+                    placeholder="Search by coach name..."
                     placeholderTextColor={colors.searchIcon}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
+                {searchQuery.length > 0 && (
+                    <TouchableOpacity onPress={() => setSearchQuery('')}>
+                        <Ionicons name="close-circle" size={18} color={colors.searchIcon} />
+                    </TouchableOpacity>
+                )}
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
-                {RESULTS_DATA.map(item => (
-                    <TouchableOpacity key={item.id} style={styles.card}>
-                        <View style={styles.colName}>
-                            <Text style={styles.nameText}>{item.name}</Text>
-                        </View>
+            {error && (
+                <Text style={styles.errorText}>{error}</Text>
+            )}
 
-                        <View style={styles.colDateTime}>
-                            <Text style={styles.dateTimeText}>{item.date}</Text>
-                            <Text style={styles.dateTimeText}>{item.time}</Text>
-                        </View>
-
-                        <View style={styles.colVenue}>
-                            <Text style={styles.venueText}>{item.venue}</Text>
-                        </View>
-
-                        <View style={styles.colScore}>
-                            <View style={[styles.scoreBadge, { backgroundColor: item.color }]}>
-                                <Text style={styles.scoreText}>{item.score}%</Text>
+            {loading ? (
+                <View style={styles.centered}>
+                    <CustomLoader size={80} color={colors.primary} />
+                </View>
+            ) : filteredReports.length === 0 ? (
+                <View style={styles.centered}>
+                    <Text style={styles.emptyText}>No reports found</Text>
+                </View>
+            ) : (
+                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
+                    {filteredReports.map((item, index) => (
+                        <TouchableOpacity
+                            key={item?.id ?? index}
+                            style={styles.card}
+                            onPress={() => setSelectedObservationId(item.id)}
+                            activeOpacity={0.7}
+                        >
+                            <View style={styles.colName}>
+                                <Text style={styles.nameText}>{item?.coachName || 'Unknown'}</Text>
                             </View>
-                            <Ionicons name="chevron-forward" size={16} color={colors.chevron} style={styles.chevron} />
-                        </View>
-                    </TouchableOpacity>
-                ))}
-                <View style={{ height: 40 }} />
-            </ScrollView>
+
+                            <View style={styles.colDateTime}>
+                                <Text style={styles.dateTimeText}>{formatDate(item?.observationDate)}</Text>
+                                <Text style={styles.dateTimeText}>{item?.observationTime || '-'}</Text>
+                            </View>
+
+                            <View style={styles.colVenue}>
+                                <Text style={styles.venueText}>{item?.venue || '-'}</Text>
+                            </View>
+
+                            <View style={styles.colScore}>
+                                <View style={[styles.scoreBadge, { backgroundColor: getScoreColor(item?.score) }]}>
+                                    <Text style={styles.scoreText}>
+                                        {item?.score ? String(item.score) : '0%'}
+                                    </Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={16} color={colors.chevron} style={styles.chevron} />
+                            </View>
+                        </TouchableOpacity>
+                    ))}
+                    <View style={{ height: 40 }} />
+                </ScrollView>
+            )}
         </View>
     );
 }
@@ -147,6 +253,25 @@ const createStyles = (colors) => StyleSheet.create({
         fontFamily: 'Urbanist_400Regular',
         color: colors.searchText,
     },
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 60,
+    },
+    emptyText: {
+        fontSize: 14,
+        color: colors.textSecondary,
+        fontFamily: 'Urbanist_400Regular',
+    },
+    errorText: {
+        color: colors.error,
+        textAlign: 'center',
+        marginBottom: 12,
+        marginHorizontal: 16,
+        fontFamily: 'Urbanist_400Regular',
+        fontSize: 13,
+    },
     listContent: {
         paddingHorizontal: 16,
     },
@@ -175,7 +300,7 @@ const createStyles = (colors) => StyleSheet.create({
         color: colors.nameText,
     },
     colDateTime: {
-        flex: 1.5,
+        flex: 1,
     },
     dateTimeText: {
         fontSize: 12,

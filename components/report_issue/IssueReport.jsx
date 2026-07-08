@@ -1,8 +1,8 @@
+import CustomLoader from '@/components/common/CustomLoader';
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
-import CustomLoader from '@/components/common/CustomLoader';
 
 const COLORS = {
     light: {
@@ -63,7 +63,7 @@ export default function IssueReport({ reportId, onBack }) {
         try {
             setLoading(true);
             const response = await fetch(
-                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/report-issue/listBy/${reportId}`,
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/report-issue/listBy/${reportId}`,
                 {
                     headers: { Authorization: `Bearer ${token}` }
                 }

@@ -1,8 +1,8 @@
+import CustomLoader from '@/components/common/CustomLoader';
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
-import CustomLoader from '@/components/common/CustomLoader';
 import Svg, { Polyline } from 'react-native-svg';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -99,7 +99,7 @@ export default function StudentNumbers({ onBack }) {
                 redirect: "follow"
             };
 
-            const response = await fetch(`https://api.grabbite.com/api/coachpro/health-check-venues?year=${year}`, requestOptions);
+            const response = await fetch(`process.env.EXPO_PUBLIC_API_BASE_URLapi/coachpro/health-check-venues?year=${year}`, requestOptions);
             const result = await response.json();
 
             if (result.status && result.data) {

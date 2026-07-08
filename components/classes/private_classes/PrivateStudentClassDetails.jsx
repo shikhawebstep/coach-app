@@ -1,19 +1,19 @@
+import CustomLoader from "@/components/common/CustomLoader";
+import { useToast } from "@/components/common/Toast";
 import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-  Image,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  useColorScheme,
+    Image,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+    useColorScheme,
 } from "react-native";
-import CustomLoader from "@/components/common/CustomLoader";
-import { useToast } from "@/components/common/Toast";
 
 const MONTHS = [
   "January",
@@ -66,7 +66,7 @@ export default function PrivateStudentClassDetails({
         redirect: "follow",
       };
       const response = await fetch(
-        `https://api.grabbite.com/api/coachpro/one-to-one/booking/${bookingId}`,
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/one-to-one/booking/${bookingId}`,
         requestOptions,
       );
       const result = await response.json();
@@ -113,7 +113,7 @@ export default function PrivateStudentClassDetails({
       };
 
       const response = await fetch(
-        `https://api.grabbite.com/api/coachpro/one-to-one/booking/${bookingId}/date`,
+        `process.env.EXPO_PUBLIC_API_BASE_URLapi/coachpro/one-to-one/booking/${bookingId}/date`,
         requestOptions,
       );
       const result = await response.json();

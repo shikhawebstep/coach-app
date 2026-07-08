@@ -1,16 +1,16 @@
+import CustomLoader from "@/components/common/CustomLoader";
 import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  useColorScheme,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+    useColorScheme,
 } from "react-native";
-import CustomLoader from "@/components/common/CustomLoader";
 import AddTrialist from "../common/AddTrialist";
 
 export default function WeeklySessionTrainingDetails({
@@ -43,7 +43,7 @@ export default function WeeklySessionTrainingDetails({
     try {
       setLoading(true);
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/weekly-classes/session/${sessionId}`,
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/classes/weekly-classes/session/${sessionId}`,
         {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
@@ -103,7 +103,7 @@ export default function WeeklySessionTrainingDetails({
 
     try {
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/weekly-classes/session/${sessionId}/attendance/${studentId}`,
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/classes/weekly-classes/session/${sessionId}/attendance/${studentId}`,
         {
           method: "PATCH",
           headers: {

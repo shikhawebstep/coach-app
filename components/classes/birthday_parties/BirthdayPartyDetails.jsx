@@ -1,18 +1,18 @@
 // BirthdayPartyDetails.jsx
 
+import CustomLoader from '@/components/common/CustomLoader';
 import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  useColorScheme,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+    useColorScheme,
 } from "react-native";
-import CustomLoader from '@/components/common/CustomLoader';
 import MiniMapView from "./MiniMapView";
 
 export default function BirthdayPartyDetails({
@@ -62,7 +62,7 @@ export default function BirthdayPartyDetails({
     try {
       setLoading(true);
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/birthday-party/booking/${initialBooking?.id}`,
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/birthday-party/booking/${initialBooking?.id}`,
         { method: "GET", headers: { Authorization: `Bearer ${token}` } },
       );
       const result = await response.json();

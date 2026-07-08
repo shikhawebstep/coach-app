@@ -1,17 +1,17 @@
+import CustomLoader from "@/components/common/CustomLoader";
+import { useToast } from "@/components/common/Toast";
 import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  useColorScheme,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+    useColorScheme,
 } from "react-native";
-import CustomLoader from "@/components/common/CustomLoader";
-import { useToast } from "@/components/common/Toast";
 
 export default function WeeklyStudentClassDetails({
   onBack,
@@ -51,7 +51,7 @@ export default function WeeklyStudentClassDetails({
     try {
       setLoading(true);
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/weekly-classes/${bookingId}/notes`,
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/classes/weekly-classes/${bookingId}/notes`,
         {
           method: "POST",
           headers: {

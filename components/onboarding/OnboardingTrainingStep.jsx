@@ -21,7 +21,7 @@ const TrainingStep = ({ onComplete, onBack, isCompleted, styles, COLORS, authTok
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("https://api.grabbite.com/api/coachpro/courses/listing", {
+      const response = await fetch("process.env.EXPO_PUBLIC_API_BASE_URLapi/coachpro/courses/listing", {
         method: "GET",
         headers: { Authorization: `Bearer ${authToken}` },
       });

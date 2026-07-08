@@ -1,17 +1,17 @@
+import CustomLoader from "@/components/common/CustomLoader";
 import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  useColorScheme,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+    useColorScheme,
 } from "react-native";
-import CustomLoader from "@/components/common/CustomLoader";
 
 export default function PrivateClassesBookings({ onBack, onStudentSelect }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -38,8 +38,8 @@ export default function PrivateClassesBookings({ onBack, onStudentSelect }) {
         redirect: "follow",
       };
       const response = await fetch(
-        "https://api.grabbite.com/api/coachpro/one-to-one/bookings",
-        requestOptions,
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/one-to-one/bookings`,
+        requestOptions
       );
       const result = await response.json();
       if (response.ok) {

@@ -1,9 +1,9 @@
+import CustomLoader from '@/components/common/CustomLoader';
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { useEffect, useRef, useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
-import CustomLoader from '@/components/common/CustomLoader';
 
 const { width } = Dimensions.get('window');
 
@@ -83,7 +83,7 @@ export default function MusicPlayer({ onBack }) {
         try {
             setLoading(true);
             const response = await fetch(
-                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/music/playlist`,
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/music/playlist`,
                 {
                     method: "GET",
                     headers: { Authorization: `Bearer ${token || ""}` },

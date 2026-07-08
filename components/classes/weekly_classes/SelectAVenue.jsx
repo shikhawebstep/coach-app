@@ -1,16 +1,16 @@
+import CustomLoader from "@/components/common/CustomLoader";
 import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  useColorScheme,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+    useColorScheme,
 } from "react-native";
-import CustomLoader from "@/components/common/CustomLoader";
 
 export default function SelectAVenue({ onBack, onVenueSelect }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,7 +29,7 @@ export default function SelectAVenue({ onBack, onVenueSelect }) {
     try {
       setLoading(true);
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/weekly-classes/venues`,
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/classes/weekly-classes/venues`,
         {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },

@@ -1,3 +1,4 @@
+import { useToast } from '@/components/common/Toast';
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -16,7 +17,6 @@ import {
     View,
     useColorScheme
 } from 'react-native';
-import { useToast } from '@/components/common/Toast';
 
 const { width } = Dimensions.get('window');
 
@@ -77,7 +77,7 @@ export default function ProfileModal({ visible, onClose }) {
         if (!token || !userId) return;
         const myHeaders = new Headers();
         myHeaders.append('Authorization', `Bearer ${token}`);
-        fetch(`https://api.grabbite.com/api/coachpro/account-profile/${userId}`, {
+        fetch(`process.env.EXPO_PUBLIC_API_BASE_URLapi/coachpro/account-profile/${userId}`, {
             method: 'GET',
             headers: myHeaders,
         })
@@ -120,7 +120,7 @@ export default function ProfileModal({ visible, onClose }) {
             if (postalCode) formdata.append('postalCode', postalCode);
 
             const response = await fetch(
-                `https://api.grabbite.com/api/coachPro/account-profile/update/profile/${userId}`,
+                `process.env.EXPO_PUBLIC_API_BASE_URLapi/coachPro/account-profile/update/profile/${userId}`,
                 { method: 'PUT', body: formdata, redirect: 'follow' }
             );
             const result = await response.json();
@@ -152,7 +152,7 @@ export default function ProfileModal({ visible, onClose }) {
             myHeaders.append('Content-Type', 'application/json');
             myHeaders.append('Authorization', `Bearer ${token}`);
 
-            const response = await fetch('https://api.grabbite.com/api/coachpro/referal/create', {
+            const response = await fetch('process.env.EXPO_PUBLIC_API_BASE_URLapi/coachpro/referal/create', {
                 method: 'POST',
                 headers: myHeaders,
                 body: JSON.stringify({

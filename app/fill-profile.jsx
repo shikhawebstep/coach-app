@@ -44,7 +44,7 @@ export default function FillProfile() {
         if (!token || !userId) return;
         const myHeaders = new Headers();
         myHeaders.append('Authorization', `Bearer ${token}`);
-        fetch(`https://api.grabbite.com/api/coachpro/account-profile/${userId}`, {
+        fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/account-profile/${userId}`, {
             method: 'GET',
             headers: myHeaders,
         })
@@ -85,7 +85,7 @@ export default function FillProfile() {
         if (phone) formdata.append('phoneNumber', `${selectedCountry.code}${phone}`);
 
         const response = await fetch(
-            `https://api.grabbite.com/api/coachPro/account-profile/update/profile/${userId}`,
+            `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachPro/account-profile/update/profile/${userId}`,
             {
                 method: 'PUT',
                 headers: {

@@ -84,7 +84,7 @@ export default function HolidayCampDetails({ sessionId, onBack, onSyllabusClick,
         try {
             setLoading(true);
             const response = await fetch(
-                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/holiday-camp/session/${idToFetch}`,
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/classes/holiday-camp/session/${idToFetch}`,
                 {
                     method: 'GET',
                     headers: { Authorization: `Bearer ${token}` },
@@ -124,7 +124,7 @@ export default function HolidayCampDetails({ sessionId, onBack, onSyllabusClick,
 
     const handleAttendance = async (studentId, status) => {
         try {
-            const url = `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/holiday-camp/session/${currentSessionId}/attendance/${studentId}`;
+            const url = `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/classes/holiday-camp/session/${currentSessionId}/attendance/${studentId}`;
             const response = await fetch(url, {
                 method: 'PATCH',
                 headers: {

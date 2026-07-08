@@ -1,8 +1,8 @@
+import CustomLoader from '@/components/common/CustomLoader';
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
-import CustomLoader from '@/components/common/CustomLoader';
 const CATEGORIES = ['Equipment', 'Incident', 'Complaint', 'Coaches', 'Venue', 'Other'];
 
 const COLORS = {
@@ -78,7 +78,7 @@ export default function ReportIssueForm({ onBack }) {
         try {
             setLoadingVenues(true);
             const response = await fetch(
-                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/classes/weekly-classes/venues`,
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/classes/weekly-classes/venues`,
                 {
                     headers: { Authorization: `Bearer ${token}` }
                 }
@@ -140,7 +140,7 @@ export default function ReportIssueForm({ onBack }) {
         try {
             setSubmitting(true);
             const response = await fetch(
-                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/report-issue/create`,
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/report-issue/create`,
                 {
                     method: 'POST',
                     headers: {

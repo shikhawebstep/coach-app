@@ -1,8 +1,8 @@
+import CustomLoader from '@/components/common/CustomLoader';
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
-import CustomLoader from '@/components/common/CustomLoader';
 
 const CATEGORIES = ['Equipment', 'Incident', 'Complaint', 'Coaches', 'Venue', 'Other'];
 
@@ -64,7 +64,7 @@ export default function ReportIssueList({ onNewReport, onReportSelect, onBack })
         try {
             setLoading(true);
             const response = await fetch(
-                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/report-issue/list`,
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/report-issue/list`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             const result = await response.json();

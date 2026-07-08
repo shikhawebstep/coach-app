@@ -1,8 +1,10 @@
+import CustomLoader from '@/components/common/CustomLoader';
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+    Dimensions,
     ImageBackground,
     ScrollView,
     StatusBar,
@@ -10,10 +12,8 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View,
-    Dimensions
+    View
 } from 'react-native';
-import CustomLoader from '@/components/common/CustomLoader';
 
 const { width } = Dimensions.get('window');
 
@@ -55,7 +55,7 @@ export default function TrainingFlow() {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch("https://api.grabbite.com/api/coachpro/courses/listing", {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/courses/listing`, {
                 method: "GET",
                 headers: { Authorization: `Bearer ${token}` },
             });

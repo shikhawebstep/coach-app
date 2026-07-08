@@ -1,9 +1,9 @@
+import CustomLoader from '@/components/common/CustomLoader';
 import { useAuth } from '@/context/AuthContext';
 import { getNotificationVisual } from '@/utils/notificationVisuals';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
-import CustomLoader from '@/components/common/CustomLoader';
 
 // Group flat notifications array into sections by category
 function groupByCategory(notifications = []) {
@@ -40,7 +40,7 @@ export default function NotificationsList({ onNotificationSelect }) {
         try {
             setLoading(true);
             const response = await fetch(
-                `${process.env.EXPO_PUBLIC_API_BASE_URL}/api/coachpro/notifications/list`,
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/notifications/list`,
                 {
                     method: 'GET',
                     headers: { Authorization: `Bearer ${token}` },
