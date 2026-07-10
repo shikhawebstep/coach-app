@@ -1,7 +1,9 @@
 import { Colors } from '@/constants/theme';
 import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { useRouter } from 'expo-router';
 import PercentageBar from '../common/PercentageBar';
 const Banner = () => {
+    const router = useRouter();
     const colorScheme = useColorScheme();
     const theme = colorScheme ?? 'light';
     const textColor = Colors[theme].text;
@@ -58,7 +60,9 @@ const Banner = () => {
 
                 <View style={styles.textBetween}>
                     <Text style={[styles.nextSession, { color: textColor }]}>What’s coming up...</Text>
-                    <Text style={styles.seeAll}>See full calendar</Text>
+                    <TouchableOpacity onPress={() => router.push('/calendar')}>
+                        <Text style={styles.seeAll}>See full calendar</Text>
+                    </TouchableOpacity>
                 </View>
                 <ScrollView
                     horizontal
@@ -68,7 +72,17 @@ const Banner = () => {
                     contentContainerStyle={{ paddingHorizontal: 16 }}
                 >
                     {bookings.map((booking, index) => (
-                        <View key={index} style={{ width: 280, marginRight: 16 }}>
+                        <TouchableOpacity
+                            key={index}
+                            style={{ width: 280, marginRight: 16 }}
+                            onPress={() => {
+                                if (booking.service === 'Birthday Party') {
+                                    router.push({ pathname: '/classes', params: { view: 'birthday' } });
+                                } else if (booking.service === 'Holiday Camps') {
+                                    router.push({ pathname: '/classes', params: { view: 'holiday' } });
+                                }
+                            }}
+                        >
                             <ImageBackground imageStyle={styles.bgImage}
                                 source={booking.image} style={{ padding: 20, paddingTop: 100 }}>
                                 <View style={styles.overlay} />
@@ -80,7 +94,7 @@ const Banner = () => {
                                     </View>
                                 </View>
                             </ImageBackground>
-                        </View>
+                        </TouchableOpacity>
                     ))}
 
                 </ScrollView>

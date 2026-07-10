@@ -99,7 +99,7 @@ export default function StudentNumbers({ onBack }) {
                 redirect: "follow"
             };
 
-            const response = await fetch(`process.env.EXPO_PUBLIC_API_BASE_URLapi/coachpro/health-check-venues?year=${year}`, requestOptions);
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/health-check-venues?year=${year}`, requestOptions);
             const result = await response.json();
 
             if (result.status && result.data) {

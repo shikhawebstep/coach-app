@@ -609,7 +609,6 @@ export default function QcReportFlow({ onBack }) {
         for (const [key, value] of form.entries()) {
             debugPayload[key] = value;
         }
-        console.log('📤 Submitting observation report with payload:', debugPayload);
         // ────────────────────────────────────────────────────────────────
 
         // ⚠️ TEST MODE: set to true to skip the real network call and just
@@ -617,7 +616,6 @@ export default function QcReportFlow({ onBack }) {
         const TEST_MODE = false;
 
         if (TEST_MODE) {
-            console.log('🧪 TEST_MODE active — skipping real API call, simulating success');
             await new Promise(resolve => setTimeout(resolve, 1000)); // fake latency
             setScreen('congrats');
             return;
@@ -634,7 +632,6 @@ export default function QcReportFlow({ onBack }) {
         });
 
         const json = await res.json();
-        console.log('📥 Server response:', json);
 
         if (!res.ok) throw new Error(json?.message || 'Failed to submit report');
 

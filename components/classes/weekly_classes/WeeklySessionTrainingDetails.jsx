@@ -115,7 +115,6 @@ export default function WeeklySessionTrainingDetails({
       );
 
       if (response.ok) {
-        console.log("✅ Attendance updated successfully");
       } else {
         const errorText = await response.text();
         console.error(

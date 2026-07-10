@@ -41,7 +41,6 @@ export default function Login() {
 
             const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/auth/login`, requestOptions);
             const resultText = await response.text();
-            console.log(resultText);
 
             let resultObj = {};
             try {

@@ -51,7 +51,6 @@ export default function UploadVideo({ onBack, onNext }) {
                 setVideo(res.assets[0]);
             }
         } catch (err) {
-            console.log('Error picking video:', err);
         } finally {
             setPicking(false);
         }

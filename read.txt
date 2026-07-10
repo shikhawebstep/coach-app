@@ -1,7 +1,405 @@
+==================================================
+        EXPO APP COMPLETE SETUP & BUILD GUIDE
+        (ANDROID APK + IOS BUILD)
+==================================================
+
+
+==================================================
+STEP 1: INSTALL EXPO CLI
+==================================================
+
+First time Expo install karna ho:
+
 npm install -g expo-cli
+
+
+Check Expo installation:
+
 expo --version
+
+
+
+==================================================
+STEP 2: CREATE NEW EXPO PROJECT
+==================================================
+
+New Expo app create karo:
+
 npx create-expo-app coach
+
+
+Project folder me jao:
+
+cd coach
+
+
+
+==================================================
+STEP 3: RUN EXPO APP
+==================================================
+
+Development server start karo:
+
 npx expo start
+
+
+QR code aayega.
+
+Use:
+- Android → Expo Go app se scan
+- iPhone → Camera/Expo Go se scan
+
+
+
+==================================================
+STEP 4: INSTALL REQUIRED PACKAGES
+==================================================
+
+
+React Navigation install:
+
 npm install @react-navigation/native
+
+
+Navigation dependencies:
+
 npx expo install react-native-screens react-native-safe-area-context
+
+
+Expo Icons:
+
 npx expo install @expo/vector-icons
+
+
+
+==================================================
+STEP 5: RUN APP FROM OTHER NETWORK
+==================================================
+
+Agar client ya device same WiFi par nahi hai:
+
+
+Tunnel mode:
+
+npx expo start --tunnel
+
+
+Isse internet ke through app access kar sakte hain.
+
+
+
+==================================================
+STEP 6: PREPARE APP FOR APK / IOS BUILD
+==================================================
+
+
+EAS CLI install karo:
+
+npm install -g eas-cli
+
+
+Check EAS:
+
+npx eas --version
+
+
+Expo account login:
+
+npx eas login
+
+
+Browser open hoga:
+Expo account se login karo.
+
+
+
+==================================================
+STEP 7: CONFIGURE EAS PROJECT
+==================================================
+
+
+Project root folder me command:
+
+npx eas build:configure
+
+
+Prompt:
+
+Which platforms would you like to configure?
+
+
+Select:
+
+All
+
+
+(All select karne se Android + iOS dono configure honge)
+
+
+EAS automatically:
+
+- eas.json create karega
+- Project ko EAS se connect karega
+
+
+
+==================================================
+STEP 8: CREATE ANDROID APK
+==================================================
+
+
+Android APK generate karne ke liye:
+
+
+npx eas build --platform android --profile preview
+
+
+First time prompt:
+
+
+Generate a new Android Keystore?
+
+
+Select:
+
+Y
+
+
+EAS automatically Android signing keystore create karega.
+
+
+Build complete hone ke baad:
+
+Build finished
+
+
+Expo dashboard me:
+
+Project
+ ↓
+Builds
+ ↓
+Android Build
+
+
+Wahan se:
+
+- Install link
+- APK Download
+
+
+mil jayega.
+
+
+
+==================================================
+STEP 9: SHARE ANDROID APK WITH CLIENT
+==================================================
+
+
+Client ko APK dene ke liye:
+
+
+Option 1:
+
+APK download karo
+↓
+WhatsApp / Drive / Email se send karo
+
+
+Option 2:
+
+Expo Install link share karo
+
+
+
+Client:
+
+APK install karega
+↓
+App use karega
+
+
+
+==================================================
+STEP 10: CREATE IOS BUILD
+==================================================
+
+
+iOS build ke liye:
+
+
+npx eas build --platform ios --profile preview
+
+
+
+Requirements:
+
+- Apple Developer Account
+- Apple ID
+
+
+iOS me APK nahi hoti.
+
+iOS file:
+
+.ipa
+
+
+
+==================================================
+STEP 11: UPLOAD IOS APP TO TESTFLIGHT
+==================================================
+
+
+iOS submit:
+
+npx eas submit --platform ios
+
+
+Process:
+
+IPA upload
+↓
+App Store Connect
+↓
+TestFlight
+↓
+Client Testing
+
+
+
+==================================================
+STEP 12: FUTURE APP UPDATE BUILD
+==================================================
+
+
+Android new APK:
+
+npx eas build --platform android --profile preview
+
+
+iOS new build:
+
+npx eas build --platform ios --profile preview
+
+
+
+==================================================
+STEP 13: CHECK BUILD STATUS
+==================================================
+
+
+All builds dekhne ke liye:
+
+npx eas build:list
+
+
+
+==================================================
+STEP 14: IMPORTANT PROJECT FILES
+==================================================
+
+
+Main files:
+
+
+app.json
+
+package.json
+
+eas.json
+
+
+
+==================================================
+STEP 15: USEFUL COMMANDS
+==================================================
+
+
+Expo version:
+
+npx expo --version
+
+
+EAS login check:
+
+npx eas whoami
+
+
+Start web:
+
+npx expo start --web
+
+
+Start development:
+
+npx expo start
+
+
+
+==================================================
+COMPLETE FLOW SUMMARY
+==================================================
+
+
+NEW PROJECT:
+
+npm install -g expo-cli
+
+↓
+
+npx create-expo-app coach
+
+↓
+
+cd coach
+
+↓
+
+npx expo start
+
+
+PACKAGES:
+
+npm install @react-navigation/native
+
+↓
+
+npx expo install react-native-screens react-native-safe-area-context
+
+↓
+
+npx expo install @expo/vector-icons
+
+
+BUILD SETUP:
+
+npm install -g eas-cli
+
+↓
+
+npx eas login
+
+↓
+
+npx eas build:configure
+
+↓
+
+Select All
+
+
+ANDROID:
+
+npx eas build --platform android --profile preview
+
+
+IOS:
+
+npx eas build --platform ios --profile preview
+
+
+==================================================
+                    END
+==================================================

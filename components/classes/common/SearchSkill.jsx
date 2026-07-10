@@ -12,6 +12,7 @@ import {
     View,
     useColorScheme,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 // ─────────────────────────────────────────────
 // LEVEL META — maps sessionPlan's `${level}_video` / `${level}_banner`
@@ -27,21 +28,29 @@ const LEVEL_META = {
 
 const LEVEL_KEYS = Object.keys(LEVEL_META);
 
+const LEVEL_FALLBACK_IMAGES = {
+    beginner: require('@/assets/images/skill1.png'),
+    intermediate: require('@/assets/images/skill2.png'),
+    advanced: require('@/assets/images/skill3.png'),
+    pro: require('@/assets/images/skill4.png'),
+};
+
 const COLORS = {
     light: {
         background: '#fff',
         icon: '#000',
         headerTitle: '#1a1a1a',
         headerSubtitle: '#6B7280',
-        searchBg: '#fff',
+        searchBg: '#F5F5F7',
         searchBorder: '#E5E7EB',
         searchText: '#000',
-        placeholderText: '#a0a0a0',
-        filterPillBg: '#fff',
-        filterPillBorder: '#3B82F6',
-        filterPillText: '#3B82F6',
-        activeFilterPillBg: '#EBF5FF',
-        activeFilterText: '#2563EB',
+        placeholderText: '#8E8E93',
+        filterPillBg: 'transparent',
+        filterPillBorder: '#3771E0',
+        filterPillText: '#3771E0',
+        activeFilterPillBg: '#3771E0',
+        activeFilterPillBorder: '#3771E0',
+        activeFilterText: '#fff',
         emptyText: '#9CA3AF',
         cardFallbackBg: '#F3F4F6',
     },
@@ -50,15 +59,16 @@ const COLORS = {
         icon: '#F5F5F5',
         headerTitle: '#F5F5F5',
         headerSubtitle: '#9CA3AF',
-        searchBg: '#1E1E1E',
-        searchBorder: '#2A2A2A',
+        searchBg: '#1C1C1E',
+        searchBorder: '#2C2C2E',
         searchText: '#F5F5F5',
-        placeholderText: '#9CA3AF',
-        filterPillBg: '#1E1E1E',
-        filterPillBorder: '#3B82F6',
-        filterPillText: '#3B82F6',
-        activeFilterPillBg: '#1E3A8A',
-        activeFilterText: '#60A5FA',
+        placeholderText: '#8E8E93',
+        filterPillBg: 'transparent',
+        filterPillBorder: '#3771E0',
+        filterPillText: '#3771E0',
+        activeFilterPillBg: '#3771E0',
+        activeFilterPillBorder: '#3771E0',
+        activeFilterText: '#fff',
         emptyText: '#6B7280',
         cardFallbackBg: '#1E1E1E',
     },
@@ -80,7 +90,6 @@ export default function SearchSkill({ sessionPlan, onBack }) {
 
     // Logs once per actual sessionPlan change (by id), not once per render
     useEffect(() => {
-        if (__DEV__) console.log('SearchSkill.jsx: sessionPlan:', sessionPlan);
     }, [sessionPlan?.id]);
 
     // Build the video list straight from the session plan — only levels
@@ -88,13 +97,17 @@ export default function SearchSkill({ sessionPlan, onBack }) {
     // recomputes when sessionPlan actually changes, not on every render.
     const videos = useMemo(() => (
         LEVEL_KEYS
-            .map((key) => ({
-                id: key,
-                level: LEVEL_META[key].label,
-                color: LEVEL_META[key].color,
-                url: sessionPlan?.[`${key}_video`] || null,
-                banner: sessionPlan?.[`${key}_banner`] || null,
-            }))
+            .map((key) => {
+                const levelData = sessionPlan?.levels?.[key]?.[0];
+                return {
+                    id: key,
+                    level: LEVEL_META[key].label,
+                    skillName: levelData?.skillOfTheDay || LEVEL_META[key].label,
+                    color: LEVEL_META[key].color,
+                    url: sessionPlan?.[`${key}_video`] || null,
+                    banner: sessionPlan?.[`${key}_banner`] || null,
+                };
+            })
             .filter((v) => !!v.url)
     ), [sessionPlan]);
 
@@ -103,7 +116,9 @@ export default function SearchSkill({ sessionPlan, onBack }) {
     const filteredVideos = useMemo(() => (
         videos.filter((v) => {
             const matchesFilter = activeFilter === 'All' || v.level === activeFilter;
-            const matchesSearch = v.level.toLowerCase().includes(searchQuery.trim().toLowerCase());
+            const matchesSearch = 
+                v.level.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+                v.skillName.toLowerCase().includes(searchQuery.trim().toLowerCase());
             return matchesFilter && matchesSearch;
         })
     ), [videos, activeFilter, searchQuery]);
@@ -115,12 +130,7 @@ export default function SearchSkill({ sessionPlan, onBack }) {
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={theme.icon} />
                 </TouchableOpacity>
-                <View>
-                    <Text style={styles.headerTitle}>Session Videos</Text>
-                    {!!sessionPlan?.groupName && (
-                        <Text style={styles.headerSubtitle}>{sessionPlan.groupName}</Text>
-                    )}
-                </View>
+                <Text style={styles.headerTitle}>Search a skill</Text>
             </View>
 
             {videos.length > 0 && (
@@ -130,7 +140,7 @@ export default function SearchSkill({ sessionPlan, onBack }) {
                         <Ionicons name="search-outline" size={20} color={theme.placeholderText} style={styles.searchIcon} />
                         <TextInput
                             style={styles.searchInput}
-                            placeholder="Search a level..."
+                            placeholder="Search a skill..."
                             placeholderTextColor={theme.placeholderText}
                             value={searchQuery}
                             onChangeText={setSearchQuery}
@@ -186,22 +196,23 @@ export default function SearchSkill({ sessionPlan, onBack }) {
                             onPress={() => setPlayingVideo(video)}
                             activeOpacity={0.85}
                         >
-                            {video.banner ? (
-                                <Image source={{ uri: video.banner }} style={styles.skillImage} resizeMode="cover" />
-                            ) : (
-                                <View style={[styles.skillImage, styles.cardFallback, { backgroundColor: video.color }]}>
-                                    <Ionicons name="football-outline" size={36} color="rgba(255,255,255,0.35)" />
-                                </View>
-                            )}
+                            <Image 
+                                source={
+                                    (video.banner && typeof video.banner === 'string' && video.banner.trim().length > 0)
+                                        ? { uri: video.banner }
+                                        : (LEVEL_FALLBACK_IMAGES[video.id] || LEVEL_FALLBACK_IMAGES.beginner)
+                                } 
+                                style={styles.skillImage} 
+                                resizeMode="cover" 
+                            />
 
-                            <View style={styles.videoBadge}>
-                                <Ionicons name="videocam" size={12} color="#fff" />
-                            </View>
-
-                            <View style={styles.textOverlay}>
-                                <Text style={styles.skillName}>{video.level}</Text>
-                                <Text style={styles.skillLevel}>Tap to watch</Text>
-                            </View>
+                            <LinearGradient
+                                colors={['transparent', 'rgba(0,0,0,0.85)']}
+                                style={styles.textOverlay}
+                            >
+                                <Text style={styles.skillName} numberOfLines={1}>{video.skillName}</Text>
+                                <Text style={styles.skillLevel}>{video.level}</Text>
+                            </LinearGradient>
 
                             <View style={styles.playButtonOverlay}>
                                 <View style={styles.playButtonCircle}>
@@ -254,14 +265,14 @@ const getStyles = (theme) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
-        paddingTop: 16,
-        paddingBottom: 24,
+        paddingTop: 20,
+        paddingBottom: 15,
     },
     backButton: {
-        marginRight: 12,
+        marginRight: 16,
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 28,
         fontFamily: 'Urbanist_700Bold',
         color: theme.headerTitle,
     },
@@ -278,9 +289,9 @@ const getStyles = (theme) => StyleSheet.create({
         backgroundColor: theme.searchBg,
         borderWidth: 1,
         borderColor: theme.searchBorder,
-        borderRadius: 12,
+        borderRadius: 16,
         paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingVertical: 14,
         marginBottom: 20,
     },
     searchIcon: {
@@ -301,18 +312,19 @@ const getStyles = (theme) => StyleSheet.create({
     },
     filterPill: {
         paddingHorizontal: 20,
-        paddingVertical: 8,
-        borderRadius: 20,
+        paddingVertical: 10,
+        borderRadius: 25,
         borderWidth: 1.5,
         borderColor: theme.filterPillBorder,
         backgroundColor: theme.filterPillBg,
     },
     activeFilterPill: {
         backgroundColor: theme.activeFilterPillBg,
+        borderColor: theme.activeFilterPillBorder,
     },
     filterText: {
         color: theme.filterPillText,
-        fontSize: 14,
+        fontSize: 15,
         fontFamily: 'Urbanist_700Bold',
     },
     activeFilterText: {
@@ -340,8 +352,8 @@ const getStyles = (theme) => StyleSheet.create({
     },
     gridItem: {
         width: '48%',
-        height: 200,
-        borderRadius: 24,
+        height: 220,
+        borderRadius: 28,
         overflow: 'hidden',
         marginBottom: 16,
         backgroundColor: '#333',
@@ -373,19 +385,18 @@ const getStyles = (theme) => StyleSheet.create({
         right: 0,
         paddingHorizontal: 16,
         paddingBottom: 16,
-        paddingTop: 30,
-        backgroundColor: 'rgba(0,0,0,0.3)',
+        paddingTop: 45,
     },
     skillName: {
         color: '#fff',
-        fontSize: 18,
+        fontSize: 20,
         fontFamily: 'Urbanist_700Bold',
-        marginBottom: 4,
+        marginBottom: 2,
     },
     skillLevel: {
-        color: '#fff',
+        color: 'rgba(255,255,255,0.8)',
         fontSize: 12,
-        fontFamily: 'Urbanist_400Regular',
+        fontFamily: 'Urbanist_500Medium',
     },
     playButtonOverlay: {
         position: 'absolute',
@@ -394,15 +405,17 @@ const getStyles = (theme) => StyleSheet.create({
         alignItems: 'center',
     },
     playButtonCircle: {
-        width: 48,
-        height: 48,
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        borderRadius: 24,
+        width: 50,
+        height: 50,
+        backgroundColor: 'rgba(0,0,0,0.35)',
+        borderRadius: 25,
         justifyContent: 'center',
         alignItems: 'center',
+        borderWidth: 1.5,
+        borderColor: 'rgba(255,255,255,0.4)',
     },
     playIcon: {
-        marginLeft: 4,
+        marginLeft: 3,
     },
 
     // Video player modal

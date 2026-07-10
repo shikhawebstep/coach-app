@@ -1,6 +1,6 @@
 import * as DocumentPicker from 'expo-document-picker';
 import { useState } from "react";
-import { Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, Text, TextInput, TouchableOpacity, View ,Platform} from "react-native";
 import { QUALIFICATION_TYPES } from "./OnboardingConstants";
 
 // ─────────────────────────────────────────────
@@ -13,7 +13,6 @@ const QualificationsStep = ({ onNext, onComplete, onBack, isCompleted, styles, C
   const [notes, setNotes] = useState('');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
-  console.log('userId', userId);
 
   // Map your UI qualification ids -> API field names
   const FIELD_MAP = {
@@ -30,7 +29,6 @@ const QualificationsStep = ({ onNext, onComplete, onBack, isCompleted, styles, C
         copyToCacheDirectory: true,
       });
 
-      console.log('DocumentPicker result:', result);
 
       if (result.canceled) return;
 
@@ -42,85 +40,76 @@ const QualificationsStep = ({ onNext, onComplete, onBack, isCompleted, styles, C
       setError(`Could not open file picker: ${e.message}`);
     }
   };
+  const appendFileToFormData = async (formdata, fieldName, file) => {
+  if (Platform.OS === "web") {
+    const res = await fetch(file.uri);      // blob: URL -> actual Blob
+    const blob = await res.blob();
+    formdata.append(fieldName, blob, file.name || `${fieldName}_upload`);
+  } else {
+    formdata.append(fieldName, {
+      uri: file.uri,
+      name: file.name || `${fieldName}_upload`,
+      type: file.mimeType || "application/octet-stream",
+    });
+  }
+};
 
   const toggleNotPossess = (id) => setNotPossess((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  const handleComplete = async () => {
-    setUploading(true);
-    setError(null);
-    try {
-      const formdata = new FormData();
-      let fileCount = 0;
+ const handleComplete = async () => {
+  setUploading(true);
+  setError(null);
+  try {
+    const formdata = new FormData();
+    let fileCount = 0;
 
-      QUALIFICATION_TYPES.forEach((qual) => {
-        const fieldName = FIELD_MAP[qual.id];
-        if (!fieldName) return;
-        const file = files[qual.id];
-        if (file && !notPossess[qual.id]) {
-          formdata.append(fieldName, {
-            uri: file.uri,
-            name: file.name || `${fieldName}_upload`,
-            type: file.mimeType || "application/octet-stream",
-          });
-          fileCount++;
-        }
-      });
-
-      if (notes) formdata.append("notes", notes);
-
-      console.log('--- Upload debug ---');
-      console.log('fileCount:', fileCount);
-      console.log('files state:', files);
-      console.log('userId:', userId);
-      console.log('token present:', !!token, token?.slice(0, 20));
-
-      if (fileCount === 0 && !notes) {
-        setError("Please upload at least one document or add notes");
-        setUploading(false);
-        return;
+    for (const qual of QUALIFICATION_TYPES) {
+      const fieldName = FIELD_MAP[qual.id];
+      if (!fieldName) continue;
+      const file = files[qual.id];
+      if (file && !notPossess[qual.id]) {
+        await appendFileToFormData(formdata, fieldName, file);
+        fileCount++;
       }
-
-      const response = await fetch(
-        `process.env.EXPO_PUBLIC_API_BASE_URLapi/coachPro/account-profile/upload/qualifications/${userId}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formdata,
-        }
-      );
-
-      console.log('response status:', response.status);
-      console.log('response headers:', JSON.stringify([...response.headers.entries()]));
-
-      // Read the body as text FIRST — response.json() will throw and swallow
-      // the actual error body if the server returns HTML/plain-text on failure
-      const rawText = await response.text();
-      console.log('response raw body:', rawText);
-
-      if (!response.ok) {
-        throw new Error(`Upload failed (${response.status}): ${rawText}`);
-      }
-
-      let result;
-      try {
-        result = JSON.parse(rawText);
-      } catch (parseErr) {
-        throw new Error(`Server returned non-JSON: ${rawText.slice(0, 200)}`);
-      }
-
-      console.log('parsed result:', result);
-
-      if (onComplete) onComplete();
-      else if (onNext) onNext();
-    } catch (e) {
-      console.error('Upload error full:', e);
-      setError(e.message || "Upload failed");
-    } finally {
-      setUploading(false);
     }
-  };
+
+    if (notes) formdata.append("notes", notes);
+
+
+    if (fileCount === 0 && !notes) {
+      setError("Please upload at least one document or add notes");
+      setUploading(false);
+      return;
+    }
+
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachPro/account-profile/upload/qualifications/${userId}`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formdata,
+      }
+    );
+
+    const rawText = await response.text();
+    if (!response.ok) throw new Error(`Upload failed (${response.status}): ${rawText}`);
+
+    let result;
+    try {
+      result = JSON.parse(rawText);
+    } catch {
+      throw new Error(`Server returned non-JSON: ${rawText.slice(0, 200)}`);
+    }
+
+    if (onComplete) onComplete();
+    else if (onNext) onNext();
+  } catch (e) {
+    console.error('Upload error full:', e);
+    setError(e.message || "Upload failed");
+  } finally {
+    setUploading(false);
+  }
+};
 
   return (
     <View style={styles.stepContainer}>

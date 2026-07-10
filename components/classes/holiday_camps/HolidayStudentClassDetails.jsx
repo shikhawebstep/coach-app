@@ -44,7 +44,6 @@ const COLORS = {
 
 export default function HolidayStudentClassDetails({ student, onBack, onNotesClick }) {
 
-    console.log("HolidayStudentClassDetails - student:", student);
     const studentName = student?.name || "Unknown";
     const age = student?.age || "N/A";
     

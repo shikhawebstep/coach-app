@@ -3,13 +3,13 @@ import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from "react-native";
 
 export default function SelectAVenueList({ venueId, onBack, onSessionSelect }) {
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
   },
   colSession: {
-    width: 78,
+    flex:1,
   },
   sessionLabel: {
     fontSize: 14,
@@ -487,6 +487,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   colDate: {
+     flex:1,
     width: 100,
   },
   cardText: {

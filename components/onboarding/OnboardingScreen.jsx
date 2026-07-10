@@ -1,7 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { SafeAreaView, StatusBar, Text, TouchableOpacity, useColorScheme, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, SafeAreaView, StatusBar, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import Header from '../../components/layout/Header';
 
 import { DARK_COLORS, LIGHT_COLORS } from "./OnboardingColors";
@@ -32,6 +32,48 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
   const [completedTasks, setCompletedTasks] = useState({
     "1": false, "2": false, "3": false, "4": false,
   });
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  // ── Fetch profile once and derive which onboarding steps are already done ──
+  useEffect(() => {
+    if (!token || !userId) { setProfileLoading(false); return; }
+
+    const headers = new Headers();
+    headers.append('Authorization', `Bearer ${token}`);
+
+    fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/account-profile/${userId}`, {
+      method: 'GET', headers,
+    })
+      .then(r => r.json())
+      .then(result => {
+        if (result.status && result.data) {
+          const d = result.data;
+
+          // 1 = Contract
+          const contractDone = d.contract?.status === 'signed' || !!d.contract?.signedAt;
+
+          // 2 = Qualifications — considered done if at least one qualification doc is uploaded
+          // ⚠️ ADJUST: if there's a fixed required list of qualification keys, check against that
+          // instead of "any key present" (e.g. all of ['fa_level_1', 'safeguarding', ...] must exist).
+          const qualificationsDone = !!d.qualifications && Object.keys(d.qualifications).length > 0;
+
+          // 3 = Uniform
+          const uniformDone = d.uniformPurchaseStatus === 'completed';
+
+          // 4 = Training — ⚠️ no field returned by this API yet.
+          // Keeping whatever local state already has (e.g. set by handleCompleteTask)
+          // until backend exposes a training completion field.
+          setCompletedTasks(prev => ({
+            "1": contractDone,
+            "2": qualificationsDone,
+            "3": uniformDone,
+            "4": prev["4"],
+          }));
+        }
+      })
+      .catch(err => console.error('Onboarding profile fetch:', err))
+      .finally(() => setProfileLoading(false));
+  }, [token, userId]);
 
   const sharedProps = { styles, COLORS };
 
@@ -46,6 +88,23 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
     if (navigation) navigation.navigate("Home");
     else router.replace('/(tabs)');
   };
+
+  if (profileLoading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.screenBg }}>
+        <StatusBar
+          barStyle={scheme === 'light' ? 'dark-content' : 'light-content'}
+          backgroundColor={COLORS.headerBg}
+        />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 }}>
+          <ActivityIndicator color={COLORS.blueBtn} size="large" />
+          <Text style={{ color: COLORS.textSecondary, fontFamily: 'Urbanist_500Medium' }}>
+            Loading your onboarding status…
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[
@@ -103,6 +162,8 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
             onComplete={() => handleCompleteTask("1")}
             onBack={handleBackToDashboard}
             {...sharedProps}
+            token={token}
+            userId={userId}
           />
         )}
 
@@ -123,6 +184,7 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
             onComplete={() => handleCompleteTask("3")}
             onBack={handleBackToDashboard}
             {...sharedProps}
+            token={token}
           />
         )}
 

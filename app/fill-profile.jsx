@@ -70,7 +70,6 @@ export default function FillProfile() {
     }, [token, userId]);
 
   const saveProfile = async () => {
-    console.log('here');
 
     if (!userId || !token) return false;
 
@@ -98,7 +97,6 @@ export default function FillProfile() {
 
         const result = await response.json();
 
-        console.log('result', result);
         return result.status;
     } catch (err) {
         console.error('FillProfile save error:', err);

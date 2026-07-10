@@ -508,7 +508,6 @@ const getStyles = (theme) => StyleSheet.create({
         paddingVertical: 8,
     },
     studentIndex: {
-        width: 24,
         fontSize: 14,
         color: theme.studentIndex,
         fontFamily: 'Urbanist_400Regular',
@@ -519,10 +518,10 @@ const getStyles = (theme) => StyleSheet.create({
         alignItems: 'center',
     },
     studentName: {
+         flex: 1,
         fontSize: 12,
         textTransform: 'capitalize',
         color: theme.studentName,
-        width: 80,
         fontFamily: 'Urbanist_700Bold',
     },
     studentAge: {

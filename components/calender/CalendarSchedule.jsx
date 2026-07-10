@@ -327,11 +327,7 @@ export default function CalendarSchedule() {
                         return true;
                     });
 
-                    if (__DEV__) {
-                        console.log(
-                            `[schedule] date=${dateISO} rawCount=${eventsArray.length} dedupedCount=${deduped.length}`
-                        );
-                    }
+                   
 
                     setEventsData(deduped);
                 }
@@ -367,7 +363,6 @@ export default function CalendarSchedule() {
 
     // Memoized so it only recomputes when one of its actual inputs changes,
     // instead of on every render (which was also making any nearby
-    // console.log look like it fired repeatedly with "growing" data).
     const filteredEvents = useMemo(() => eventsData.filter(event => {
         const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesFilter = activeFilters.includes(event.type);
@@ -378,10 +373,8 @@ export default function CalendarSchedule() {
     // Debug logs — each only fires once per *actual* change to its value,
     // not once per render.
     useEffect(() => {
-        if (__DEV__) console.log('eventsData changed:', eventsData.length, 'events');
     }, [eventsData]);
     useEffect(() => {
-        if (__DEV__) console.log('filteredEvents changed:', filteredEvents.length, 'events');
     }, [filteredEvents]);
 
     // ---- navigation ----

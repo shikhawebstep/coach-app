@@ -200,7 +200,7 @@ export default function HolidaySyllabus({ venueId, onBack, onSessionSelect }) {
                         <TouchableOpacity
                             key={`${exercise.id}-${index}`}
                             style={styles.sessionCard}
-                            onPress={() => onSessionSelect && onSessionSelect(exercise)}
+                            onPress={() => onSessionSelect && onSessionSelect(exercise, sessionPlan)}
                         >
                             <View style={styles.imagePlaceholder}>
                                 {imageUri ? (

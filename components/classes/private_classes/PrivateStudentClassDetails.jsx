@@ -113,7 +113,7 @@ export default function PrivateStudentClassDetails({
       };
 
       const response = await fetch(
-        `process.env.EXPO_PUBLIC_API_BASE_URLapi/coachpro/one-to-one/booking/${bookingId}/date`,
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/one-to-one/booking/${bookingId}/date`,
         requestOptions,
       );
       const result = await response.json();

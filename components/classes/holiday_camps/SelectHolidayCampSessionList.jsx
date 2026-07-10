@@ -3,13 +3,13 @@ import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from "react-native";
 
 export default function SelectHolidayCampSessionList({ venueId, onBack, onSessionSelect }) {
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
   },
   colSession: {
-    width: 78,
+     flex: 1,
   },
   sessionLabel: {
     fontSize: 13,
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   colDate: {
-    width: 100,
+     flex: 1.4,
   },
   cardText: {
     fontSize: 12,

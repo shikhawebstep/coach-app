@@ -78,7 +78,6 @@ export default function SideMenu({ visible, onClose, initialTab = 'Menu' }) {
             await logout();
             router.replace('/login');
         } catch (error) {
-            console.log('Error logging out:', error);
         }
     };
 
@@ -132,7 +131,6 @@ export default function SideMenu({ visible, onClose, initialTab = 'Menu' }) {
     } else if (route === 'training') {
         router.push('/training');
     } else {
-        console.log('Navigate to:', route);
     }
 };
 

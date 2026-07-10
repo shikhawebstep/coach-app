@@ -3,14 +3,14 @@ import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from "react-native";
 
 export default function PrivateClassesBookings({ onBack, onStudentSelect }) {
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
   },
   cardInfo: {
-    width: 80,
+    flex: 1,
     marginRight: 16,
   },
   cardTitle: {
@@ -377,11 +377,12 @@ const styles = StyleSheet.create({
     color: "#9CA3AF",
   },
   cardCount: {
-    width: 30,
+    flex: 1,
     alignItems: "center",
     marginRight: 8,
   },
   countText: {
+     flex: 1,
     fontSize: 14,
     fontFamily: "Urbanist_700Bold",
     color: "#1a1a1a",
@@ -390,6 +391,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   cardStatusContainer: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
   },

@@ -188,7 +188,7 @@ const [selectedObservationId, setSelectedObservationId] = useState(null);
 
                             <View style={styles.colDateTime}>
                                 <Text style={styles.dateTimeText}>{formatDate(item?.observationDate)}</Text>
-                                <Text style={styles.dateTimeText}>{item?.observationTime || '-'}</Text>
+                                <Text style={styles.dateTimeText}>{item?.startTime + ' - ' + item?.endTime || '-'}</Text>
                             </View>
 
                             <View style={styles.colVenue}>

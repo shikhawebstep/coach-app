@@ -52,7 +52,7 @@ import CustomerFeedback from '@/components/venue_health/CustomerFeedback';
 import StudentNumbers from '@/components/venue_health/StudentNumbers';
 
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Classes() {
@@ -70,18 +70,29 @@ export default function Classes() {
     const [selectedBirthdayBooking, setSelectedBirthdayBooking] = useState(null);
     const [selectedBirthdaySyllabus, setSelectedBirthdaySyllabus] = useState(null);
     const [weeklyExcercises, setWeeklyExcercises] = useState(null);
+    const [holidaySessionPlan, setHolidaySessionPlan] = useState(null);
     const [selectedPrivateBookingId, setSelectedPrivateBookingId] = useState(null);
     const [selectedReportId, setSelectedReportId] = useState(null);
     const [notesBackView, setNotesBackView] = useState('studentClass');
 
-    if (__DEV__) console.log('currentView', currentView);
+
+    const clearingParam = useRef(false);
 
     // Single source of truth for syncing the `view` param → local state.
-    // (Previously had both useFocusEffect AND a separate useEffect doing
-    // the exact same thing — redundant and could double-fire.)
     useFocusEffect(
         useCallback(() => {
-            setCurrentView(params.view || 'dashboard');
+            if (clearingParam.current) {
+                clearingParam.current = false;
+                return;
+            }
+
+            if (params.view) {
+                setCurrentView(params.view);
+                clearingParam.current = true;
+                router.setParams({ view: undefined });
+            } else {
+                setCurrentView('dashboard');
+            }
         }, [params.view])
     );
 
@@ -126,8 +137,9 @@ export default function Classes() {
         return <HolidaySyllabus
             venueId={selectedVenuenId}
             onBack={() => setCurrentView('campDetails')}
-            onSessionSelect={(exercise) => {
+            onSessionSelect={(exercise, sessionPlan) => {
                 setWeeklyExcercises(exercise);
+                setHolidaySessionPlan(sessionPlan);
                 setCurrentView('holidaySessionExercise');
             }}
             syllabus={syllabusDetails}
@@ -145,7 +157,7 @@ export default function Classes() {
     if (currentView === 'holidaySearchSkill') {
         return <SearchSkill
             onBack={() => setCurrentView('holidaySessionExercise')}
-            sessionPlan={weeklyExcercises} />;
+            sessionPlan={holidaySessionPlan} />;
     }
 
     if (currentView === 'private') {

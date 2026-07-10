@@ -270,7 +270,7 @@ const getStyles = (theme) => StyleSheet.create({
         elevation: 2,
     },
     cardInfo: {
-        width: 80,
+        flex:1,
         marginRight: 16,
     },
     cardTitle: {

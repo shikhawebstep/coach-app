@@ -45,7 +45,6 @@ export function AuthProvider({ children }) {
 
                 const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/auth/login/verify`, requestOptions);
                 const resultText = await response.text();
-                console.log("Verify session result:", resultText);
 
                 let resultObj = {};
                 try {

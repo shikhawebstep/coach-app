@@ -1,4 +1,4 @@
-import { useToast } from '@/components/common/Toast';
+import { ToastProvider, useToast } from '@/components/common/Toast';
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -18,16 +18,36 @@ import {
     useColorScheme
 } from 'react-native';
 
+let localToast = null;
+
+function ToastRegister() {
+    const toast = useToast();
+    useEffect(() => {
+        localToast = toast;
+        return () => {
+            localToast = null;
+        };
+    }, [toast]);
+    return null;
+}
+
+const toast = {
+    success: (msg, title) => localToast?.success(msg, title),
+    error: (msg, title) => localToast?.error(msg, title),
+    warning: (msg, title) => localToast?.warning(msg, title),
+    info: (msg, title) => localToast?.info(msg, title),
+};
+
 const { width } = Dimensions.get('window');
 
-export default function ProfileModal({ visible, onClose }) {
+function ProfileModalContent({ visible, onClose }) {
     const { token, userId } = useAuth();
     const [view, setView] = useState('profile');
-    const toast = useToast();
     const [profileData, setProfileData] = useState(null);
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
     const styles = getStyles(isDark);
+
 
     // ── Edit profile form state ──────────────────────────────────────────────
     const [firstName, setFirstName] = useState('');
@@ -77,7 +97,7 @@ export default function ProfileModal({ visible, onClose }) {
         if (!token || !userId) return;
         const myHeaders = new Headers();
         myHeaders.append('Authorization', `Bearer ${token}`);
-        fetch(`process.env.EXPO_PUBLIC_API_BASE_URLapi/coachpro/account-profile/${userId}`, {
+        fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/account-profile/${userId}`, {
             method: 'GET',
             headers: myHeaders,
         })
@@ -120,8 +140,9 @@ export default function ProfileModal({ visible, onClose }) {
             if (postalCode) formdata.append('postalCode', postalCode);
 
             const response = await fetch(
-                `process.env.EXPO_PUBLIC_API_BASE_URLapi/coachPro/account-profile/update/profile/${userId}`,
-                { method: 'PUT', body: formdata, redirect: 'follow' }
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachPro/account-profile/update/profile/${userId}`,
+                { method: 'PUT', body: formdata, redirect: 'follow',        headers: { Authorization: `Bearer ${token}` },
+ }
             );
             const result = await response.json();
             if (result.status) {
@@ -152,7 +173,7 @@ export default function ProfileModal({ visible, onClose }) {
             myHeaders.append('Content-Type', 'application/json');
             myHeaders.append('Authorization', `Bearer ${token}`);
 
-            const response = await fetch('process.env.EXPO_PUBLIC_API_BASE_URLapi/coachpro/referal/create', {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/referal/create`, {
                 method: 'POST',
                 headers: myHeaders,
                 body: JSON.stringify({
@@ -583,36 +604,47 @@ export default function ProfileModal({ visible, onClose }) {
     };
 
     return (
+        <View style={styles.modalOverlay}>
+            <Animated.View
+                style={[
+                    styles.screenContainer,
+                    { transform: [{ translateX: slideAnim }] },
+                ]}
+            >
+                <ImageBackground
+                    source={require('@/assets/images/Login.png')}
+                    style={styles.headerBg}
+                    resizeMode="cover"
+                >
+                    <View style={styles.headerTop}>
+                        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+                            <Ionicons name="arrow-back" size={28} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+                </ImageBackground>
+
+                <View style={styles.bodyContainer}>
+                    {renderContent()}
+                </View>
+            </Animated.View>
+        </View>
+    );
+}
+
+export default function ProfileModal({ visible, onClose }) {
+    return (
         <Modal
             visible={visible}
             transparent={true}
             animationType="none"
             onRequestClose={onClose}
         >
-            <View style={styles.modalOverlay}>
-                <Animated.View
-                    style={[
-                        styles.screenContainer,
-                        { transform: [{ translateX: slideAnim }] },
-                    ]}
-                >
-                    <ImageBackground
-                        source={require('@/assets/images/Login.png')}
-                        style={styles.headerBg}
-                        resizeMode="cover"
-                    >
-                        <View style={styles.headerTop}>
-                            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                                <Ionicons name="arrow-back" size={28} color="#fff" />
-                            </TouchableOpacity>
-                        </View>
-                    </ImageBackground>
-
-                    <View style={styles.bodyContainer}>
-                        {renderContent()}
-                    </View>
-                </Animated.View>
-            </View>
+            {visible && (
+                <ToastProvider>
+                    <ToastRegister />
+                    <ProfileModalContent visible={visible} onClose={onClose} />
+                </ToastProvider>
+            )}
         </Modal>
     );
 }

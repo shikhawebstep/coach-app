@@ -5,13 +5,13 @@ import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from "react-native";
 
 export default function BirthdayParties({ onBack, onBookingSelect }) {
@@ -53,6 +53,32 @@ export default function BirthdayParties({ onBack, onBookingSelect }) {
     const q = searchQuery.toLowerCase();
     return studentName.includes(q) || parentName.includes(q);
   });
+
+  // helper — put this above the component or in a utils file
+const formatTimeRange = (startTime, endTime) => {
+  const to12Hour = (t) => {
+    if (!t) return null;
+    const [h, m] = t.split(":");
+    let hour = parseInt(h, 10);
+    const period = hour >= 12 ? "pm" : "am";
+    hour = hour % 12 || 12;
+    return { label: `${hour}:${m}`, period };
+  };
+
+  const start = to12Hour(startTime);
+  const end = to12Hour(endTime);
+
+  if (!start && !end) return "-";
+  if (start && !end) return `${start.label}${start.period}`;
+  if (!start && end) return `${end.label}${end.period}`;
+
+  // Same am/pm on both -> show once at the end (10:30-11:30am)
+  if (start.period === end.period) {
+    return `${start.label}-${end.label}${end.period}`;
+  }
+  // Different am/pm -> show both (11:30am-12:30pm)
+  return `${start.label}${start.period}-${end.label}${end.period}`;
+};
 
   return (
     <View style={[styles.container, isDark && styles.containerDark]}>
@@ -132,8 +158,13 @@ export default function BirthdayParties({ onBack, onBookingSelect }) {
                     year: "numeric",
                   })
                 : "-";
-              const time = booking.time || "-";
-              const packageType = booking.package?.packageName || "-";
+              const time = formatTimeRange(booking.time || "-");
+
+              // Only show "Silver" / "Gold" etc, strip "Party Package" suffix
+              const rawPackage = booking.package?.packageName || "-";
+              const packageType =
+                rawPackage.replace(/party\s*package/i, "").trim() || rawPackage;
+
               const status = booking.status;
 
               return (
@@ -145,6 +176,7 @@ export default function BirthdayParties({ onBack, onBookingSelect }) {
                   <View style={styles.cardInfo}>
                     <Text
                       style={[styles.cardTitle, isDark && styles.cardTitleDark]}
+                      numberOfLines={1}
                     >
                       {studentName}
                     </Text>
@@ -152,11 +184,13 @@ export default function BirthdayParties({ onBack, onBookingSelect }) {
                   <View style={styles.cardDetails}>
                     <Text
                       style={[styles.cardText, isDark && styles.cardTextDark]}
+                      numberOfLines={1}
                     >
                       {date}
                     </Text>
                     <Text
                       style={[styles.cardText, isDark && styles.cardTextDark]}
+                      numberOfLines={1}
                     >
                       {time}
                     </Text>
@@ -167,6 +201,7 @@ export default function BirthdayParties({ onBack, onBookingSelect }) {
                         styles.packageText,
                         isDark && styles.packageTextDark,
                       ]}
+                      numberOfLines={1}
                     >
                       {packageType}
                     </Text>
@@ -274,8 +309,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff",
     borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 18,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: "#F0F0F0",
@@ -284,41 +319,49 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
+    
   },
   cardDark: {
     backgroundColor: "#1E1E1E",
     borderColor: "#2A2A2A",
     shadowOpacity: 0.3,
   },
-  cardInfo: { width: 80, marginRight: 16 },
-  cardTitle: { fontSize: 14, color: "#1a1a1a", fontFamily: "Urbanist_700Bold" },
+  cardInfo: { flex:1, marginRight: 6 },
+  cardTitle: {flex:1.5, fontSize: 15, color: "#1a1a1a", fontFamily: "Urbanist_700Bold" },
   cardTitleDark: { color: "#fff" },
-  cardDetails: { flex: 1, marginRight: 8 },
+  cardDetails: { flex:1,marginRight: 6 },
   cardText: {
+    flex:1.2,
     fontSize: 13,
     color: "#666",
-    lineHeight: 18,
+    lineHeight: 19,
+    paddingLeft:6,
     fontFamily: "Urbanist_400Regular",
   },
   cardTextDark: { color: "#9CA3AF" },
-  cardPackage: { width: 45, alignItems: "flex-start", marginRight: 8 },
+  cardPackage: { flex:0.5, alignItems: "flex-start", marginRight: 6 },
   packageText: {
-    fontSize: 14,
+    fontSize: 15,
     color: "#1a1a1a",
     fontFamily: "Urbanist_700Bold",
   },
   packageTextDark: { color: "#E5E7EB" },
-  cardStatusContainer: { flexDirection: "row", alignItems: "center" },
+  cardStatusContainer: {
+    flex:0.7,
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: "auto",
+  },
   statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    marginRight: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 14,
+    marginRight: 6,
   },
   statusCompleted: { backgroundColor: "#1CAB4B" },
   statusPending: { backgroundColor: "#FFD700" },
-  statusText: { fontSize: 12, fontFamily: "Urbanist_600SemiBold" },
+  statusText: { fontSize: 13, fontFamily: "Urbanist_600SemiBold" },
   statusTextWhite: { color: "#fff" },
   statusTextBlack: { color: "#1a1a1a" },
-  chevron: { marginLeft: 4 },
+  chevron: { marginLeft: 2 },
 });
