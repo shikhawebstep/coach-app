@@ -68,7 +68,7 @@ export default function MyReports({ onBack, title = "My reports" }) {
     const [error, setError] = useState(null);
 
     // Tracks which report's issue detail is currently open
-const [selectedObservationId, setSelectedObservationId] = useState(null);
+    const [selectedObservationId, setSelectedObservationId] = useState(null);
 
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
@@ -123,14 +123,63 @@ const [selectedObservationId, setSelectedObservationId] = useState(null);
     });
 
     // Agar koi report select ho chuki hai, uska issue detail screen dikhao
- if (selectedObservationId) {
-    return (
-        <ObservationDetail
-            observationId={selectedObservationId}
-            onBack={() => setSelectedObservationId(null)}
-        />
-    );
-}
+    if (selectedObservationId) {
+        return (
+            <ObservationDetail
+                observationId={selectedObservationId}
+                onBack={() => setSelectedObservationId(null)}
+            />
+        );
+    }
+    // Utility: formats "10:30 AM" + "11:30 AM" => "10:30-11:30am"
+    // Also handles cross-period case: "11:30 AM" + "12:30 PM" => "11:30am-12:30pm"
+    const formatTimeRange = (start, end) => {
+        if (!start || !end) return '-';
+
+        const parseTime = (t) => {
+            if (!t) return null;
+
+            // Handles "HH:mm", "HH:mm:ss", "hh:mm AM/PM", "hh:mm:ss AM/PM"
+            const match = t.trim().match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM|am|pm)?/);
+            if (!match) return null;
+
+            let hours = parseInt(match[1], 10);
+            const minutes = match[2];
+            const meridiemRaw = match[3];
+
+            let period;
+            if (meridiemRaw) {
+                period = meridiemRaw.toLowerCase();
+                if (period === 'pm' && hours !== 12) hours += 12;
+                if (period === 'am' && hours === 12) hours = 0;
+            }
+
+            // Derive 12-hour display + am/pm if not already given (24hr input case)
+            const displayPeriod = hours >= 12 ? 'pm' : 'am';
+            let displayHour = hours % 12;
+            if (displayHour === 0) displayHour = 12;
+
+            return {
+                display: `${displayHour}:${minutes}`,
+                period: displayPeriod,
+            };
+        };
+
+        const startParsed = parseTime(start);
+        const endParsed = parseTime(end);
+
+        if (!startParsed || !endParsed) {
+            return `${start} - ${end}`; // fallback, don't break UI
+        }
+
+        // Same period (both am or both pm) -> show suffix once at the end
+        if (startParsed.period === endParsed.period) {
+            return `${startParsed.display}-${endParsed.display}${endParsed.period}`;
+        }
+
+        // Different periods -> show suffix on both
+        return `${startParsed.display}${startParsed.period}-${endParsed.display}${endParsed.period}`;
+    };
 
     return (
         <View style={styles.container}>
@@ -188,11 +237,10 @@ const [selectedObservationId, setSelectedObservationId] = useState(null);
 
                             <View style={styles.colDateTime}>
                                 <Text style={styles.dateTimeText}>{formatDate(item?.observationDate)}</Text>
-                                <Text style={styles.dateTimeText}>{item?.startTime + ' - ' + item?.endTime || '-'}</Text>
-                            </View>
+                                <Text style={styles.dateTimeText}>{formatTimeRange(item?.startTime, item?.endTime)}</Text>                            </View>
 
                             <View style={styles.colVenue}>
-                                <Text style={styles.venueText}>{item?.venue || '-'}</Text>
+                                <Text style={styles.venueText}>{item?.area || '-'}</Text>
                             </View>
 
                             <View style={styles.colScore}>
@@ -277,7 +325,7 @@ const createStyles = (colors) => StyleSheet.create({
     },
     card: {
         flexDirection: 'row',
-        alignItems: 'start',
+        alignItems: 'center',
         backgroundColor: colors.cardBg,
         borderRadius: 16,
         paddingVertical: 16,
@@ -300,10 +348,11 @@ const createStyles = (colors) => StyleSheet.create({
         color: colors.nameText,
     },
     colDateTime: {
-        flex: 1.5,
+        flex: 1,
     },
     dateTimeText: {
         fontSize: 12,
+        textAlign: 'center',
         fontFamily: 'Urbanist_400Regular',
         color: colors.dateTimeText,
         lineHeight: 18,

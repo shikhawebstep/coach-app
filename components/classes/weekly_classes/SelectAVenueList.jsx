@@ -179,7 +179,7 @@ export default function SelectAVenueList({ venueId, onBack, onSessionSelect }) {
               <View style={styles.colPlayer}>
                 <Text
                   style={[styles.playerText, isDark && styles.playerTextDark]}
-                  numberOfLines={1}
+
                 >
                   {item?.sessionPlan?.groupName}
                 </Text>
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     paddingTop: 16,
     paddingBottom: 24,
   },
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
     borderColor: "#0E35AD",
   },
   tabText: {
-    fontSize: 16,
+    fontSize: 13,
     fontFamily: "Urbanist_700Bold",
   },
   inactiveTabText: {
@@ -476,10 +476,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
   },
   colSession: {
-    flex:1,
+    flex: 0.8,
   },
   sessionLabel: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: "Urbanist_700Bold",
     color: "#1a1a1a",
   },
@@ -487,11 +487,12 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   colDate: {
-     flex:1,
-    width: 100,
+    flex: 1.1,
+
   },
   cardText: {
     fontSize: 12,
+    textTransform:'lowercase',
     fontFamily: "Urbanist_400Regular",
     color: "#666",
     lineHeight: 18,
@@ -501,10 +502,9 @@ const styles = StyleSheet.create({
   },
   colPlayer: {
     flex: 1,
-    paddingRight: 8,
   },
   playerText: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: "Urbanist_600SemiBold",
     color: "#1a1a1a",
   },
@@ -512,11 +512,13 @@ const styles = StyleSheet.create({
     color: "#E5E7EB",
   },
   colStatus: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
   },
   statusBadge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
+    width:75,
     paddingVertical: 6,
     borderRadius: 8,
     marginRight: 8,
@@ -528,6 +530,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFD700",
   },
   statusText: {
+    textAlign:'center',
     fontSize: 12,
     fontFamily: "Urbanist_600SemiBold",
   },
@@ -538,7 +541,7 @@ const styles = StyleSheet.create({
     color: "#1a1a1a",
   },
   chevron: {
-    marginLeft: 4,
+    marginLeft: 1,
   },
   termTab: {
     paddingVertical: 6,

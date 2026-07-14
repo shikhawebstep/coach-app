@@ -4,15 +4,15 @@ import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-    Image,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from "react-native";
 
 const MONTHS = [
@@ -247,7 +247,7 @@ export default function PrivateStudentClassDetails({
           </TouchableOpacity>
           <Text
             style={[styles.headerTitle, isDark && styles.headerTitleDark]}
-            numberOfLines={1}
+           
           >
             {studentNames} class
           </Text>
@@ -725,6 +725,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 22,
+    flex:1,
     fontFamily: "Urbanist_700Bold",
     color: "#1a1a1a",
   },
@@ -798,7 +799,7 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   infoLabel: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: "Urbanist_400Regular",
     color: "#666",
     marginBottom: 4,
@@ -807,7 +808,7 @@ const styles = StyleSheet.create({
     color: "#9CA3AF",
   },
   infoValue: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: "Urbanist_700Bold",
     color: "#1a1a1a",
   },
@@ -816,14 +817,14 @@ const styles = StyleSheet.create({
   },
   changeDateBtn: {
     backgroundColor: "#FF4C4C",
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 8,
     borderRadius: 8,
   },
   changeDateText: {
     color: "#fff",
     fontFamily: "Urbanist_700Bold",
-    fontSize: 13,
+    fontSize: 12,
   },
   mapContainer: {
     height: 140,
@@ -847,7 +848,7 @@ const styles = StyleSheet.create({
   },
   locationText: {
     marginLeft: 8,
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: "Urbanist_400Regular",
     color: "#4B5563",
     lineHeight: 18,

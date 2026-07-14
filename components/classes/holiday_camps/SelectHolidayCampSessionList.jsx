@@ -58,24 +58,52 @@ export default function SelectHolidayCampSessionList({ venueId, onBack, onSessio
         </View>
       );
 
-    const formatTimeRange = (startTime, endTime) => {
-      if (!startTime || !endTime) return "";
-      const formatTime = (timeString) => {
-        const [hours, minutes] = timeString.split(':');
-        let h = parseInt(hours, 10);
-        const ampm = h >= 12 ? '' : '';
-        h = h % 12 || 12;
-        return { time: `${h}:${minutes}`, ampm };
+    const formatTimeRange = (start, end) => {
+      if (!start || !end) return '-';
+
+      const parseTime = (t) => {
+        if (!t) return null;
+
+        // Handles "HH:mm", "HH:mm:ss", "hh:mm AM/PM", "hh:mm:ss AM/PM"
+        const match = t.trim().match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM|am|pm)?/);
+        if (!match) return null;
+
+        let hours = parseInt(match[1], 10);
+        const minutes = match[2];
+        const meridiemRaw = match[3];
+
+        let period;
+        if (meridiemRaw) {
+          period = meridiemRaw.toLowerCase();
+          if (period === 'pm' && hours !== 12) hours += 12;
+          if (period === 'am' && hours === 12) hours = 0;
+        }
+
+        // Derive 12-hour display + am/pm if not already given (24hr input case)
+        const displayPeriod = hours >= 12 ? 'pm' : 'am';
+        let displayHour = hours % 12;
+        if (displayHour === 0) displayHour = 12;
+
+        return {
+          display: `${displayHour}:${minutes}`,
+          period: displayPeriod,
+        };
       };
 
-      const s = formatTime(startTime);
-      const e = formatTime(endTime);
+      const startParsed = parseTime(start);
+      const endParsed = parseTime(end);
 
-      if (s.ampm === e.ampm) {
-        return `${s.time}-${e.time}${e.ampm}`;
-      } else {
-        return `${s.time}${s.ampm}-${e.time}${e.ampm}`;
+      if (!startParsed || !endParsed) {
+        return `${start} - ${end}`; // fallback, don't break UI
       }
+
+      // Same period (both am or both pm) -> show suffix once at the end
+      if (startParsed.period === endParsed.period) {
+        return `${startParsed.display}-${endParsed.display}${endParsed.period}`;
+      }
+
+      // Different periods -> show suffix on both
+      return `${startParsed.display}${startParsed.period}-${endParsed.display}${endParsed.period}`;
     };
 
     const timeLabel = schedule
@@ -153,7 +181,7 @@ export default function SelectHolidayCampSessionList({ venueId, onBack, onSessio
               <View style={styles.colPlayer}>
                 <Text
                   style={[styles.playerText, isDark && styles.playerTextDark]}
-                  numberOfLines={1}
+
                 >
                   {item?.sessionPlan?.groupName || "Session"}
                 </Text>
@@ -330,10 +358,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
   },
   colSession: {
-     flex: 1,
+    flex: 1,
   },
   sessionLabel: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: "Urbanist_700Bold",
     color: "#1a1a1a",
   },
@@ -341,7 +369,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   colDate: {
-     flex: 1.4,
+    flex: 1,
   },
   cardText: {
     fontSize: 12,
@@ -366,11 +394,12 @@ const styles = StyleSheet.create({
     color: "#E5E7EB",
   },
   colStatus: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
   },
   statusBadge: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
     marginRight: 8,
@@ -383,7 +412,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    fontFamily: "Urbanist_600SemiBold",
+    fontFamily: "Urbanist_700Bold",
   },
   statusTextWhite: {
     color: "#fff",

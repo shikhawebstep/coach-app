@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { Audio } from 'expo-av';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 const COLORS = {
     light: {
@@ -32,6 +32,9 @@ const COLORS = {
     },
 };
 
+// onComplete receives the recorded audio URI (or null if the assessor
+// skipped/never recorded one) so the parent flow can carry it through to
+// the final results screen.
 export default function SummarisePerformance({ onBack, onComplete }) {
     const colorScheme = useColorScheme();
     const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
@@ -43,8 +46,9 @@ export default function SummarisePerformance({ onBack, onComplete }) {
     const [soundUri, setSoundUri] = useState(null);
     const [playbackSound, setPlaybackSound] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [recordedDuration, setRecordedDuration] = useState(0); // freeze duration after stop
 
-    // Audio Timer
+    // Audio Timer (only runs while recording)
     useEffect(() => {
         let interval = null;
         if (status === 'recording') {
@@ -82,7 +86,7 @@ export default function SummarisePerformance({ onBack, onComplete }) {
             const { recording } = await Audio.Recording.createAsync(
                 Audio.RecordingOptionsPresets.HIGH_QUALITY
             );
-            
+
             setRecording(recording);
             setSeconds(0);
             setStatus('recording');
@@ -97,6 +101,7 @@ export default function SummarisePerformance({ onBack, onComplete }) {
             await recording.stopAndUnloadAsync();
             const uri = recording.getURI();
             setSoundUri(uri);
+            setRecordedDuration(seconds); // freeze the recorded duration
             setRecording(null);
             setStatus('stopped');
         } catch (err) {
@@ -104,11 +109,18 @@ export default function SummarisePerformance({ onBack, onComplete }) {
         }
     }
 
+    // Plays from start (new load) OR resumes from paused position if sound already loaded
     async function playAudio() {
         if (!soundUri) return;
         try {
             if (playbackSound) {
-                await playbackSound.unloadAsync();
+                const currentStatus = await playbackSound.getStatusAsync();
+                if (currentStatus.isLoaded) {
+                    // Resume from paused position instead of reloading
+                    await playbackSound.playAsync();
+                    setIsPlaying(true);
+                    return;
+                }
             }
 
             const { sound } = await Audio.Sound.createAsync(
@@ -120,8 +132,11 @@ export default function SummarisePerformance({ onBack, onComplete }) {
             setIsPlaying(true);
 
             sound.setOnPlaybackStatusUpdate((statusUpdate) => {
+                if (!statusUpdate.isLoaded) return;
                 if (statusUpdate.didJustFinish) {
                     setIsPlaying(false);
+                    // rewind to start so next "play" starts fresh, not stuck at end
+                    sound.setPositionAsync(0);
                 }
             });
         } catch (err) {
@@ -129,16 +144,21 @@ export default function SummarisePerformance({ onBack, onComplete }) {
         }
     }
 
-    async function stopPlayback() {
-        if (playbackSound) {
-            await playbackSound.stopAsync();
+    // Real pause — keeps position, doesn't reset/unload
+    async function pausePlayback() {
+        if (!playbackSound) return;
+        try {
+            await playbackSound.pauseAsync();
             setIsPlaying(false);
+        } catch (err) {
+            console.error('Failed to pause audio', err);
         }
     }
 
     const resetRecording = () => {
         setSoundUri(null);
         setSeconds(0);
+        setRecordedDuration(0);
         setStatus('idle');
         if (playbackSound) {
             playbackSound.unloadAsync();
@@ -148,6 +168,11 @@ export default function SummarisePerformance({ onBack, onComplete }) {
     };
 
     const fmt = sec => `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+
+    const handleComplete = () => {
+        if (status !== 'stopped') return;
+        onComplete?.(soundUri);
+    };
 
     return (
         <View style={styles.container}>
@@ -166,7 +191,7 @@ export default function SummarisePerformance({ onBack, onComplete }) {
                 {/* Ripple Effect Circles */}
                 <View style={[styles.outerCircle, status === 'recording' && styles.outerCircleRecording]}>
                     <View style={[styles.middleCircle, status === 'recording' && styles.middleCircleRecording]}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[styles.innerCircle, status === 'recording' && styles.innerCircleRecording]}
                             onPress={status === 'recording' ? stopRecording : startRecording}
                         >
@@ -177,12 +202,12 @@ export default function SummarisePerformance({ onBack, onComplete }) {
 
                 {status === 'stopped' && soundUri && (
                     <View style={styles.audioPlayerContainer}>
-                        <TouchableOpacity onPress={isPlaying ? stopPlayback : playAudio} style={styles.playButton}>
+                        <TouchableOpacity onPress={isPlaying ? pausePlayback : playAudio} style={styles.playButton}>
                             <Ionicons name={isPlaying ? 'pause' : 'play'} size={24} color="#fff" />
                         </TouchableOpacity>
                         <View style={{ flex: 1, marginLeft: 12 }}>
                             <Text style={styles.audioText}>Recorded Feedback</Text>
-                            <Text style={styles.audioSubText}>Duration: {fmt(seconds)}</Text>
+                            <Text style={styles.audioSubText}>Duration: {fmt(recordedDuration)}</Text>
                         </View>
                         <TouchableOpacity onPress={resetRecording} style={styles.trashButton}>
                             <Ionicons name="trash" size={24} color="#EF4444" />
@@ -192,9 +217,9 @@ export default function SummarisePerformance({ onBack, onComplete }) {
             </View>
 
             <View style={styles.bottomContainer}>
-                <TouchableOpacity 
-                    style={[styles.completeButton, status !== 'stopped' && { opacity: 0.5 }]} 
-                    onPress={onComplete}
+                <TouchableOpacity
+                    style={[styles.completeButton, status !== 'stopped' && { opacity: 0.5 }]}
+                    onPress={handleComplete}
                     disabled={status !== 'stopped'}
                 >
                     <Text style={styles.completeButtonText}>Complete</Text>

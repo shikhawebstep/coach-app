@@ -11,6 +11,11 @@ import {
 const CONGRATS_IMG = require('@/assets/images/congrats.png');
 const FAILED_IMG = require('@/assets/images/failed.png');
 
+// onComplete receives 'pass' | 'fail'. Per Loom, the actual hiring/employment
+// offer ("invite to coach pro... send the email offer") is done by the
+// admin/HQ team from the recruitment panel after reviewing this assessment —
+// not by the venue manager from inside the app. So this screen only submits
+// the assessment result for review; it doesn't hire anyone itself.
 export default function AssessmentDecision({ onBack, onComplete }) {
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
@@ -19,12 +24,20 @@ export default function AssessmentDecision({ onBack, onComplete }) {
     const isPass = decision === 'pass';
     const isFail = decision === 'fail';
 
+    const handleSubmit = () => {
+        if (!decision) return;
+        onComplete?.(decision);
+    };
+
     return (
         <View style={[styles.container, { backgroundColor: isDark ? '#0E0E14' : '#F4F6FB' }]}>
 
             {/* ── Title ── */}
             <View style={styles.header}>
-                <Text style={[styles.title, { color: isDark ? '#F3F4F6' : '#111827' }]}>
+                <Text style={[styles.title, {
+                    fontFamily: 'Urbanist_700Bold',
+                    color: isDark ? '#F3F4F6' : '#111827'
+                }]}>
                     Final Decision
                 </Text>
                 <Text style={[styles.subtitle, { color: isDark ? '#9CA3AF' : '#6B7280' }]}>
@@ -108,16 +121,16 @@ export default function AssessmentDecision({ onBack, onComplete }) {
                         isFail && styles.ctaFail,
                         !decision && { backgroundColor: isDark ? '#2A2A38' : '#D1D5DB' },
                     ]}
-                    onPress={onComplete}
+                    onPress={handleSubmit}
                     disabled={!decision}
                     activeOpacity={0.85}
                 >
                     <Text style={styles.ctaText}>
                         {isPass
-                            ? 'Invite to CoachPro'
+                            ? 'Submit Assessment'
                             : isFail
-                            ? 'Complete Assessment'
-                            : 'Select a Decision'}
+                                ? 'Submit Assessment'
+                                : 'Select a Decision'}
                     </Text>
                 </TouchableOpacity>
             </View>

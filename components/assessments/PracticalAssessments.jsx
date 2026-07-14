@@ -47,6 +47,9 @@ const COLORS = {
     },
 };
 
+// onStart receives the full assessment record (id, name, date, time, venue)
+// so downstream screens — and the final Results screen — can show the real
+// candidate instead of nothing.
 export default function PracticalAssessments({ onBack, onStart }) {
     const colorScheme = useColorScheme();
     const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
@@ -64,10 +67,10 @@ export default function PracticalAssessments({ onBack, onStart }) {
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
                 {ASSESSMENTS_DATA.map(assessment => (
-                    <TouchableOpacity 
-                        key={assessment.id} 
+                    <TouchableOpacity
+                        key={assessment.id}
                         style={styles.card}
-                        onPress={assessment.status === 'Start' ? onStart : undefined}
+                        onPress={assessment.status === 'Start' ? () => onStart?.(assessment) : undefined}
                     >
 
                         <View style={styles.infoCol}>
@@ -89,6 +92,7 @@ export default function PracticalAssessments({ onBack, onStart }) {
                                     styles.actionBtn,
                                     assessment.status === 'Start' ? styles.btnStart : styles.btnComplete
                                 ]}
+                                onPress={assessment.status === 'Start' ? () => onStart?.(assessment) : undefined}
                             >
                                 <Text style={styles.actionBtnText}>{assessment.status}</Text>
                             </TouchableOpacity>
@@ -117,7 +121,7 @@ const getStyles = (theme) => StyleSheet.create({
         marginRight: 12,
     },
     headerTitle: {
-        fontSize: 26,
+        fontSize: 24,
         fontFamily: 'Urbanist_700Bold',
         color: theme.headerTitle,
     },
@@ -145,7 +149,7 @@ const getStyles = (theme) => StyleSheet.create({
         flex: 1.2,
     },
     name: {
-        fontSize: 14,
+        fontSize: 12,
         fontFamily: 'Urbanist_700Bold',
         color: theme.name,
     },
@@ -162,7 +166,7 @@ const getStyles = (theme) => StyleSheet.create({
         flex: 1,
     },
     venue: {
-        fontSize: 14,
+        fontSize: 12,
         fontFamily: 'Urbanist_700Bold',
         color: theme.venue,
     },
@@ -173,10 +177,10 @@ const getStyles = (theme) => StyleSheet.create({
         justifyContent: 'flex-end',
     },
     actionBtn: {
-        paddingHorizontal: 16,
+        paddingHorizontal: 10,
         paddingVertical: 8,
         borderRadius: 6,
-        width: 85,
+        width:73,
     },
     btnStart: {
         backgroundColor: '#3B82F6',

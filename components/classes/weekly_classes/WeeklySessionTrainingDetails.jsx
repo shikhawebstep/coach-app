@@ -3,13 +3,13 @@ import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme,
 } from "react-native";
 import AddTrialist from "../common/AddTrialist";
 
@@ -129,6 +129,56 @@ export default function WeeklySessionTrainingDetails({
     }
   };
 
+
+  // Utility: formats "10:30 AM" + "11:30 AM" => "10:30-11:30am"
+  // Also handles cross-period case: "11:30 AM" + "12:30 PM" => "11:30am-12:30pm"
+  const formatTimeRange = (start, end) => {
+    if (!start || !end) return '-';
+
+    const parseTime = (t) => {
+      if (!t) return null;
+
+      // Handles "HH:mm", "HH:mm:ss", "hh:mm AM/PM", "hh:mm:ss AM/PM"
+      const match = t.trim().match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM|am|pm)?/);
+      if (!match) return null;
+
+      let hours = parseInt(match[1], 10);
+      const minutes = match[2];
+      const meridiemRaw = match[3];
+
+      let period;
+      if (meridiemRaw) {
+        period = meridiemRaw.toLowerCase();
+        if (period === 'pm' && hours !== 12) hours += 12;
+        if (period === 'am' && hours === 12) hours = 0;
+      }
+
+      // Derive 12-hour display + am/pm if not already given (24hr input case)
+      const displayPeriod = hours >= 12 ? 'pm' : 'am';
+      let displayHour = hours % 12;
+      if (displayHour === 0) displayHour = 12;
+
+      return {
+        display: `${displayHour}:${minutes}`,
+        period: displayPeriod,
+      };
+    };
+
+    const startParsed = parseTime(start);
+    const endParsed = parseTime(end);
+
+    if (!startParsed || !endParsed) {
+      return `${start} - ${end}`; // fallback, don't break UI
+    }
+
+    // Same period (both am or both pm) -> show suffix once at the end
+    if (startParsed.period === endParsed.period) {
+      return `${startParsed.display}-${endParsed.display}${endParsed.period}`;
+    }
+
+    // Different periods -> show suffix on both
+    return `${startParsed.display}${startParsed.period}-${endParsed.display}${endParsed.period}`;
+  };
   if (showAddTrialist) {
     return <AddTrialist onBack={() => setShowAddTrialist(false)} />;
   }
@@ -165,7 +215,6 @@ export default function WeeklySessionTrainingDetails({
           >
             <Text
               style={[styles.headerTitle, isDark && styles.headerTitleDark]}
-              numberOfLines={1}
               ellipsizeMode="tail"
             >
               {sessionName}
@@ -195,9 +244,8 @@ export default function WeeklySessionTrainingDetails({
                 Date
               </Text>
               <Text style={[styles.infoValue, isDark && styles.infoValueDark]}>
-                {formatDate(sessionData?.sessionDate)}{" "}
-                {sessionData?.classSchedule?.startTime} -{" "}
-                {sessionData?.classSchedule?.endTime}
+                {formatDate(sessionData?.sessionDate)}{","}
+                {formatTimeRange(sessionData?.classSchedule?.startTime,sessionData?.classSchedule?.endTime)}
               </Text>
             </View>
             <View style={styles.infoItemSmall}>
@@ -216,18 +264,18 @@ export default function WeeklySessionTrainingDetails({
                 style={[
                   styles.statusBadge,
                   sessionData?.status === "completed" &&
-                    styles.statusBadgeCompleted,
+                  styles.statusBadgeCompleted,
                   sessionData?.status === "pending" &&
-                    styles.statusBadgePending,
+                  styles.statusBadgePending,
                 ]}
               >
                 <Text
                   style={[
                     styles.statusText,
                     sessionData?.status === "completed" &&
-                      styles.statusTextCompleted,
+                    styles.statusTextCompleted,
                     sessionData?.status === "pending" &&
-                      styles.statusTextPending,
+                    styles.statusTextPending,
                   ]}
                 >
                   {sessionData?.status || "Pending"}
@@ -305,12 +353,12 @@ export default function WeeklySessionTrainingDetails({
                     >
                       {member.name}
                     </Text>
+                  </View>
                     <Text
                       style={[styles.memberAge, isDark && styles.memberAgeDark]}
                     >
                       {member.age}
                     </Text>
-                  </View>
                   <View style={styles.attendanceButtons}>
                     <TouchableOpacity
                       style={[
@@ -327,7 +375,7 @@ export default function WeeklySessionTrainingDetails({
                     >
                       <Ionicons
                         name="checkmark"
-                        size={18}
+                        size={15}
                         color={
                           member.status === "attended"
                             ? "#fff"
@@ -366,7 +414,7 @@ export default function WeeklySessionTrainingDetails({
                     >
                       <Ionicons
                         name="close"
-                        size={18}
+                        size={15}
                         color={
                           member.status === "not attended"
                             ? "#fff"
@@ -460,7 +508,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     color: "#1a1a1a",
     fontFamily: "Urbanist_700Bold",
     flexShrink: 1,
@@ -617,7 +665,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#2A2A2A",
   },
   memberIndex: {
-    width: 24,
+    flex: 0.2,
     fontSize: 12,
     color: "#212121",
     fontFamily: "Urbanist_500Medium",
@@ -626,7 +674,7 @@ const styles = StyleSheet.create({
     color: "#9CA3AF",
   },
   memberInfo: {
-    flex: 1,
+    flex: 0.8,
     flexDirection: "row",
     alignItems: "center",
   },
@@ -640,6 +688,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   memberAge: {
+    flex: 0.6,
     fontSize: 12,
     color: "#212121",
     marginLeft: 8,
@@ -651,12 +700,13 @@ const styles = StyleSheet.create({
   attendanceButtons: {
     flexDirection: "row",
     gap: 8,
+    flex: 1.8,
   },
   attendanceBtn: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 5,
     borderRadius: 20,
     borderWidth: 1.5,
   },
@@ -666,7 +716,7 @@ const styles = StyleSheet.create({
   },
   btnAttendedInactive: {
     backgroundColor: "#fff",
-    borderColor: "#1CAB4B",
+    borderColor: "#000",
   },
   btnAttendedInactiveDark: {
     backgroundColor: "#1E1E1E",
@@ -688,7 +738,7 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   btnText: {
-    fontSize: 12,
+    fontSize: 11,
     color: "#101014",
     fontFamily: "Urbanist_600SemiBold",
   },

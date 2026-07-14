@@ -1,8 +1,8 @@
-import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import CustomLoader from '@/components/common/CustomLoader';
+import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { useState } from 'react';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 const COLORS = {
     light: {
@@ -16,6 +16,9 @@ const COLORS = {
         cardBg: '#F3F4F6',
         text: '#1F2937',
         subText: '#4B5563',
+        notesLabel: '#1a1a1a',
+        notesBorder: '#E5E7EB',
+        notesPlaceholder: '#9CA3AF',
     },
     dark: {
         background: '#121212',
@@ -28,9 +31,16 @@ const COLORS = {
         cardBg: '#1E1E1E',
         text: '#F3F4F6',
         subText: '#9CA3AF',
+        notesLabel: '#F5F5F5',
+        notesBorder: '#2A2A2A',
+        notesPlaceholder: '#6B7280',
     },
 };
 
+// onNext receives { video, notes } — notes is optional free text, per Loom:
+// "there should be a note section which they can transcribe, they can
+// literally write something. So, upload video, add notes is optional,
+// that should be in there, and then complete."
 export default function UploadVideo({ onBack, onNext }) {
     const colorScheme = useColorScheme();
     const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
@@ -38,6 +48,7 @@ export default function UploadVideo({ onBack, onNext }) {
 
     const [video, setVideo] = useState(null);
     const [picking, setPicking] = useState(false);
+    const [notes, setNotes] = useState('');
 
     const handlePickVideo = async () => {
         try {
@@ -58,6 +69,11 @@ export default function UploadVideo({ onBack, onNext }) {
 
     const clearVideo = () => {
         setVideo(null);
+    };
+
+    const handleNext = () => {
+        if (!video) return;
+        onNext?.({ video, notes: notes.trim() });
     };
 
     return (
@@ -102,12 +118,30 @@ export default function UploadVideo({ onBack, onNext }) {
                         </TouchableOpacity>
                     </View>
                 )}
+
+                {/* Add Notes (optional) — required by client, sits alongside video upload */}
+                <View style={styles.notesContainer}>
+                    <View style={styles.notesLabelRow}>
+                        <Text style={styles.notesLabel}>Add Notes</Text>
+                        <Text style={styles.notesOptionalTag}>Optional</Text>
+                    </View>
+                    <TextInput
+                        style={styles.notesInput}
+                        value={notes}
+                        onChangeText={setNotes}
+                        placeholder="Write down anything you noticed during the assessment..."
+                        placeholderTextColor={theme.notesPlaceholder}
+                        multiline
+                        numberOfLines={5}
+                        textAlignVertical="top"
+                    />
+                </View>
             </View>
 
             <View style={styles.bottomContainer}>
-                <TouchableOpacity 
-                    style={[styles.nextButton, !video && { opacity: 0.5 }]} 
-                    onPress={onNext}
+                <TouchableOpacity
+                    style={[styles.nextButton, !video && { opacity: 0.5 }]}
+                    onPress={handleNext}
                     disabled={!video}
                 >
                     <Text style={styles.nextButtonText}>Next</Text>
@@ -204,6 +238,37 @@ const getStyles = (theme) => StyleSheet.create({
     },
     clearButton: {
         padding: 4,
+    },
+    notesContainer: {
+        width: '100%',
+        marginTop: 24,
+    },
+    notesLabelRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 10,
+    },
+    notesLabel: {
+        fontSize: 16,
+        fontFamily: 'Urbanist_700Bold',
+        color: theme.notesLabel,
+    },
+    notesOptionalTag: {
+        fontSize: 12,
+        fontFamily: 'Urbanist_500Medium',
+        color: theme.subText,
+    },
+    notesInput: {
+        borderWidth: 1,
+        borderColor: theme.notesBorder,
+        borderRadius: 12,
+        padding: 14,
+        minHeight: 110,
+        fontSize: 14,
+        fontFamily: 'Urbanist_400Regular',
+        color: theme.text,
+        backgroundColor: theme.cardBg,
     },
     bottomContainer: {
         paddingHorizontal: 20,

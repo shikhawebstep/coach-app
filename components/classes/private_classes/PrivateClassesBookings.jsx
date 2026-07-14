@@ -165,7 +165,7 @@ export default function PrivateClassesBookings({ onBack, onStudentSelect }) {
                 booking.totalStudents || booking.students?.length || 0;
               const statusStr = booking.status
                 ? booking.status.charAt(0).toUpperCase() +
-                  booking.status.slice(1)
+                booking.status.slice(1)
                 : "Pending";
               const isActiveOrCompleted =
                 booking.status === "active" || booking.status === "Completed";
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   cardTitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: "Urbanist_700Bold",
     color: "#1a1a1a",
   },
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   cardText: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: "Urbanist_400Regular",
     color: "#666",
     lineHeight: 18,
@@ -382,8 +382,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   countText: {
-     flex: 1,
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: "Urbanist_700Bold",
     color: "#1a1a1a",
   },

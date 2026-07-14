@@ -138,10 +138,11 @@ const getStyles = (isDark) => StyleSheet.create({
         color: isDark ? '#fff' : '#1a1a1a',
     },
     colDateTime: {
-        flex: 1.5,
+        flex: 1,
     },
     dateTimeText: {
         fontSize: 12,
+        flex: 1,
         fontFamily: 'Urbanist_500Medium',
         color: isDark ? '#9CA3AF' : '#6B7280',
         lineHeight: 18,
@@ -150,6 +151,7 @@ const getStyles = (isDark) => StyleSheet.create({
         flex: 1,
     },
     venueText: {
+        textAlign:'center',
         fontSize: 12,
         fontFamily: 'Urbanist_700Bold',
         color: isDark ? '#fff' : '#1a1a1a',

@@ -1,13 +1,7 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 import { useState } from 'react';
-
-const INITIAL_QUESTIONS = [
-    { id: 1, text: 'Energy & Enthusiasm', answer: null },
-    { id: 2, text: 'Communication Skills', answer: null },
-    { id: 3, text: 'Session/Drill Setup', answer: null },
-    { id: 4, text: 'Professionalism', answer: null },
-];
+import { PRACTICAL_ASSESSMENT_CRITERIA } from './Assessmentcriteria.constants';
 
 const COLORS = {
     light: {
@@ -30,40 +24,45 @@ const COLORS = {
     },
 };
 
+// onNext receives the ratings as { [criterionKey]: 1-5 }, e.g.
+// { punctuality: 4, communicationSkills: 5, structureOfExercises: 3, controlOfGroup: 4 }
 export default function AssessmentCriteria({ onBack, onNext }) {
     const colorScheme = useColorScheme();
     const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
     const styles = getStyles(theme);
 
-    const [questions, setQuestions] = useState(INITIAL_QUESTIONS);
+    const [answers, setAnswers] = useState(
+        Object.fromEntries(PRACTICAL_ASSESSMENT_CRITERIA.map((c) => [c.key, null]))
+    );
 
-    const handleSelect = (id, val) => {
-        setQuestions(questions.map(q => q.id === id ? { ...q, answer: val } : q));
+    const handleSelect = (key, val) => {
+        setAnswers((prev) => ({ ...prev, [key]: val }));
     };
 
-    const isAllAnswered = questions.every(q => q.answer !== null);
+    const isAllAnswered = PRACTICAL_ASSESSMENT_CRITERIA.every((c) => answers[c.key] !== null);
+
+    const handleNext = () => {
+        if (!isAllAnswered) return;
+        onNext?.(answers);
+    };
 
     return (
         <View style={styles.container}>
-            {/* Header */}
-            {/* <View style={styles.header}>
-                <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color={theme.icon} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Create report</Text>
-            </View> */}
-
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
                 <Text style={styles.sectionTitle}>Assessment Criteria</Text>
 
-                {questions.map((q, idx) => (
-                    <View key={idx} style={styles.questionBlock}>
-                        <Text style={styles.questionText}>{q.text}</Text>
+                {PRACTICAL_ASSESSMENT_CRITERIA.map((criterion) => (
+                    <View key={criterion.key} style={styles.questionBlock}>
+                        <Text style={styles.questionText}>{criterion.text}</Text>
                         <View style={styles.radioGroup}>
                             {[1, 2, 3, 4, 5].map(val => (
-                                <TouchableOpacity key={val} style={styles.radioOption} onPress={() => handleSelect(q.id, val)}>
-                                    <View style={[styles.outerCircle, q.answer === val && styles.outerCircleSelected]}>
-                                        {q.answer === val && <View style={styles.innerCircle} />}
+                                <TouchableOpacity
+                                    key={val}
+                                    style={styles.radioOption}
+                                    onPress={() => handleSelect(criterion.key, val)}
+                                >
+                                    <View style={[styles.outerCircle, answers[criterion.key] === val && styles.outerCircleSelected]}>
+                                        {answers[criterion.key] === val && <View style={styles.innerCircle} />}
                                     </View>
                                     <Text style={styles.radioLabel}>{val}</Text>
                                 </TouchableOpacity>
@@ -74,9 +73,9 @@ export default function AssessmentCriteria({ onBack, onNext }) {
 
             </ScrollView>
             <View style={styles.bottomContainer}>
-                <TouchableOpacity 
-                    style={[styles.nextButton, !isAllAnswered && { opacity: 0.5 }]} 
-                    onPress={onNext}
+                <TouchableOpacity
+                    style={[styles.nextButton, !isAllAnswered && { opacity: 0.5 }]}
+                    onPress={handleNext}
                     disabled={!isAllAnswered}
                 >
                     <Text style={styles.nextButtonText}>Next</Text>
@@ -104,7 +103,7 @@ const getStyles = (theme) => StyleSheet.create({
     headerTitle: {
         fontSize: 26,
         color: theme.headerTitle,
-        fontFamily: 'Urbanist_700Bold',  // bold ke liye
+        fontFamily: 'Urbanist_700Bold',
     },
     content: {
         paddingHorizontal: 20,
@@ -124,7 +123,7 @@ const getStyles = (theme) => StyleSheet.create({
         fontSize: 18,
         color: theme.questionText,
         marginBottom: 12,
-        fontFamily: 'Urbanist_700Bold',  // bold ke liye
+        fontFamily: 'Urbanist_700Bold',
     },
     radioGroup: {
         flexDirection: 'row',

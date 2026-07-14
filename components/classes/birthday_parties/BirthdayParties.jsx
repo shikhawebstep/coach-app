@@ -55,30 +55,30 @@ export default function BirthdayParties({ onBack, onBookingSelect }) {
   });
 
   // helper — put this above the component or in a utils file
-const formatTimeRange = (startTime, endTime) => {
-  const to12Hour = (t) => {
-    if (!t) return null;
-    const [h, m] = t.split(":");
-    let hour = parseInt(h, 10);
-    const period = hour >= 12 ? "pm" : "am";
-    hour = hour % 12 || 12;
-    return { label: `${hour}:${m}`, period };
+  const formatTimeRange = (startTime, endTime) => {
+    const to12Hour = (t) => {
+      if (!t) return null;
+      const [h, m] = t.split(":");
+      let hour = parseInt(h, 10);
+      const period = hour >= 12 ? "pm" : "am";
+      hour = hour % 12 || 12;
+      return { label: `${hour}:${m}`, period };
+    };
+
+    const start = to12Hour(startTime);
+    const end = to12Hour(endTime);
+
+    if (!start && !end) return "-";
+    if (start && !end) return `${start.label}${start.period}`;
+    if (!start && end) return `${end.label}${end.period}`;
+
+    // Same am/pm on both -> show once at the end (10:30-11:30am)
+    if (start.period === end.period) {
+      return `${start.label}-${end.label}${end.period}`;
+    }
+    // Different am/pm -> show both (11:30am-12:30pm)
+    return `${start.label}${start.period}-${end.label}${end.period}`;
   };
-
-  const start = to12Hour(startTime);
-  const end = to12Hour(endTime);
-
-  if (!start && !end) return "-";
-  if (start && !end) return `${start.label}${start.period}`;
-  if (!start && end) return `${end.label}${end.period}`;
-
-  // Same am/pm on both -> show once at the end (10:30-11:30am)
-  if (start.period === end.period) {
-    return `${start.label}-${end.label}${end.period}`;
-  }
-  // Different am/pm -> show both (11:30am-12:30pm)
-  return `${start.label}${start.period}-${end.label}${end.period}`;
-};
 
   return (
     <View style={[styles.container, isDark && styles.containerDark]}>
@@ -153,10 +153,10 @@ const formatTimeRange = (startTime, endTime) => {
                 `${student?.studentFirstName || ""} ${student?.studentLastName || ""}`.trim();
               const date = booking.date
                 ? new Date(booking.date).toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })
                 : "-";
               const time = formatTimeRange(booking.time || "-");
 
@@ -175,9 +175,7 @@ const formatTimeRange = (startTime, endTime) => {
                 >
                   <View style={styles.cardInfo}>
                     <Text
-                      style={[styles.cardTitle, isDark && styles.cardTitleDark]}
-                      numberOfLines={1}
-                    >
+                      style={[styles.cardTitle, isDark && styles.cardTitleDark]}>
                       {studentName}
                     </Text>
                   </View>
@@ -319,48 +317,57 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
-    
+
   },
   cardDark: {
     backgroundColor: "#1E1E1E",
     borderColor: "#2A2A2A",
     shadowOpacity: 0.3,
   },
-  cardInfo: { flex:1, marginRight: 6 },
-  cardTitle: {flex:1.5, fontSize: 15, color: "#1a1a1a", fontFamily: "Urbanist_700Bold" },
+  cardInfo: {
+    flex: 1,
+  },
+  cardTitle: {
+    flex: 1,
+    flexShrink: 1,
+    width: '100%',
+    flexWrap: 'wrap',
+    fontSize: 12,
+    color: "#1a1a1a",
+    fontFamily: "Urbanist_700Bold",
+  },
   cardTitleDark: { color: "#fff" },
-  cardDetails: { flex:1,marginRight: 6 },
+  cardDetails: { flex: 1, },
   cardText: {
-    flex:1.2,
-    fontSize: 13,
+    flex: 1,
+    fontSize: 12,
     color: "#666",
     lineHeight: 19,
-    paddingLeft:6,
     fontFamily: "Urbanist_400Regular",
   },
   cardTextDark: { color: "#9CA3AF" },
-  cardPackage: { flex:0.5, alignItems: "flex-start", marginRight: 6 },
+  cardPackage: { flex: 0.5, alignItems: "flex-start", },
   packageText: {
-    fontSize: 15,
+    fontSize: 12,
     color: "#1a1a1a",
     fontFamily: "Urbanist_700Bold",
   },
   packageTextDark: { color: "#E5E7EB" },
   cardStatusContainer: {
-    flex:0.7,
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     marginLeft: "auto",
   },
   statusBadge: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
     marginRight: 6,
   },
   statusCompleted: { backgroundColor: "#1CAB4B" },
   statusPending: { backgroundColor: "#FFD700" },
-  statusText: { fontSize: 13, fontFamily: "Urbanist_600SemiBold" },
+  statusText: { fontSize: 12, fontFamily: "Urbanist_600SemiBold" },
   statusTextWhite: { color: "#fff" },
   statusTextBlack: { color: "#1a1a1a" },
   chevron: { marginLeft: 2 },

@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
         flex: 0.5,
     },
     nameText: {
-        fontSize: 14,
+        fontSize: 12,
         fontFamily: 'Urbanist_700Bold',
         color: '#1a1a1a',
     },

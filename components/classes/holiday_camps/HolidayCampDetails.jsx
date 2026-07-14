@@ -294,8 +294,8 @@ export default function HolidayCampDetails({ sessionId, onBack, onSyllabusClick,
                                         style={styles.studentCard}
                                         onPress={() => onStudentSelect && onStudentSelect(student)}
                                     >
-                                        <View style={{flex:0.5}}>
-                                        <Text style={styles.studentIndex}>{index + 1}</Text>
+                                        <View style={{ flex: 0.5 }}>
+                                            <Text style={styles.studentIndex}>{index + 1}</Text>
                                         </View>
                                         <View style={styles.studentInfo}>
                                             <Text style={styles.studentName} numberOfLines={1}>{student.name}</Text>
@@ -310,7 +310,7 @@ export default function HolidayCampDetails({ sessionId, onBack, onSyllabusClick,
                                             >
                                                 <Ionicons
                                                     name="checkmark"
-                                                    size={18}
+                                                    size={16}
                                                     color={student.status === 'attended' ? '#fff' : theme.btnTextBlack}
                                                     style={styles.btnIcon}
                                                 />
@@ -322,10 +322,11 @@ export default function HolidayCampDetails({ sessionId, onBack, onSyllabusClick,
                                                 style={[styles.attendanceBtn, student.status === 'not attended' ? styles.btnNotAttendedActive : styles.btnNotAttendedInactive]}
                                                 onPress={() => handleAttendance(student.studentId, 'not attended')}
                                             >
+                                               // JSX mein icon color bhi theme se le:
                                                 <Ionicons
                                                     name="close"
-                                                    size={18}
-                                                    color={student.status === 'not attended' ? '#fff' : '#000'}
+                                                    size={16}
+                                                    color={student.status === 'not attended' ? '#fff' : theme.btnTextBlack}
                                                     style={styles.btnIcon}
                                                 />
                                                 <Text style={[styles.btnText, student.status === 'not attended' ? styles.btnTextWhite : styles.btnTextBlack]}>
@@ -354,7 +355,7 @@ const getStyles = (theme) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 16,
+        paddingHorizontal: 10,
         paddingTop: 16,
         paddingBottom: 10,
         borderBottomColor: theme.infoCardBorder,
@@ -567,7 +568,7 @@ const getStyles = (theme) => StyleSheet.create({
         marginRight: 4,
     },
     btnText: {
-        fontSize: 12,
+        fontSize: 11,
         fontFamily: 'Urbanist_700Bold',
     },
     btnTextWhite: {
@@ -576,9 +577,7 @@ const getStyles = (theme) => StyleSheet.create({
     btnTextBlack: {
         color: theme.btnTextBlack,
     },
-    btnTextBlack: {
-        color: '#000',
-    },
+
     addTrialistButton: {
         flexDirection: 'row',
         alignItems: 'center',

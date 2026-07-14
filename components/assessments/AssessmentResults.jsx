@@ -1,18 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Audio } from 'expo-av';
+import { useEffect, useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { Audio } from 'expo-av';
-import { useState, useEffect } from 'react';
+import { buildRatingsBreakdown, calculateOverallPercentage } from './Assessmentcriteria.constants';
 
 const { width } = Dimensions.get('window');
-
-const RATINGS = [
-    { id: 1, title: 'Personal Qualities', score: '9/10', percentage: 90, emoji: '🌟' },
-    { id: 2, title: 'Delivery Qualities', score: '8/10', percentage: 80, emoji: '⚡' },
-    { id: 3, title: 'Coaching Standards', score: '9/10', percentage: 90, emoji: '📋' },
-    { id: 4, title: 'Educational Quality', score: '8/10', percentage: 80, emoji: '🎓' },
-    { id: 5, title: 'Session Structure', score: '9/10', percentage: 90, emoji: '⏱️' },
-];
 
 const COLORS = {
     light: {
@@ -51,7 +44,17 @@ const COLORS = {
     },
 };
 
-export default function AssessmentResults({ onBack }) {
+// All data is now passed in via props from the practical-assessment flow —
+// no more hardcoded "Chelsea" / "Sat 3rd Apr" / mock RATINGS array.
+//
+// Props:
+//   assessment: { name, date, time, venue }   — from PracticalAssessments
+//   ratings:    { punctuality: 1-5, communicationSkills: 1-5, ... }  — from AssessmentCriteria
+//   video:      DocumentPicker asset { name, size, uri } | null      — from UploadVideo
+//   notes:      string                                               — from UploadVideo
+//   audioUri:   string | null                                        — from SummarisePerformance
+//   decision:   'pass' | 'fail'                                      — from AssessmentDecision
+export default function AssessmentResults({ onBack, assessment, ratings = {}, video, notes, audioUri, decision }) {
     const colorScheme = useColorScheme();
     const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
     const styles = getStyles(theme);
@@ -69,14 +72,14 @@ export default function AssessmentResults({ onBack }) {
     }, [playbackSound]);
 
     async function playAudio() {
+        if (!audioUri) return;
         try {
             if (playbackSound) {
                 await playbackSound.unloadAsync();
             }
 
-            // Using a demo audio link for mock playback
             const { sound } = await Audio.Sound.createAsync(
-                { uri: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+                { uri: audioUri },
                 { shouldPlay: true }
             );
 
@@ -100,11 +103,16 @@ export default function AssessmentResults({ onBack }) {
         }
     }
 
+    const ratingsBreakdown = buildRatingsBreakdown(ratings);
+    const percentage = calculateOverallPercentage(ratings);
+
     const strokeWidth = 14;
     const radius = 80;
     const circumference = 2 * Math.PI * radius;
-    const percentage = 86; // Overall Average
     const offset = circumference - (percentage / 100) * circumference;
+
+    const isPass = decision === 'pass';
+    const isFail = decision === 'fail';
 
     return (
         <View style={styles.container}>
@@ -122,19 +130,38 @@ export default function AssessmentResults({ onBack }) {
                     <View style={styles.metaItem}>
                         <Ionicons name="calendar-outline" size={16} color={theme.textSecondary} />
                         <Text style={styles.metaLabel}>Date</Text>
-                        <Text style={styles.metaValue}>Sat 3rd Apr</Text>
+                        <Text style={styles.metaValue}>{assessment?.date || '—'}</Text>
                     </View>
                     <View style={styles.metaItem}>
                         <Ionicons name="time-outline" size={16} color={theme.textSecondary} />
                         <Text style={styles.metaLabel}>Time</Text>
-                        <Text style={styles.metaValue}>9:30am</Text>
+                        <Text style={styles.metaValue}>{assessment?.time || '—'}</Text>
                     </View>
                     <View style={styles.metaItem}>
                         <Ionicons name="location-outline" size={16} color={theme.textSecondary} />
                         <Text style={styles.metaLabel}>Venue</Text>
-                        <Text style={styles.metaValue}>Chelsea</Text>
+                        <Text style={styles.metaValue}>{assessment?.venue || '—'}</Text>
                     </View>
                 </View>
+
+                {/* Decision badge */}
+                {decision && (
+                    <View
+                        style={[
+                            styles.decisionBadge,
+                            { backgroundColor: isPass ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)' },
+                        ]}
+                    >
+                        <Ionicons
+                            name={isPass ? 'checkmark-circle' : 'close-circle'}
+                            size={18}
+                            color={isPass ? theme.success : theme.danger}
+                        />
+                        <Text style={[styles.decisionBadgeText, { color: isPass ? theme.success : theme.danger }]}>
+                            {isPass ? 'Passed' : 'Failed'}
+                        </Text>
+                    </View>
+                )}
 
                 {/* Score Section */}
                 <View style={styles.card}>
@@ -146,7 +173,7 @@ export default function AssessmentResults({ onBack }) {
                                 cx="100"
                                 cy="100"
                                 r={radius}
-                                stroke={theme.success}
+                                stroke={isFail ? theme.danger : theme.success}
                                 strokeWidth={strokeWidth}
                                 fill="none"
                                 strokeDasharray={circumference}
@@ -162,58 +189,63 @@ export default function AssessmentResults({ onBack }) {
                     </View>
                 </View>
 
-                {/* Feedback Player */}
+                {/* Session Video */}
                 <View style={styles.card}>
-                    <Text style={styles.cardTitle}>Voice Feedback</Text>
-                    <Text style={styles.cardDescription}>Listen to your manager's recorded summary and guidance.</Text>
-                    <View style={styles.audioPlayerContainer}>
-                        <TouchableOpacity onPress={isPlaying ? stopPlayback : playAudio} style={styles.playButton}>
-                            <Ionicons name={isPlaying ? 'pause' : 'play'} size={24} color="#fff" />
-                        </TouchableOpacity>
-                        <View style={{ flex: 1, marginLeft: 16 }}>
-                            <Text style={styles.audioText}>Manager Voice Note</Text>
-                            <Text style={styles.audioSubText}>{isPlaying ? 'Playing feedback...' : 'Tap to listen'}</Text>
+                    <Text style={styles.cardTitle}>Session Video</Text>
+                    {video ? (
+                        <View style={styles.videoRow}>
+                            <TouchableOpacity style={styles.playButton}>
+                                <Ionicons name="play" size={22} color="#fff" />
+                            </TouchableOpacity>
+                            <View style={{ flex: 1, marginLeft: 16 }}>
+                                <Text style={styles.audioText} numberOfLines={1}>{video.name}</Text>
+                                <Text style={styles.audioSubText}>Tap to watch video</Text>
+                            </View>
                         </View>
-                        <Ionicons name="volume-high-outline" size={24} color={theme.textSecondary} />
-                    </View>
+                    ) : (
+                        <Text style={styles.emptyStateText}>No video was uploaded for this assessment.</Text>
+                    )}
                 </View>
 
-                {/* Written AI Feedback */}
+                {/* Voice Feedback */}
                 <View style={styles.card}>
-                    <Text style={styles.cardTitle}>Observations & Summary</Text>
-                    <View style={styles.feedbackSection}>
-                        <View style={styles.feedbackBlock}>
-                            <View style={styles.badgeSuccess}>
-                                <Text style={styles.badgeText}>POSITIVES</Text>
+                    <Text style={styles.cardTitle}>Voice Feedback</Text>
+                    {audioUri ? (
+                        <>
+                            <Text style={styles.cardDescription}>Listen to the assessor's recorded summary.</Text>
+                            <View style={styles.audioPlayerContainer}>
+                                <TouchableOpacity onPress={isPlaying ? stopPlayback : playAudio} style={styles.playButton}>
+                                    <Ionicons name={isPlaying ? 'pause' : 'play'} size={24} color="#fff" />
+                                </TouchableOpacity>
+                                <View style={{ flex: 1, marginLeft: 16 }}>
+                                    <Text style={styles.audioText}>Assessor Voice Note</Text>
+                                    <Text style={styles.audioSubText}>{isPlaying ? 'Playing feedback...' : 'Tap to listen'}</Text>
+                                </View>
+                                <Ionicons name="volume-high-outline" size={24} color={theme.textSecondary} />
                             </View>
-                            <Text style={styles.feedbackText}>
-                                Great energy right from the warmup. Engaged very well with the children and kept them focused. Excellent control of the layout and clear instructions.
-                            </Text>
-                        </View>
-                        <View style={styles.feedbackBlock}>
-                            <View style={styles.badgeDanger}>
-                                <Text style={styles.badgeText}>IMPROVEMENTS</Text>
-                            </View>
-                            <View style={styles.bulletItem}>
-                                <Ionicons name="arrow-forward" size={16} color={theme.danger} style={{ marginTop: 2, marginRight: 8 }} />
-                                <Text style={styles.feedbackText}>Project voice more clearly when the outdoor venue has high ambient noise.</Text>
-                            </View>
-                            <View style={styles.bulletItem}>
-                                <Ionicons name="arrow-forward" size={16} color={theme.danger} style={{ marginTop: 2, marginRight: 8 }} />
-                                <Text style={styles.feedbackText}>Improve transition speed between the main exercise and the cool down.</Text>
-                            </View>
-                        </View>
-                    </View>
+                        </>
+                    ) : (
+                        <Text style={styles.emptyStateText}>No voice summary was recorded for this assessment.</Text>
+                    )}
+                </View>
+
+                {/* Notes */}
+                <View style={styles.card}>
+                    <Text style={styles.cardTitle}>Assessor Notes</Text>
+                    {notes ? (
+                        <Text style={styles.feedbackText}>{notes}</Text>
+                    ) : (
+                        <Text style={styles.emptyStateText}>No notes were added for this assessment.</Text>
+                    )}
                 </View>
 
                 {/* Scoring Breakdown */}
                 <View style={styles.card}>
                     <Text style={styles.cardTitle}>Criteria breakdown</Text>
                     <View style={styles.ratingsList}>
-                        {RATINGS.map(item => (
+                        {ratingsBreakdown.map(item => (
                             <View key={item.id} style={styles.ratingRow}>
                                 <View style={styles.ratingHeader}>
-                                    <Text style={styles.ratingEmoji}>{item.emoji}</Text>
                                     <Text style={styles.ratingTitle}>{item.title}</Text>
                                     <Text style={styles.ratingScore}>{item.score}</Text>
                                 </View>
@@ -265,7 +297,7 @@ const getStyles = (theme) => StyleSheet.create({
         backgroundColor: theme.cardBackground,
         borderRadius: 16,
         padding: 16,
-        marginBottom: 20,
+        marginBottom: 16,
         borderWidth: 1,
         borderColor: theme.cardBorder,
         shadowColor: theme.shadowColor,
@@ -288,6 +320,20 @@ const getStyles = (theme) => StyleSheet.create({
         fontSize: 14,
         fontFamily: 'Urbanist_700Bold',
         color: theme.text,
+    },
+    decisionBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start',
+        gap: 6,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 20,
+        marginBottom: 16,
+    },
+    decisionBadgeText: {
+        fontSize: 13,
+        fontFamily: 'Urbanist_700Bold',
     },
     card: {
         backgroundColor: theme.cardBackground,
@@ -313,6 +359,12 @@ const getStyles = (theme) => StyleSheet.create({
         color: theme.textSecondary,
         marginBottom: 16,
     },
+    emptyStateText: {
+        fontSize: 13,
+        fontFamily: 'Urbanist_400Regular',
+        color: theme.textMuted,
+        fontStyle: 'italic',
+    },
     progressCircleContainer: {
         alignItems: 'center',
         justifyContent: 'center',
@@ -334,6 +386,10 @@ const getStyles = (theme) => StyleSheet.create({
         fontFamily: 'Urbanist_500Medium',
         color: theme.textSecondary,
         marginTop: 2,
+    },
+    videoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     audioPlayerContainer: {
         flexDirection: 'row',
@@ -363,41 +419,11 @@ const getStyles = (theme) => StyleSheet.create({
         color: theme.textSecondary,
         marginTop: 2,
     },
-    feedbackSection: {
-        gap: 20,
-    },
-    feedbackBlock: {
-        alignItems: 'flex-start',
-    },
-    badgeSuccess: {
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 6,
-        marginBottom: 8,
-    },
-    badgeDanger: {
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 6,
-        marginBottom: 8,
-    },
-    badgeText: {
-        fontSize: 11,
-        fontFamily: 'Urbanist_700Bold',
-        letterSpacing: 1,
-    },
     feedbackText: {
         fontSize: 14,
         fontFamily: 'Urbanist_400Regular',
         color: theme.textSecondary,
         lineHeight: 20,
-    },
-    bulletItem: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        marginBottom: 8,
     },
     ratingsList: {
         gap: 16,
@@ -409,10 +435,6 @@ const getStyles = (theme) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 8,
-    },
-    ratingEmoji: {
-        fontSize: 18,
-        marginRight: 8,
     },
     ratingTitle: {
         fontSize: 14,
