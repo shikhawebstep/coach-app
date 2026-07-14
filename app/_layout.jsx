@@ -36,13 +36,20 @@ function RootLayoutNav() {
 
         if (!isLoggedIn && inAuthGroup) {
             router.replace('/login');
-        } else if (isLoggedIn && (segments[0] === 'login' || segments[0] === 'forgot-password')) {
+        } else if (isLoggedIn) {
             if (!isProfileCompleted) {
-                router.replace('/fill-profile');
+                if (segments[0] !== 'fill-profile') {
+                    router.replace('/fill-profile');
+                }
             } else if (!isOnboardingCompleted) {
-                router.replace('/onboarding');
+                if (segments[0] !== 'onboarding') {
+                    router.replace('/onboarding');
+                }
             } else {
-                router.replace('/(tabs)');
+                const entryScreens = ['login', 'forgot-password', 'success', 'create-new-password', 'index', 'onboarding', 'fill-profile'];
+                if (entryScreens.includes(segments[0]) || !segments[0]) {
+                    router.replace('/(tabs)');
+                }
             }
         }
     }, [isLoggedIn, isAuthLoading, segments, inAuthGroup, isProfileCompleted, isOnboardingCompleted]);

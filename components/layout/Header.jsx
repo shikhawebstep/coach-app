@@ -6,7 +6,7 @@ import NotificationDetails from '../notifications/NotificationDetails';
 import NotificationsList from '../notifications/NotificationsList';
 import ProfileModal from './ProfileModal';
 
-export default function Header({ title, showBack = false, onMenuPress }) {
+export default function Header({ title, showBack = false, onMenuPress, isOnboarding = false }) {
     const router = useRouter();
     const [isProfileVisible, setIsProfileVisible] = useState(false);
     const [isNotificationsVisible, setIsNotificationsVisible] = useState(false);
@@ -34,6 +34,8 @@ export default function Header({ title, showBack = false, onMenuPress }) {
                             <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
                                 <Ionicons name="arrow-back" size={28} color="#fff" />
                             </TouchableOpacity>
+                        ) : isOnboarding ? (
+                            null
                         ) : (
                             <TouchableOpacity style={styles.iconButton} onPress={onMenuPress}>
                                 <Ionicons name="menu" size={32} color="#fff" />
@@ -52,19 +54,23 @@ export default function Header({ title, showBack = false, onMenuPress }) {
                     </View>
 
                     <View style={styles.rightContainer}>
-                        <TouchableOpacity style={styles.iconButton} onPress={handleNotificationPress}>
-                            <Image
-                                source={require('../../assets/images/Notification.png')}
-                                style={{ width: 32, height: 32 }}
-                            />                            <View style={styles.badge} />
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.profileButton} onPress={() => setIsProfileVisible(true)}>
-
-                            <Image
-                                source={require('@/assets/images/Ellipse.png')}
-                                style={styles.profileImage}
-                            />
-                        </TouchableOpacity>
+                        {!isOnboarding && (
+                            <>
+                                <TouchableOpacity style={styles.iconButton} onPress={handleNotificationPress}>
+                                    <Image
+                                        source={require('../../assets/images/Notification.png')}
+                                        style={{ width: 32, height: 32 }}
+                                    />
+                                    <View style={styles.badge} />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.profileButton} onPress={() => setIsProfileVisible(true)}>
+                                    <Image
+                                        source={require('@/assets/images/Ellipse.png')}
+                                        style={styles.profileImage}
+                                    />
+                                </TouchableOpacity>
+                            </>
+                        )}
                     </View>
                 </View>
             </ImageBackground>

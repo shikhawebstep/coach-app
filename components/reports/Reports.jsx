@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     },
     card: {
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'start',
         backgroundColor: '#fff',
         borderRadius: 16,
         paddingVertical: 16,
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
         elevation: 1,
     },
     colName: {
-        flex: 1,
+        flex: 0.5,
     },
     nameText: {
         fontSize: 14,
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
         color: '#1a1a1a',
     },
     colDateTime: {
-        flex: 1.5,
+        flex: 1,
     },
     dateTimeText: {
         fontSize: 12,

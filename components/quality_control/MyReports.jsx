@@ -277,7 +277,7 @@ const createStyles = (colors) => StyleSheet.create({
     },
     card: {
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'start',
         backgroundColor: colors.cardBg,
         borderRadius: 16,
         paddingVertical: 16,
@@ -300,7 +300,7 @@ const createStyles = (colors) => StyleSheet.create({
         color: colors.nameText,
     },
     colDateTime: {
-        flex: 1,
+        flex: 1.5,
     },
     dateTimeText: {
         fontSize: 12,

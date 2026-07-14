@@ -156,15 +156,15 @@ export default function HolidayCampDetails({ sessionId, onBack, onSyllabusClick,
         if (isNaN(date.getTime())) return dateString;
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        
+
         const dayName = days[date.getDay()];
         const day = date.getDate();
         const month = months[date.getMonth()];
-        
+
         const suffix = (day % 10 === 1 && day !== 11) ? 'st' :
-                       (day % 10 === 2 && day !== 12) ? 'nd' :
-                       (day % 10 === 3 && day !== 13) ? 'rd' : 'th';
-                       
+            (day % 10 === 2 && day !== 12) ? 'nd' :
+                (day % 10 === 3 && day !== 13) ? 'rd' : 'th';
+
         return `${dayName} ${day}${suffix} ${month}`;
     };
 
@@ -196,7 +196,7 @@ export default function HolidayCampDetails({ sessionId, onBack, onSyllabusClick,
                         <Ionicons name="arrow-back" size={24} color={theme.icon} />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Holiday camps</Text>
-                  
+
                 </View>
                 {!loading && (
                     <TouchableOpacity style={styles.syllabusButton} onPress={() => onSyllabusClick(data)}>
@@ -294,9 +294,13 @@ export default function HolidayCampDetails({ sessionId, onBack, onSyllabusClick,
                                         style={styles.studentCard}
                                         onPress={() => onStudentSelect && onStudentSelect(student)}
                                     >
+                                        <View style={{flex:0.5}}>
                                         <Text style={styles.studentIndex}>{index + 1}</Text>
+                                        </View>
                                         <View style={styles.studentInfo}>
                                             <Text style={styles.studentName} numberOfLines={1}>{student.name}</Text>
+                                        </View>
+                                        <View style={styles.studentInfo}>
                                             <Text style={styles.studentAge}>{student.age}</Text>
                                         </View>
                                         <View style={styles.attendanceButtons}>
@@ -518,13 +522,14 @@ const getStyles = (theme) => StyleSheet.create({
         alignItems: 'center',
     },
     studentName: {
-         flex: 1,
+        flex: 1,
         fontSize: 12,
         textTransform: 'capitalize',
         color: theme.studentName,
         fontFamily: 'Urbanist_700Bold',
     },
     studentAge: {
+        flex: 1,
         fontSize: 12,
         color: theme.studentAge,
         marginLeft: 8,
@@ -537,7 +542,7 @@ const getStyles = (theme) => StyleSheet.create({
     attendanceBtn: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 12,
+        paddingHorizontal: 10,
         paddingVertical: 6,
         borderRadius: 20,
         borderWidth: 1.5,

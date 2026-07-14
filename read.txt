@@ -150,7 +150,7 @@ STEP 8: CREATE ANDROID APK
 
 Android APK generate karne ke liye:
 
-
+npm install -g eas-cli
 npx eas build --platform android --profile preview
 
 

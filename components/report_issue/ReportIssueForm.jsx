@@ -128,10 +128,7 @@ export default function ReportIssueForm({ onBack }) {
             alert('Please select a category.');
             return;
         }
-        if (!title.trim()) {
-            alert('Please enter a title.');
-            return;
-        }
+      
         if (!reportText.trim()) {
             alert('Please enter the issue details.');
             return;
@@ -150,7 +147,6 @@ export default function ReportIssueForm({ onBack }) {
                     body: JSON.stringify({
                         venueId: selectedVenue.id,
                         category: selectedCategory,
-                        title: title.trim(),
                         reportIssue: reportText.trim()
                     })
                 }

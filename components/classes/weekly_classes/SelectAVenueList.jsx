@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   statusBadge: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
     marginRight: 8,

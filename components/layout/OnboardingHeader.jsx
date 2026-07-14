@@ -1,11 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import ProfileModal from './ProfileModal';
 
-export default function OnboardingHeader({ title, showBack = false, onMenuPress, onNotificationPress }) {
-    const router = useRouter();
+export default function OnboardingHeader({ title, showBack = false, onMenuPress, onNotificationPress, isOnboarding = true }) {
     const [isProfileVisible, setIsProfileVisible] = useState(false);
 
     return (
@@ -27,24 +25,30 @@ export default function OnboardingHeader({ title, showBack = false, onMenuPress,
                 </View>
 
                 <View style={styles.rightContainer}>
-                    <TouchableOpacity style={styles.iconButton} onPress={onNotificationPress}>
-                        <Ionicons name="notifications-outline" size={26} color="#fff" />
-                        <View style={styles.badge} />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.profileButton} onPress={() => setIsProfileVisible(true)}>
+                    {!isOnboarding && (
+                        <>
+                            <TouchableOpacity style={styles.iconButton} onPress={onNotificationPress}>
+                                <Ionicons name="notifications-outline" size={26} color="#fff" />
+                                <View style={styles.badge} />
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.profileButton} onPress={() => setIsProfileVisible(true)}>
 
-                        <Image
-                            source={require('@/assets/images/Ellipse.png')}
-                            style={styles.profileImage}
-                        />
-                    </TouchableOpacity>
+                                <Image
+                                    source={require('@/assets/images/Ellipse.png')}
+                                    style={styles.profileImage}
+                                />
+                            </TouchableOpacity>
+                        </>
+                    )}
                 </View>
             </View>
 
-            <ProfileModal
-                visible={isProfileVisible}
-                onClose={() => setIsProfileVisible(false)}
-            />
+            {!isOnboarding && (
+                <ProfileModal
+                    visible={isProfileVisible}
+                    onClose={() => setIsProfileVisible(false)}
+                />
+            )}
         </>
     );
 }

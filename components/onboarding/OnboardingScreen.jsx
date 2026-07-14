@@ -116,7 +116,7 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
         backgroundColor={COLORS.headerBg}
       />
 
-      {currentStep > 1 && <Header />}
+      {currentStep > 1 && <Header isOnboarding={true} />}
 
       {/* TASK PANEL OVERLAY */}
       {showTaskPanel && currentStep > 0 && (
