@@ -603,7 +603,7 @@ function mapResponseDetail(apiData) {
         surveyTitle: apiData.surveyTitle,
         percentage: Math.round(parseFloat(apiData.overallPercentage || 0)),
         npsScore: apiData.npsScore,
-        students: apiData.students ?? apiData.studentCount ?? null,
+        students: apiData.totalStudent ?? apiData.studentCount ?? null,
         date,
         time,
         submittedAt: apiData.submittedAt,
