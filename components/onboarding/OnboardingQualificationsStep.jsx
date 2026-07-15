@@ -82,8 +82,9 @@ const QualificationsStep = ({ onNext, onComplete, onBack, isCompleted, styles, C
       return;
     }
 
+    const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || "https://api.grabbite.com/";
     const response = await fetch(
-      `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachPro/account-profile/upload/qualifications/${userId}`,
+      `${baseUrl}api/coachPro/account-profile/upload/qualifications/${userId}`,
       {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },

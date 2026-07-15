@@ -35,7 +35,11 @@ export default function Header({ title, showBack = false, onMenuPress, isOnboard
                                 <Ionicons name="arrow-back" size={28} color="#fff" />
                             </TouchableOpacity>
                         ) : isOnboarding ? (
-                            null
+                            onMenuPress ? (
+                                <TouchableOpacity style={styles.iconButton} onPress={onMenuPress}>
+                                    <Ionicons name="menu" size={32} color="#fff" />
+                                </TouchableOpacity>
+                            ) : null
                         ) : (
                             <TouchableOpacity style={styles.iconButton} onPress={onMenuPress}>
                                 <Ionicons name="menu" size={32} color="#fff" />

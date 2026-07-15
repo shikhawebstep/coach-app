@@ -7,6 +7,7 @@ import {
     View,
     useColorScheme,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 const CONGRATS_IMG = require('@/assets/images/congrats.png');
 const FAILED_IMG = require('@/assets/images/failed.png');
@@ -32,18 +33,18 @@ export default function AssessmentDecision({ onBack, onComplete }) {
     return (
         <View style={[styles.container, { backgroundColor: isDark ? '#0E0E14' : '#F4F6FB' }]}>
 
-            {/* ── Title ── */}
-            <View style={styles.header}>
-                <Text style={[styles.title, {
-                    fontFamily: 'Urbanist_700Bold',
-                    color: isDark ? '#F3F4F6' : '#111827'
-                }]}>
+            {/* Header */}
+            <View style={styles.headerRow}>
+                <TouchableOpacity onPress={onBack} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color={isDark ? '#F3F4F6' : '#111827'} />
+                </TouchableOpacity>
+                <Text style={[styles.headerTitle, { color: isDark ? '#F3F4F6' : '#111827' }]}>
                     Final Decision
                 </Text>
-                <Text style={[styles.subtitle, { color: isDark ? '#9CA3AF' : '#6B7280' }]}>
-                    Select the candidate's result to complete the assessment.
-                </Text>
             </View>
+            <Text style={[styles.subtitle, { color: isDark ? '#9CA3AF' : '#6B7280' }]}>
+                Select the candidate's result to complete the assessment.
+            </Text>
 
             {/* ── Cards Row ── */}
             <View style={styles.cardsRow}>
@@ -146,22 +147,28 @@ const styles = StyleSheet.create({
     },
 
     /* Header */
-    header: {
+    headerRow: {
+        flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 28,
-    },
-    title: {
-        fontSize: 28,
-        fontFamily: 'Urbanist_700Bold',
-        textAlign: 'center',
+        paddingVertical: 16,
         marginBottom: 8,
-        letterSpacing: -0.3,
+    },
+    backButton: {
+        marginRight: 12,
+    },
+    headerTitle: {
+        fontSize: 26,
+        fontFamily: 'Urbanist_700Bold',
+        flex: 1,
+        textAlign: 'center',
+        marginRight: 36, // Balance the back button
     },
     subtitle: {
         fontSize: 14,
         fontFamily: 'Urbanist_400Regular',
         textAlign: 'center',
         lineHeight: 21,
+        marginBottom: 28,
     },
 
     /* Cards */

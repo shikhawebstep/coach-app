@@ -2,13 +2,16 @@ import { ToastProvider, useToast } from '@/components/common/Toast';
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { useEffect, useRef, useState } from 'react';
+import * as WebBrowser from 'expo-web-browser';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+    ActivityIndicator,
     Animated,
     Dimensions,
     ImageBackground,
     Linking,
     Modal,
+    PanResponder,
     ScrollView,
     StyleSheet,
     Text,
@@ -17,6 +20,9 @@ import {
     View,
     useColorScheme
 } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
+import ViewShot from 'react-native-view-shot';
+import { WebView } from 'react-native-webview';
 
 let localToast = null;
 
@@ -39,6 +45,118 @@ const toast = {
 };
 
 const { width } = Dimensions.get('window');
+const PAD_W = width - 80;
+const PAD_H = 120;
+const PDF_PREVIEW_HEIGHT = 380;
+
+// ─── Signature Drawing Pad ─────────────────────────────────────────────────
+function SignaturePad({ onHasSignature, disabled, viewShotRef, borderColor }) {
+    const [paths, setPaths] = useState([]);
+    const currentPath = useRef([]);
+    const padRef = useRef(null);
+    const offsetRef = useRef({ x: 0, y: 0 });
+    const disabledRef = useRef(disabled);
+    const cbRef = useRef(onHasSignature);
+    disabledRef.current = disabled;
+    cbRef.current = onHasSignature;
+
+    const measure = () => padRef.current?.measure((_fx, _fy, _w, _h, px, py) => {
+        offsetRef.current = { x: px, y: py };
+    });
+    const pt = (pageX, pageY) => ({
+        x: (pageX - offsetRef.current.x).toFixed(1),
+        y: (pageY - offsetRef.current.y).toFixed(1),
+    });
+    const pan = useRef(PanResponder.create({
+        onStartShouldSetPanResponder: () => !disabledRef.current,
+        onMoveShouldSetPanResponder: () => !disabledRef.current,
+        onPanResponderGrant: ({ nativeEvent: { pageX, pageY } }) => {
+            const { x, y } = pt(pageX, pageY);
+            currentPath.current = [`M${x},${y}`];
+        },
+        onPanResponderMove: ({ nativeEvent: { pageX, pageY } }) => {
+            const { x, y } = pt(pageX, pageY);
+            currentPath.current.push(`L${x},${y}`);
+            setPaths(prev => {
+                const copy = [...prev];
+                if (copy._temp && copy.length > 0) copy[copy.length - 1] = currentPath.current.join(' ');
+                else copy.push(currentPath.current.join(' '));
+                copy._temp = true;
+                return copy;
+            });
+        },
+        onPanResponderRelease: () => {
+            const d = currentPath.current.join(' ');
+            if (d) {
+                setPaths(prev => { const done = [...prev]; done._temp = false; return done; });
+                cbRef.current?.(true);
+            }
+            currentPath.current = [];
+        },
+    })).current;
+
+    const clear = () => { setPaths([]); currentPath.current = []; onHasSignature?.(false); };
+
+    return (
+        <View style={{ marginTop: 4 }}>
+            <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 0.9, result: 'base64' }}>
+                <View
+                    ref={padRef}
+                    onLayout={measure}
+                    style={{ width: PAD_W, height: PAD_H, borderBottomWidth: 1.5, borderBottomColor: borderColor, justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}
+                    {...pan.panHandlers}
+                >
+                    {paths.length === 0 && <Text style={{ fontSize: 14, fontStyle: 'italic', color: '#aaa', position: 'absolute', fontFamily: 'Urbanist_400Regular' }}>Sign here…</Text>}
+                    <Svg width={PAD_W} height={PAD_H} style={StyleSheet.absoluteFill}>
+                        {paths.map((d, i) => <Path key={i} d={d} stroke="#1A2FA8" strokeWidth={2.2} fill="none" strokeLinecap="round" strokeLinejoin="round" />)}
+                    </Svg>
+                </View>
+            </ViewShot>
+            {paths.length > 0 && (
+                <TouchableOpacity onPress={clear} style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginTop: 6, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: '#FEE2E2', gap: 4 }}>
+                    <Ionicons name="refresh-outline" size={13} color="#EF4444" />
+                    <Text style={{ color: '#EF4444', fontSize: 12, fontFamily: 'Urbanist_600SemiBold' }}>Clear signature</Text>
+                </TouchableOpacity>
+            )}
+        </View>
+    );
+}
+
+// ─── PDF Preview via WebView ───────────────────────────────────────────────
+function PdfPreview({ pdfUrl, isDark }) {
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+    if (!pdfUrl) return (
+        <View style={{ height: PDF_PREVIEW_HEIGHT / 1.5, borderWidth: 1, borderColor: isDark ? '#2A2A2A' : '#eee', borderRadius: 12, alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <Ionicons name="document-outline" size={28} color={isDark ? '#555' : '#bbb'} />
+            <Text style={{ color: isDark ? '#777' : '#aaa', fontFamily: 'Urbanist_500Medium', fontSize: 13 }}>No contract PDF available yet.</Text>
+        </View>
+    );
+    const viewerUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(pdfUrl)}`;
+    return (
+        <View style={{ borderWidth: 1, borderColor: isDark ? '#2A2A2A' : '#eee', borderRadius: 12, overflow: 'hidden', marginBottom: 4 }}>
+            {error ? (
+                <View style={{ height: PDF_PREVIEW_HEIGHT / 1.5, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 20 }}>
+                    <Ionicons name="alert-circle-outline" size={26} color="#EF4444" />
+                    <Text style={{ color: isDark ? '#9CA3AF' : '#888', fontFamily: 'Urbanist_500Medium', fontSize: 13, textAlign: 'center' }}>Couldn't preview the PDF. Try opening it directly.</Text>
+                    <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync(pdfUrl)} style={{ backgroundColor: '#2F5FE5', paddingHorizontal: 18, paddingVertical: 10, borderRadius: 20 }}>
+                        <Text style={{ color: '#fff', fontFamily: 'Urbanist_700Bold', fontSize: 13 }}>Open PDF</Text>
+                    </TouchableOpacity>
+                </View>
+            ) : (
+                <>
+                    <WebView source={{ uri: viewerUrl }} style={{ height: PDF_PREVIEW_HEIGHT, backgroundColor: 'transparent' }} onLoadEnd={() => setLoading(false)} onError={() => { setLoading(false); setError(true); }} scalesPageToFit />
+                    {loading && (
+                        <View style={{ ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.6)' }}>
+                            <ActivityIndicator size="small" color="#2F5FE5" />
+                            <Text style={{ color: isDark ? '#9CA3AF' : '#888', fontFamily: 'Urbanist_500Medium', marginTop: 8, fontSize: 13 }}>Loading contract preview…</Text>
+                        </View>
+                    )}
+                </>
+            )}
+        </View>
+    );
+}
 
 function ProfileModalContent({ visible, onClose }) {
     const { token, userId } = useAuth();
@@ -63,6 +181,17 @@ function ProfileModalContent({ visible, onClose }) {
     const [referPhone, setReferPhone] = useState('');
     const [referNotes, setReferNotes] = useState('');
     const [referSaving, setReferSaving] = useState(false);
+
+    // ── Contract signing state ───────────────────────────────────────────────
+    const [sigMethod, setSigMethod] = useState('type');  // 'type' | 'draw'
+    const [contractFullName, setContractFullName] = useState('');
+    const [hasSig, setHasSig] = useState(false);
+    const [agreed, setAgreed] = useState(false);
+    const [signing, setSigning] = useState(false);
+    const [signError, setSignError] = useState(null);
+    const [signSuccess, setSignSuccess] = useState(null);
+    const [signedPdfUrl, setSignedPdfUrl] = useState(null);
+    const viewShotRef = useRef(null);
 
     // Splits "Shikha Thakur" -> { firstName: "Shikha", lastName: "Thakur" }
     // "Shikha" (no space) -> { firstName: "Shikha", lastName: "" }
@@ -97,7 +226,8 @@ function ProfileModalContent({ visible, onClose }) {
         if (!token || !userId) return;
         const myHeaders = new Headers();
         myHeaders.append('Authorization', `Bearer ${token}`);
-        fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/account-profile/${userId}`, {
+        const baseUrl = (process.env.EXPO_PUBLIC_API_BASE_URL || 'https://api.grabbite.com/').replace(/\/$/, '');
+        fetch(`${baseUrl}/api/coachpro/account-profile/${userId}`, {
             method: 'GET',
             headers: myHeaders,
         })
@@ -113,10 +243,52 @@ function ProfileModalContent({ visible, onClose }) {
                     setPhoneNumber(d.phoneNumber || '');
                     setCity(d.city || '');
                     setPostalCode(d.postalCode || '');
+                    // seed contract name
+                    const name = `${d.firstName || ''} ${d.lastName || ''}`.trim();
+                    setContractFullName(name);
+                    if (d.contract?.signedPdfFile) setSignedPdfUrl(d.contract.signedPdfFile);
                 }
             })
             .catch(err => console.error(err));
     }, [token, userId]);
+
+    // ── API: Sign Contract ───────────────────────────────────────────────────
+    const handleSignContract = async () => {
+        const contract = profileData?.contract;
+        if (!agreed) { setSignError('Please check the agreement box.'); return; }
+        if (!contractFullName.trim()) { setSignError('Please type your full name.'); return; }
+        if (sigMethod === 'draw' && !hasSig) { setSignError('Please draw your signature.'); return; }
+        if (!contract?.id) { setSignError('No contract found.'); return; }
+
+        setSigning(true); setSignError(null); setSignSuccess(null);
+        try {
+            let signatureBase64 = null;
+            if (sigMethod === 'draw') {
+                const raw = await viewShotRef.current?.capture?.();
+                if (!raw) { setSignError('Unable to capture signature. Please try again.'); return; }
+                signatureBase64 = `data:image/png;base64,${raw}`;
+            }
+            const baseUrl = (process.env.EXPO_PUBLIC_API_BASE_URL || 'https://api.grabbite.com/').replace(/\/$/, '');
+            const res = await fetch(`${baseUrl}/api/coachpro/contract/sign`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ contractTemplateId: contract.id, signedName: contractFullName.trim(), signatureImage: signatureBase64 }),
+            });
+            const result = await res.json();
+            if (!res.ok || !result.status) { setSignError(result.message || 'Failed to sign contract.'); return; }
+            const pdf = result.data?.signedPdfFile || result.data?.pdfFile || null;
+            if (pdf) setSignedPdfUrl(pdf);
+            setSignSuccess('Contract signed successfully!');
+            toast.success('Contract signed successfully!');
+            // update local profileData so badge flips to Signed
+            setProfileData(prev => ({ ...prev, contract: { ...prev?.contract, status: 'signed', signedAt: new Date().toISOString() } }));
+        } catch (err) {
+            console.error(err);
+            setSignError(err.message || 'Something went wrong.');
+        } finally {
+            setSigning(false);
+        }
+    };
 
     const handleBack = () => {
         if (view === 'contract') setView('profile');
@@ -314,79 +486,49 @@ function ProfileModalContent({ visible, onClose }) {
         </ScrollView>
     );
 
-    // ─── Step 2: Sign Contract ───────────────────────────────────────────────
+    // ─── Step 2: Contract — PDF preview only ────────────────────────────────
     const renderContract = () => {
         const contract = profileData?.contract;
-        const isSigned = contract?.status === 'signed';
-        const pdfUrl = contract?.signedPdfFile || contract?.pdfFile;
-        const contractorName = profileData
-            ? `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim() || 'Coach'
-            : 'Coach';
+        const isSigned = contract?.status === 'signed' || !!contract?.signedAt;
+        const activePdfUrl = signedPdfUrl || contract?.signedPdfFile || contract?.pdfFile;
 
         return (
-            <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+                {/* Header */}
                 <View style={styles.contractHeaderRow}>
-                    <Text style={styles.pageTitleHeader}>Sign your contract</Text>
+                    <Text style={styles.pageTitleHeader}>Your contract</Text>
                     <View style={[styles.completeBadge, { backgroundColor: isSigned ? '#1CAB4B' : '#f59e0b' }]}>
-                        <Text style={styles.completeBadgeText}>
-                            {isSigned ? 'Complete' : 'Pending'}
-                        </Text>
+                        <Text style={styles.completeBadgeText}>{isSigned ? 'Signed' : 'Pending'}</Text>
                     </View>
                 </View>
 
+                {/* Action buttons */}
                 <View style={styles.contractButtonRow}>
-                    <TouchableOpacity style={styles.contractTopButton}>
-                        <Text style={styles.contractTopBtnText}>Previous</Text>
+                    <TouchableOpacity style={styles.contractTopButton} onPress={handleBack}>
+                        <Text style={styles.contractTopBtnText}>Back</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => setView('referCoach')}
-                        style={styles.contractTopButton}
-                    >
-                        <Text style={styles.contractTopBtnText}>Next</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.contractTopButton}
-                        onPress={() => { if (pdfUrl) Linking.openURL(pdfUrl); }}
-                    >
-                        <Text style={styles.contractTopBtnText}>Download</Text>
-                    </TouchableOpacity>
+                    {activePdfUrl && (
+                        <TouchableOpacity style={styles.contractTopButton} onPress={() => Linking.openURL(activePdfUrl)}>
+                            <Text style={styles.contractTopBtnText}>Download</Text>
+                        </TouchableOpacity>
+                    )}
+                    {activePdfUrl && (
+                        <TouchableOpacity style={styles.contractTopButton} onPress={() => WebBrowser.openBrowserAsync(activePdfUrl)}>
+                            <Text style={styles.contractTopBtnText}>Open</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
 
-                <View style={styles.contractContent}>
-                    <Text style={styles.contractMainTitle}>
-                        {contract?.title || 'INDEPENDENT CONTRACTOR AGREEMENT'}
-                    </Text>
+                {/* PDF Preview */}
+                <PdfPreview pdfUrl={activePdfUrl} isDark={isDark} />
 
-                    <Text style={styles.contractParagraph}>
-                        This independent contractor agreement is between{' '}
-                        <Text style={styles.boldText}>{contractorName}</Text>
-                        {' '}And SAMBA SOCCER SCHOOLS GLOBAL LTD ("We", "Us", "Our", the "Company")
-                    </Text>
-
-                    <Text style={styles.contractSectionTitle}>Background</Text>
-                    <Text style={styles.contractParagraph}>
-                        a. The Company is of the opinion that the Contractor has the necessary qualifications, experience and abilities to provide services to the Company.
-                    </Text>
-                    <Text style={styles.contractParagraph}>
-                        b. The Contractor agrees to provide such services to the Company on the terms and conditions set out in the Agreement.
-                    </Text>
-
-                    <Text style={styles.contractSectionTitle}>General</Text>
-                    <Text style={styles.contractParagraph}>
-                        IN CONSIDERATION OF the matters described above and of the mutual benefits and obligations set forth in this Agreement, the receipt and sufficiency of which consideration is hereby acknowledged, the Company and the Contractor (individually the "Party" and collectively the "Parties" to this Agreement) agree as follows:
-                    </Text>
-
-                    <Text style={styles.contractSectionTitle}>General</Text>
-                    <Text style={styles.contractParagraph}>
-                        a. The particulars of this Agreement are as set out in this Agreement and the Company policies, procedures and rules as may be introduced and/or varied from time to time.
-                    </Text>
-                    <Text style={styles.contractParagraph}>
-                        b. The Company has a duty to safeguard all students, parents and guardians and their personal information. The Contractor agrees to adhere to the Company's policies and understands that failure to do so may lead to all work being withdrawn.
-                    </Text>
-                    <Text style={styles.contractParagraph}>
-                        c. Any amendments or modifications of this Agreement or additional obligation assumed by either Party in connection with this agreement will only be binding if evidenced in writing and signed by both parties.
-                    </Text>
-                </View>
+                {/* Signed confirmation row */}
+                {isSigned && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(28,171,75,0.1)', borderRadius: 12, padding: 14, marginTop: 12, borderWidth: 1, borderColor: 'rgba(28,171,75,0.3)' }}>
+                        <Ionicons name="checkmark-circle" size={18} color="#1CAB4B" />
+                        <Text style={{ color: '#1CAB4B', fontFamily: 'Urbanist_700Bold', fontSize: 14 }}>Contract signed</Text>
+                    </View>
+                )}
             </ScrollView>
         );
     };

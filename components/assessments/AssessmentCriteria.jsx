@@ -1,6 +1,6 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
-
 import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { PRACTICAL_ASSESSMENT_CRITERIA } from './Assessmentcriteria.constants';
 
 const COLORS = {
@@ -48,8 +48,15 @@ export default function AssessmentCriteria({ onBack, onNext }) {
 
     return (
         <View style={styles.container}>
+            {/* Header */}
+            <View style={styles.header}>
+                <TouchableOpacity onPress={onBack} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color={theme.icon} />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Assessment Criteria</Text>
+            </View>
+
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-                <Text style={styles.sectionTitle}>Assessment Criteria</Text>
 
                 {PRACTICAL_ASSESSMENT_CRITERIA.map((criterion) => (
                     <View key={criterion.key} style={styles.questionBlock}>
@@ -104,6 +111,9 @@ const getStyles = (theme) => StyleSheet.create({
         fontSize: 26,
         color: theme.headerTitle,
         fontFamily: 'Urbanist_700Bold',
+        flex: 1,
+        textAlign: 'center',
+        marginRight: 36, // Balance the back button
     },
     content: {
         paddingHorizontal: 20,

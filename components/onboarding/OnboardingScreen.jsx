@@ -27,53 +27,107 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
   const styles = createStyles(COLORS);
   const { token, userId, completeOnboarding } = useAuth();
 
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(0);
   const [showTaskPanel, setShowTaskPanel] = useState(false);
   const [completedTasks, setCompletedTasks] = useState({
     "1": false, "2": false, "3": false, "4": false,
   });
   const [profileLoading, setProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
-  // ── Fetch profile once and derive which onboarding steps are already done ──
-  useEffect(() => {
-    if (!token || !userId) { setProfileLoading(false); return; }
+useEffect(() => {
+  console.log("🔍 [OnboardingScreen] useEffect triggered");
+  console.log("🔍 token:", token ? `${token.substring(0, 20)}...` : "NULL / UNDEFINED");
+  console.log("🔍 userId:", userId);
 
-    const headers = new Headers();
-    headers.append('Authorization', `Bearer ${token}`);
+  if (!token || !userId) {
+    console.warn("⚠️ [OnboardingScreen] Missing token or userId — skipping profile fetch");
+    setProfileLoading(false);
+    return;
+  }
 
-    fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/account-profile/${userId}`, {
-      method: 'GET', headers,
-    })
-      .then(r => r.json())
-      .then(result => {
-        if (result.status && result.data) {
-          const d = result.data;
+  const controller = new AbortController();
+  const baseUrl = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://api.grabbite.com/").replace(/\/$/, "");
+  const url = `${baseUrl}/api/coachpro/account-profile/${userId}`;
 
-          // 1 = Contract
-          const contractDone = d.contract?.status === 'signed' || !!d.contract?.signedAt;
+  console.log("🌐 [OnboardingScreen] Fetching profile URL:", url);
+  console.log("🔑 [OnboardingScreen] Auth header:", `Bearer ${token.substring(0, 20)}...`);
 
-          // 2 = Qualifications — considered done if at least one qualification doc is uploaded
-          // ⚠️ ADJUST: if there's a fixed required list of qualification keys, check against that
-          // instead of "any key present" (e.g. all of ['fa_level_1', 'safeguarding', ...] must exist).
-          const qualificationsDone = !!d.qualifications && Object.keys(d.qualifications).length > 0;
+  setProfileError(false);
 
-          // 3 = Uniform
-          const uniformDone = d.uniformPurchaseStatus === 'completed';
+  const fetchProfile = async () => {
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+        signal: controller.signal,
+      });
 
-          // 4 = Training — ⚠️ no field returned by this API yet.
-          // Keeping whatever local state already has (e.g. set by handleCompleteTask)
-          // until backend exposes a training completion field.
-          setCompletedTasks(prev => ({
-            "1": contractDone,
-            "2": qualificationsDone,
-            "3": uniformDone,
-            "4": prev["4"],
-          }));
-        }
-      })
-      .catch(err => console.error('Onboarding profile fetch:', err))
-      .finally(() => setProfileLoading(false));
-  }, [token, userId]);
+      console.log("📡 [OnboardingScreen] Response status:", response.status, response.statusText);
+
+      const rawText = await response.text();
+      console.log("📦 [OnboardingScreen] Raw response text:", rawText);
+
+      let result;
+      try {
+        result = JSON.parse(rawText);
+      } catch (parseErr) {
+        console.error("❌ [OnboardingScreen] Failed to parse JSON:", parseErr.message);
+        setProfileError(true);
+        return;
+      }
+
+      console.log("✅ [OnboardingScreen] Parsed result:", JSON.stringify(result, null, 2));
+
+      if (!result.status || !result.data) {
+        console.warn("⚠️ [OnboardingScreen] Invalid profile response — status:", result.status, "data:", result.data);
+        return;
+      }
+
+      const d = result.data;
+      console.log("📋 [OnboardingScreen] Profile data keys:", Object.keys(d));
+      console.log("📋 contract:", d.contract);
+      console.log("📋 qualifications:", d.qualifications);
+      console.log("📋 uniformPurchaseStatus:", d.uniformPurchaseStatus);
+      console.log("📋 onboardingCourseResult:", d.onboardingCourseResult);
+
+      const contractDone = d.contract?.status === "signed" || !!d.contract?.signedAt;
+      const qualificationsDone = !!d.qualifications && Object.keys(d.qualifications).length > 0;
+      const uniformDone = d.uniformPurchaseStatus === "completed";
+      const trainingDone = d.onboardingCourseResult?.status === "pass";
+
+      console.log("🏁 Task states — contract:", contractDone, "| qualifications:", qualificationsDone, "| uniform:", uniformDone, "| training:", trainingDone);
+
+      if (contractDone && qualificationsDone && uniformDone && trainingDone) {
+        console.log("🎉 [OnboardingScreen] All tasks complete — redirecting");
+        setRedirecting(true);
+        handleComplete();
+        return;
+      }
+
+      setCompletedTasks((prev) => ({
+        "1": contractDone || prev["1"],
+        "2": qualificationsDone || prev["2"],
+        "3": uniformDone || prev["3"],
+        "4": trainingDone || prev["4"],
+      }));
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        console.error("❌ [OnboardingScreen] Profile fetch error:", err.name, err.message);
+        setProfileError(true);
+      }
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  fetchProfile();
+
+  return () => controller.abort();
+}, [token, userId]);
+
+console.log('profileError',profileError)
 
   const sharedProps = { styles, COLORS };
 
@@ -86,10 +140,10 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
   const handleComplete = () => {
     completeOnboarding();
     if (navigation) navigation.navigate("Home");
-    else router.replace('/(tabs)');
+    else router.replace('/');
   };
 
-  if (profileLoading) {
+  if (profileLoading || redirecting) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.screenBg }}>
         <StatusBar
@@ -97,7 +151,7 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
           backgroundColor={COLORS.headerBg}
         />
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 }}>
-          <ActivityIndicator color={COLORS.blueBtn} size="large" />
+          <ActivityIndicator color={COLORS.accent || '#2F5FE5'} size="large" />
           <Text style={{ color: COLORS.textSecondary, fontFamily: 'Urbanist_500Medium' }}>
             Loading your onboarding status…
           </Text>
@@ -116,9 +170,16 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
         backgroundColor={COLORS.headerBg}
       />
 
-      {currentStep > 1 && <Header isOnboarding={true} />}
+      {/* FIX: Header now gets a handler to actually open the task panel.
+          Previously showTaskPanel was only ever set to false, so this
+          overlay could never be opened. */}
+      {currentStep > 1 && (
+        <Header
+          isOnboarding={true}
+          onMenuPress={() => setShowTaskPanel(true)}
+        />
+      )}
 
-      {/* TASK PANEL OVERLAY */}
       {showTaskPanel && currentStep > 0 && (
         <View style={styles.taskPanelOverlay}>
           <View style={styles.taskPanel}>
@@ -136,6 +197,14 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
               {...sharedProps}
             />
           </View>
+        </View>
+      )}
+
+      {profileError && currentStep === 1 && (
+        <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
+          <Text style={{ color: '#D11A2A', fontFamily: 'Urbanist_500Medium', fontSize: 13 }}>
+            Couldn't load your saved onboarding progress. You can still continue below.
+          </Text>
         </View>
       )}
 
@@ -160,6 +229,7 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
           <ContractStep
             isCompleted={!!completedTasks["1"]}
             onComplete={() => handleCompleteTask("1")}
+            onNext={() => setCurrentStep(3)}
             onBack={handleBackToDashboard}
             {...sharedProps}
             token={token}

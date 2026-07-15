@@ -14,8 +14,9 @@ import {
 // UNIFORM STEP  (API-integrated)
 // ─────────────────────────────────────────────
 
-const PRODUCTS_URL = `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/uniform/products`;
-const CHECKOUT_URL = `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/uniform/checkout`;
+const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || "https://api.grabbite.com/";
+const PRODUCTS_URL = `${baseUrl}api/coachpro/uniform/products`;
+const CHECKOUT_URL = `${baseUrl}api/coachpro/uniform/checkout`;
 
 const DISCOUNT_OPTIONS = [
   { value: "full",    label: "Full Discount (100% off)" },

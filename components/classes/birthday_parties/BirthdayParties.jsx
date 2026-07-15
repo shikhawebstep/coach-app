@@ -174,9 +174,8 @@ export default function BirthdayParties({ onBack, onBookingSelect }) {
                   onPress={() => onBookingSelect && onBookingSelect(booking)}
                 >
                   <View style={styles.cardInfo}>
-                    <Text
-                      style={[styles.cardTitle, isDark && styles.cardTitleDark]}>
-                      {studentName}
+                    <Text style={[styles.cardTitle, isDark && styles.cardTitleDark]}>
+                      {`${student?.studentFirstName || ''}\n${student?.studentLastName || ''}`.trim()}
                     </Text>
                   </View>
                   <View style={styles.cardDetails}>

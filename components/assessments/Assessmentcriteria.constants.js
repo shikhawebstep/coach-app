@@ -14,7 +14,7 @@ export const PRACTICAL_ASSESSMENT_CRITERIA = [
     { id: 1, key: 'punctuality', text: 'Punctuality' },
     { id: 2, key: 'communicationSkills', text: 'Communication Skills' },
     { id: 3, key: 'structureOfExercises', text: 'Structure of Exercises' },
-    { id: 4, key: 'controlOfGroup', text: 'Control of Group' },
+    // { id: 4, key: 'controlOfGroup', text: 'Control of Group' },
 ];
 
 // Helper: turns the raw { [key]: 1-5 } ratings object into the shape

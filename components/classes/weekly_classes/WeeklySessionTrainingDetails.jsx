@@ -179,9 +179,12 @@ export default function WeeklySessionTrainingDetails({
     // Different periods -> show suffix on both
     return `${startParsed.display}${startParsed.period}-${endParsed.display}${endParsed.period}`;
   };
+
+  console.log('sessionData',sessionData)
   if (showAddTrialist) {
-    return <AddTrialist onBack={() => setShowAddTrialist(false)} />;
+    return <AddTrialist onBack={() => setShowAddTrialist(false)} postcode={sessionData?.venue?.postal_code || sessionData?.classSchedule?.venue?.postcode || ''} />;
   }
+
 
   if (loading) {
     return (
@@ -700,7 +703,7 @@ const styles = StyleSheet.create({
   attendanceButtons: {
     flexDirection: "row",
     gap: 8,
-    flex: 1.8,
+    flex: 1.4,
   },
   attendanceBtn: {
     flexDirection: "row",

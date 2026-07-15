@@ -16,60 +16,117 @@ export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
     const toast = useToast();
 
-    const handleLogin = async () => {
-        if (!email || !password) {
-            toast.warning('Please enter email and password');
-            return;
-        }
+  const handleLogin = async () => {
+    console.log("🚀 Login function called");
 
-        setIsLoading(true);
+    if (!email || !password) {
+        console.log("❌ Email or password is missing");
+        toast.warning("Please enter email and password");
+        return;
+    }
+
+    console.log("📧 Email:", email);
+    console.log("🔑 Password entered:", password ? "Yes" : "No");
+
+    setIsLoading(true);
+    console.log("⏳ Loading started");
+
+    try {
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+
+        const raw = JSON.stringify({
+            email,
+            password,
+        });
+
+        const url = `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/auth/login`;
+
+        console.log("🌐 API URL:", url);
+        console.log("📤 Request Body:", JSON.parse(raw));
+
+        const requestOptions = {
+            method: "POST",
+            headers: myHeaders,
+            body: raw,
+            redirect: "follow",
+        };
+
+        console.log("📡 Sending request...");
+
+        const response = await fetch(url, requestOptions);
+
+        console.log("📥 Response Status:", response.status);
+        console.log("📥 Response OK:", response.ok);
+
+        const resultText = await response.text();
+
+        console.log("📄 Raw Response:", resultText);
+
+        let resultObj = {};
+
         try {
-            const myHeaders = new Headers();
-            myHeaders.append("Content-Type", "application/json");
-
-            const raw = JSON.stringify({
-                "email": email,
-                "password": password
-            });
-
-            const requestOptions = {
-                method: "POST",
-                headers: myHeaders,
-                body: raw,
-                redirect: "follow"
-            };
-
-            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/auth/login`, requestOptions);
-            const resultText = await response.text();
-
-            let resultObj = {};
-            try {
-                resultObj = JSON.parse(resultText);
-            } catch (e) { }
-
-            if (response.ok) {
-                const token = resultObj.token || resultObj.data?.token || '';
-                const userId = resultObj.id || resultObj.userId || resultObj.data?.id || resultObj.data?.user?.id || resultObj.data?.admin?.id || resultObj.user?.id || '';
-
-                toast.success(resultObj.message || 'Logged in successfully!');
-                login(token, userId);
-                if (!isProfileCompleted) {
-                    router.replace('/fill-profile');
-                } else if (!isOnboardingCompleted) {
-                    router.replace('/onboarding');
-                } else {
-                    router.replace('/(tabs)');
-                }
-            } else {
-                toast.error(resultObj.message || 'Login failed. Please check your credentials.');
-            }
-        } catch (error) {
-            console.error(error);
-            toast.error('An error occurred during login.');
-        } finally {
-            setIsLoading(false);
+            resultObj = JSON.parse(resultText);
+            console.log("✅ Parsed Response:", resultObj);
+        } catch (e) {
+            console.log("❌ Failed to parse JSON:", e);
         }
-    };
+
+        if (response.ok) {
+            console.log("🎉 Login Successful");
+
+            const token =
+                resultObj.token ||
+                resultObj.data?.token ||
+                "";
+
+            const userId =
+                resultObj.id ||
+                resultObj.userId ||
+                resultObj.data?.id ||
+                resultObj.data?.user?.id ||
+                resultObj.data?.admin?.id ||
+                resultObj.user?.id ||
+                "";
+
+            console.log("🔑 Token:", token);
+            console.log("👤 User ID:", userId);
+
+            toast.success(resultObj.message || "Logged in successfully!");
+
+            console.log("💾 Saving login data...");
+            login(token, userId);
+
+            console.log("📋 isProfileCompleted:", isProfileCompleted);
+            console.log("📋 isOnboardingCompleted:", isOnboardingCompleted);
+
+            if (!isProfileCompleted) {
+                console.log("➡️ Navigating to Fill Profile");
+                router.replace("/fill-profile");
+            } else if (!isOnboardingCompleted) {
+                console.log("➡️ Navigating to Onboarding");
+                router.replace("/onboarding");
+            } else {
+                console.log("➡️ Navigating to Tabs");
+                router.replace("/(tabs)");
+            }
+        } else {
+            console.log("❌ Login Failed");
+            console.log("📄 Error Response:", resultObj);
+
+            toast.error(
+                resultObj.message ||
+                    "Login failed. Please check your credentials."
+            );
+        }
+    } catch (error) {
+        console.error("💥 Fetch Error:", error);
+        toast.error("An error occurred during login.");
+    } finally {
+        console.log("🏁 Loading finished");
+        setIsLoading(false);
+    }
+};
 
     const handleForgotPassword = () => {
         router.push('/forgot-password');

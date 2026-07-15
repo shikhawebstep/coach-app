@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { useEffect, useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme, Linking } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { buildRatingsBreakdown, calculateOverallPercentage } from './Assessmentcriteria.constants';
 
@@ -71,12 +71,28 @@ export default function AssessmentResults({ onBack, assessment, ratings = {}, vi
         };
     }, [playbackSound]);
 
+    const handlePlayVideo = () => {
+        if (video?.uri) {
+            Linking.openURL(video.uri).catch(err => {
+                console.error("Failed to open video URL:", err);
+            });
+        }
+    };
+
     async function playAudio() {
         if (!audioUri) return;
         try {
             if (playbackSound) {
                 await playbackSound.unloadAsync();
             }
+
+            // Set audio mode so sound plays properly out of standard speaker
+            await Audio.setAudioModeAsync({
+                allowsRecordingIOS: false,
+                playsInSilentModeIOS: true,
+                staysActiveInBackground: false,
+                shouldRouteThroughEarpieceAndroid: false,
+            });
 
             const { sound } = await Audio.Sound.createAsync(
                 { uri: audioUri },
@@ -193,15 +209,19 @@ export default function AssessmentResults({ onBack, assessment, ratings = {}, vi
                 <View style={styles.card}>
                     <Text style={styles.cardTitle}>Session Video</Text>
                     {video ? (
-                        <View style={styles.videoRow}>
-                            <TouchableOpacity style={styles.playButton}>
-                                <Ionicons name="play" size={22} color="#fff" />
+                        <>
+                            <Text style={styles.cardDescription}>Watch the recorded practical assessment video.</Text>
+                            <TouchableOpacity style={styles.audioPlayerContainer} onPress={handlePlayVideo} activeOpacity={0.8}>
+                                <View style={styles.playButton}>
+                                    <Ionicons name="film-outline" size={22} color="#fff" />
+                                </View>
+                                <View style={{ flex: 1, marginLeft: 16 }}>
+                                    <Text style={styles.audioText} numberOfLines={1}>{video.name}</Text>
+                                    <Text style={styles.audioSubText}>Tap to watch video</Text>
+                                </View>
+                                <Ionicons name="open-outline" size={24} color={theme.textSecondary} />
                             </TouchableOpacity>
-                            <View style={{ flex: 1, marginLeft: 16 }}>
-                                <Text style={styles.audioText} numberOfLines={1}>{video.name}</Text>
-                                <Text style={styles.audioSubText}>Tap to watch video</Text>
-                            </View>
-                        </View>
+                        </>
                     ) : (
                         <Text style={styles.emptyStateText}>No video was uploaded for this assessment.</Text>
                     )}
@@ -282,10 +302,12 @@ const getStyles = (theme) => StyleSheet.create({
         padding: 4,
     },
     headerTitle: {
-        fontSize: 20,
+        fontSize: 22,
         fontFamily: 'Urbanist_700Bold',
         color: theme.headerTitle,
-        marginLeft: 16,
+        flex: 1,
+        textAlign: 'center',
+        marginRight: 28, // Balance the back button
     },
     content: {
         paddingHorizontal: 16,

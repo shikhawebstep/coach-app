@@ -72,7 +72,7 @@ export default function SessionDetails({ onBack, onSessionPlanClick, onStudentSe
     };
 
     if (showAddTrialist) {
-        return <AddTrialist onBack={() => setShowAddTrialist(false)} />;
+        return <AddTrialist onBack={() => setShowAddTrialist(false)} postcode={''} />;
     }
 
     return (

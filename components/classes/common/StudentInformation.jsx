@@ -30,10 +30,33 @@ const COLORS = {
     },
 };
 
-export default function StudentInformation({ onBack }) {
+export default function StudentInformation({ onBack, student }) {
     const colorScheme = useColorScheme();
     const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
     const styles = getStyles(theme);
+
+    // --- Derive display values from the student object ---
+    const raw = student?.rawStudent || {};
+    const booking = student?.booking || {};
+
+    const getValid = (v) =>
+        v && String(v).toLowerCase() !== 'undefined' && String(v).toLowerCase() !== 'null'
+            ? String(v)
+            : '';
+
+    const studentName = student?.name || 'N/A';
+    const studentAge  = getValid(raw.age) || 'N/A';
+    const medicalInfo = getValid(raw.medicalInfo) || getValid(raw.medical) || getValid(raw.medicalNotes) || 'N/A';
+
+    // Parent / guardian info lives on the booking or the student's user object
+
+    console.log('booking - studnets ',booking);
+    console.log('student - studnets ',student);
+    const parentUser  = raw?.parents[0]  || {};
+    const parentFirstName = getValid(parentUser.parentFirstName) || '';
+    const parentLastName  =  getValid(parentUser.parentLastName)  || '';
+    const parentName  = `${parentFirstName} ${parentLastName}`.trim() || 'N/A';
+    const parentPhone = getValid(booking.parentPhoneNumber) || getValid(booking.parentPhoneNumber) || getValid(parentUser.phoneNumber) || getValid(parentUser.parentPhoneNumber) || 'N/A';
 
     return (
         <View style={styles.container}>
@@ -42,7 +65,9 @@ export default function StudentInformation({ onBack }) {
                 <TouchableOpacity onPress={onBack} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={theme.icon} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>John Smith information</Text>
+                <Text style={styles.headerTitle} numberOfLines={1}>
+                    {studentName} information
+                </Text>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
@@ -58,18 +83,18 @@ export default function StudentInformation({ onBack }) {
                 <View style={styles.rowWrapper}>
                     <View style={styles.col}>
                         <Text style={styles.label}>Full Name</Text>
-                        <Text style={styles.value}>John Smith</Text>
+                        <Text style={styles.value}>{studentName}</Text>
                     </View>
                     <View style={styles.col}>
                         <Text style={styles.label}>Age</Text>
-                        <Text style={styles.value}>7</Text>
+                        <Text style={styles.value}>{studentAge}</Text>
                     </View>
                 </View>
 
                 <View style={styles.rowWrapper}>
                     <View style={styles.col}>
                         <Text style={styles.label}>Medical information</Text>
-                        <Text style={styles.value}>Mild asthma</Text>
+                        <Text style={styles.value}>{medicalInfo}</Text>
                     </View>
                 </View>
 
@@ -84,12 +109,12 @@ export default function StudentInformation({ onBack }) {
                 <View style={styles.rowWrapper}>
                     <View style={styles.col}>
                         <Text style={styles.label}>Full Name</Text>
-                        <Text style={styles.value}>Daryl Smith</Text>
+                        <Text style={styles.value}>{parentName}</Text>
                     </View>
                     <View style={styles.col}>
                         <Text style={styles.label}>Telephone number</Text>
                         <TouchableOpacity>
-                            <Text style={styles.linkValue}>0791042 3334</Text>
+                            <Text style={styles.linkValue}>{parentPhone}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

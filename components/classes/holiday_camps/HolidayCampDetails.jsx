@@ -183,8 +183,9 @@ export default function HolidayCampDetails({ sessionId, onBack, onSyllabusClick,
     const displayStatus = schedule?.status ? schedule.status.charAt(0).toUpperCase() + schedule.status.slice(1) : 'Pending';
 
     if (showAddTrialist) {
-        return <AddTrialist onBack={() => setShowAddTrialist(false)} />;
+        return <AddTrialist onBack={() => setShowAddTrialist(false)} postcode={data?.venue?.postcode || ''} />;
     }
+
 
     // Header stays visible always so back button works even while loading
     return (
@@ -322,7 +323,7 @@ export default function HolidayCampDetails({ sessionId, onBack, onSyllabusClick,
                                                 style={[styles.attendanceBtn, student.status === 'not attended' ? styles.btnNotAttendedActive : styles.btnNotAttendedInactive]}
                                                 onPress={() => handleAttendance(student.studentId, 'not attended')}
                                             >
-                                               // JSX mein icon color bhi theme se le:
+                                             
                                                 <Ionicons
                                                     name="close"
                                                     size={16}

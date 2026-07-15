@@ -241,13 +241,25 @@ const ContractStep = ({
 
   useEffect(() => {
     if (!token || !userId) { setProfileLoading(false); return; }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 15000);
+
     const headers = new Headers();
     headers.append('Authorization', `Bearer ${token}`);
-    fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/account-profile/${userId}`, {
-      method: 'GET', headers,
+
+    const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || "https://api.grabbite.com/";
+
+    fetch(`${baseUrl}api/coachpro/account-profile/${userId}`, {
+      method: 'GET',
+      headers,
+      signal: controller.signal,
     })
       .then(r => r.json())
       .then(result => {
+        clearTimeout(timeoutId);
         if (result.status && result.data) {
           const ct = result.data.contract;
           setContract(ct);
@@ -256,8 +268,18 @@ const ContractStep = ({
           if (ct?.signedPdfFile) setSignedPdfUrl(ct.signedPdfFile);
         }
       })
-      .catch(err => console.error('Profile fetch:', err))
-      .finally(() => setProfileLoading(false));
+      .catch(err => {
+        clearTimeout(timeoutId);
+        console.error('Profile fetch:', err);
+      })
+      .finally(() => {
+        setProfileLoading(false);
+      });
+
+    return () => {
+      controller.abort();
+      clearTimeout(timeoutId);
+    };
   }, [token, userId]);
 
   const handleSign = async () => {
@@ -316,8 +338,9 @@ const ContractStep = ({
       headers.append("Content-Type", "application/json");
       headers.append("Authorization", `Bearer ${token}`);
 
+      const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || "https://api.grabbite.com/";
       const res = await fetch(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/contract/sign`,
+        `${baseUrl}api/coachpro/contract/sign`,
         {
           method: "POST",
           headers,

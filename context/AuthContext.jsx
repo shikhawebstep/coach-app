@@ -19,10 +19,21 @@ export function AuthProvider({ children }) {
                 const storedUserId = await AsyncStorage.getItem('userId');
                 const storedProfileCompleted = await AsyncStorage.getItem('isProfileCompleted');
                 const storedOnboardingCompleted = await AsyncStorage.getItem('isOnboardingCompleted');
+                const storedFirstTime = await AsyncStorage.getItem('isFirstTime');
+
+                // isFirstTime is read regardless of login state — it should
+                // only ever be true until the user has seen onboarding once.
+                if (storedFirstTime === 'false') {
+                    setIsFirstTime(false);
+                }
 
                 if (storedToken && storedUserId) {
                     setToken(storedToken);
                     setUserId(storedUserId);
+                } else {
+                    setIsLoggedIn(false);
+                    setIsAuthLoading(false);
+                    return;
                 }
 
                 if (storedProfileCompleted === 'true') {
@@ -33,17 +44,25 @@ export function AuthProvider({ children }) {
                 }
 
                 const myHeaders = new Headers();
-                if (storedToken) {
-                    myHeaders.append("Authorization", `Bearer ${storedToken}`);
-                }
+                myHeaders.append("Authorization", `Bearer ${storedToken}`);
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
 
                 const requestOptions = {
                     method: "GET",
                     headers: myHeaders,
-                    redirect: "follow"
+                    redirect: "follow",
+                    signal: controller.signal
                 };
 
-                const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/auth/login/verify`, requestOptions);
+                let response;
+                try {
+                    response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/auth/login/verify`, requestOptions);
+                } finally {
+                    clearTimeout(timeoutId);
+                }
+
                 const resultText = await response.text();
 
                 let resultObj = {};
@@ -54,9 +73,18 @@ export function AuthProvider({ children }) {
                 if (response.ok && resultObj.success !== false && resultObj.status !== false) {
                     setIsLoggedIn(true);
                 } else {
+                    // Token was actively rejected by the server (expired/invalid) —
+                    // clear it so we don't keep re-verifying a dead token on every
+                    // app open.
                     setIsLoggedIn(false);
+                    setToken(null);
+                    setUserId(null);
+                    await AsyncStorage.multiRemove(['userToken', 'userId']);
                 }
             } catch (error) {
+                // Network/timeout error — we don't know if the token is actually
+                // invalid, so don't clear it. Just treat this session as logged
+                // out for now; verifySession will retry on next app open.
                 console.error("Verify API Error:", error);
                 setIsLoggedIn(false);
             } finally {
@@ -75,6 +103,8 @@ export function AuthProvider({ children }) {
         if (newUserId !== undefined && newUserId !== null && newUserId !== '') {
             setUserId(newUserId);
             await AsyncStorage.setItem('userId', String(newUserId));
+        } else {
+            console.warn('AuthContext.login called without a userId — userId state may be stale.');
         }
         setIsLoggedIn(true);
     };
@@ -91,8 +121,9 @@ export function AuthProvider({ children }) {
         setIsOnboardingCompleted(false);
     };
 
-    const completeFirstTimeOnboarding = () => {
+    const completeFirstTimeOnboarding = async () => {
         setIsFirstTime(false);
+        await AsyncStorage.setItem('isFirstTime', 'false');
     };
 
     const completeProfile = async () => {
@@ -105,9 +136,19 @@ export function AuthProvider({ children }) {
         await AsyncStorage.setItem('isOnboardingCompleted', 'true');
     };
 
+    // Full reset — logs the user out AND clears the stored session token, so
+    // a subsequent app restart doesn't silently re-authenticate the old
+    // session. Also resets first-time / onboarding / profile flags.
     const resetAll = async () => {
-        await AsyncStorage.removeItem('isProfileCompleted');
-        await AsyncStorage.removeItem('isOnboardingCompleted');
+        await AsyncStorage.multiRemove([
+            'userToken',
+            'userId',
+            'isProfileCompleted',
+            'isOnboardingCompleted',
+            'isFirstTime',
+        ]);
+        setToken(null);
+        setUserId(null);
         setIsLoggedIn(false);
         setIsFirstTime(true);
         setIsProfileCompleted(false);
