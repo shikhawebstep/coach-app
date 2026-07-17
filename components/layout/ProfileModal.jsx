@@ -3,7 +3,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Animated,
@@ -313,8 +313,9 @@ function ProfileModalContent({ visible, onClose }) {
 
             const response = await fetch(
                 `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachPro/account-profile/update/profile/${userId}`,
-                { method: 'PUT', body: formdata, redirect: 'follow',        headers: { Authorization: `Bearer ${token}` },
- }
+                {
+                    method: 'PUT', body: formdata, redirect: 'follow', headers: { Authorization: `Bearer ${token}` },
+                }
             );
             const result = await response.json();
             if (result.status) {
@@ -505,18 +506,18 @@ function ProfileModalContent({ visible, onClose }) {
                 {/* Action buttons */}
                 <View style={styles.contractButtonRow}>
                     <TouchableOpacity style={styles.contractTopButton} onPress={handleBack}>
-                        <Text style={styles.contractTopBtnText}>Back</Text>
+                        <Text style={styles.contractTopBtnText}>Previous</Text>
                     </TouchableOpacity>
+                    <TouchableOpacity style={styles.contractTopButton} onPress={() => setView('referCoach')}>
+    <Text style={styles.contractTopBtnText}>Next</Text>
+</TouchableOpacity>
                     {activePdfUrl && (
                         <TouchableOpacity style={styles.contractTopButton} onPress={() => Linking.openURL(activePdfUrl)}>
                             <Text style={styles.contractTopBtnText}>Download</Text>
                         </TouchableOpacity>
                     )}
-                    {activePdfUrl && (
-                        <TouchableOpacity style={styles.contractTopButton} onPress={() => WebBrowser.openBrowserAsync(activePdfUrl)}>
-                            <Text style={styles.contractTopBtnText}>Open</Text>
-                        </TouchableOpacity>
-                    )}
+
+
                 </View>
 
                 {/* PDF Preview */}

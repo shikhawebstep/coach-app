@@ -17,19 +17,14 @@ export default function Login() {
     const toast = useToast();
 
   const handleLogin = async () => {
-    console.log("🚀 Login function called");
 
     if (!email || !password) {
-        console.log("❌ Email or password is missing");
         toast.warning("Please enter email and password");
         return;
     }
 
-    console.log("📧 Email:", email);
-    console.log("🔑 Password entered:", password ? "Yes" : "No");
-
+ 
     setIsLoading(true);
-    console.log("⏳ Loading started");
 
     try {
         const myHeaders = new Headers();
@@ -42,8 +37,7 @@ export default function Login() {
 
         const url = `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/auth/login`;
 
-        console.log("🌐 API URL:", url);
-        console.log("📤 Request Body:", JSON.parse(raw));
+    
 
         const requestOptions = {
             method: "POST",
@@ -52,16 +46,10 @@ export default function Login() {
             redirect: "follow",
         };
 
-        console.log("📡 Sending request...");
 
         const response = await fetch(url, requestOptions);
+         const resultText = await response.text();
 
-        console.log("📥 Response Status:", response.status);
-        console.log("📥 Response OK:", response.ok);
-
-        const resultText = await response.text();
-
-        console.log("📄 Raw Response:", resultText);
 
         let resultObj = {};
 
@@ -73,7 +61,6 @@ export default function Login() {
         }
 
         if (response.ok) {
-            console.log("🎉 Login Successful");
 
             const token =
                 resultObj.token ||
@@ -89,25 +76,16 @@ export default function Login() {
                 resultObj.user?.id ||
                 "";
 
-            console.log("🔑 Token:", token);
-            console.log("👤 User ID:", userId);
+           
 
             toast.success(resultObj.message || "Logged in successfully!");
 
-            console.log("💾 Saving login data...");
             login(token, userId);
-
-            console.log("📋 isProfileCompleted:", isProfileCompleted);
-            console.log("📋 isOnboardingCompleted:", isOnboardingCompleted);
-
             if (!isProfileCompleted) {
-                console.log("➡️ Navigating to Fill Profile");
                 router.replace("/fill-profile");
             } else if (!isOnboardingCompleted) {
-                console.log("➡️ Navigating to Onboarding");
                 router.replace("/onboarding");
             } else {
-                console.log("➡️ Navigating to Tabs");
                 router.replace("/(tabs)");
             }
         } else {
