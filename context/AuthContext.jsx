@@ -286,6 +286,11 @@ export function AuthProvider({ children }) {
         setIsOnboardingCompleted(false);
     };
 
+    const hasRole = (roleToCheck) => {
+        if (!userRole) return false;
+        return String(userRole).toLowerCase().includes(roleToCheck.toLowerCase());
+    };
+
     return (
         <AuthContext.Provider
             value={{
@@ -301,6 +306,7 @@ export function AuthProvider({ children }) {
                 coachProfile,
                 setCoachProfile,
                 fetchCoachProfile,
+                hasRole,
                 login,
                 logout,
                 completeFirstTimeOnboarding,

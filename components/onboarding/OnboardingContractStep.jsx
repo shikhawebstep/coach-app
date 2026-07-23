@@ -120,7 +120,7 @@ function SignaturePad({ onHasSignature, disabled, viewShotRef, c }) {
 function PdfPreview({ pdfUrl, c }) {
   const [webviewLoading, setWebviewLoading] = useState(true);
   const [webviewError, setWebviewError] = useState(false);
-
+console.log('pdfUrl',pdfUrl)
   if (!pdfUrl) {
     return (
       <View style={[localSt.pdfEmptyBox, { borderColor: c.border }]}>

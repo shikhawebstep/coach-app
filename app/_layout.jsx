@@ -25,7 +25,7 @@ export const unstable_settings = {
 
 function RootLayoutNav() {
     const colorScheme = useColorScheme();
-    const { isLoggedIn, isAuthLoading, isProfileCompleted, isOnboardingCompleted, userRole } = useAuth();
+    const { isLoggedIn, isAuthLoading, isProfileCompleted, isOnboardingCompleted, hasRole, userRole } = useAuth();
     const segments = useSegments();
     const router = useRouter();
 
@@ -37,12 +37,19 @@ function RootLayoutNav() {
             return;
         }
 
-        const isCoach = typeof userRole === 'string' && userRole.trim().toLowerCase() === 'coach';
+        const isCoach = hasRole('coach');
+        const isVenueManager = hasRole('venue manager');
+        const isOwner = hasRole('owner') || hasRole('super admin');
+        
+        const needsOnboarding = (isCoach || isVenueManager) && !isOwner;
 
         console.log("🚦 [RootLayout] Navigation Guard state:", {
             isLoggedIn,
             userRole,
             isCoach,
+            isVenueManager,
+            isOwner,
+            needsOnboarding,
             isProfileCompleted,
             isOnboardingCompleted,
             currentSegment: segments[0],
@@ -53,14 +60,14 @@ function RootLayoutNav() {
             console.log("➡️ [RootLayout] Redirecting to /login (user not logged in)");
             router.replace('/login');
         } else if (isLoggedIn) {
-            if (!isProfileCompleted) {
+            if (!isProfileCompleted && !isOwner) {
                 if (segments[0] !== 'fill-profile') {
                     console.log("➡️ [RootLayout] Redirecting to /fill-profile (profile incomplete)");
                     router.replace('/fill-profile');
                 }
-            } else if (isCoach && !isOnboardingCompleted) {
+            } else if (needsOnboarding && !isOnboardingCompleted) {
                 if (segments[0] !== 'onboarding') {
-                    console.log("➡️ [RootLayout] Redirecting to /onboarding (Coach role & onboarding incomplete)");
+                    console.log("➡️ [RootLayout] Redirecting to /onboarding (Coach/VM role & onboarding incomplete)");
                     router.replace('/onboarding');
                 }
             } else {

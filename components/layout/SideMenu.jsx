@@ -65,13 +65,26 @@ const MENU_ITEMS = [
 
 export default function SideMenu({ visible, onClose, initialTab = 'Menu' }) {
     const router = useRouter();
+    const { logout, hasRole, userRole } = useAuth();
+    
     const [items, setItems] = useState(MENU_ITEMS);
     const [activeTab, setActiveTab] = useState(initialTab); // 'Menu', 'Profile', 'Notifications'
     const [isProfileVisible, setIsProfileVisible] = useState(false);
 
-
-
-    const { logout } = useAuth();
+    useEffect(() => {
+        const isOwner = hasRole('owner') || hasRole('super admin');
+        const isVenueManager = hasRole('venue manager');
+        
+        const filteredMenuItems = MENU_ITEMS.filter(item => {
+            if (isOwner) return true;
+            if (item.id === 'health' || item.id === 'quality' || item.id === '/reportIssueList') {
+                return isVenueManager;
+            }
+            return true;
+        });
+        
+        setItems(filteredMenuItems);
+    }, [userRole]);
 
     const handleLogout = async () => {
         try {
