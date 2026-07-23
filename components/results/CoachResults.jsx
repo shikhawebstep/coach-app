@@ -397,7 +397,6 @@ export default function CoachResults({ onBack, title = "My results" }) {
     if (selectedCard) {
         const { details } = selectedCard;
 
-        console.log('details',details)
         return (
             <View style={styles.container}>
                 <View style={styles.header}>

@@ -1,9 +1,12 @@
 import { Colors } from '@/constants/theme';
-import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'expo-router';
+import { Image, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import PercentageBar from '../common/PercentageBar';
+
 const Banner = () => {
     const router = useRouter();
+    const { coachProfile } = useAuth();
     const colorScheme = useColorScheme();
     const theme = colorScheme ?? 'light';
     const textColor = Colors[theme].text;
@@ -25,6 +28,13 @@ const Banner = () => {
 
         },
     ]
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'Morning';
+        if (hour < 17) return 'Afternoon';
+        return 'Evening';
+    };
+
     return (
 
         <View style={[styles.container, { backgroundColor }]}>
@@ -32,10 +42,10 @@ const Banner = () => {
 
                 <View style={styles.row}>
                     <Image
-                        source={require('@/assets/images/Ellipse.png')}
-                        style={styles.logoImage}
+                        source={coachProfile?.profile ? { uri: coachProfile.profile } : require('@/assets/images/Ellipse.png')}
+                        style={[styles.logoImage, { borderRadius: 40 }]}
                     />
-                    <Text style={[styles.greeting, { color: textColor }]}>Morning, Ethan 👋</Text>
+                    <Text style={[styles.greeting, { color: textColor }]}>{getGreeting()}, {coachProfile?.firstName || 'Coach'} 👋</Text>
                 </View>
                 <View style={styles.textBetween}>
                     <Text style={[styles.nextSession, { color: textColor }]}>Your next weekly session...</Text>

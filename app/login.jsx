@@ -55,9 +55,7 @@ export default function Login() {
 
         try {
             resultObj = JSON.parse(resultText);
-            console.log("✅ Parsed Response:", resultObj);
         } catch (e) {
-            console.log("❌ Failed to parse JSON:", e);
         }
 
         if (response.ok) {
@@ -76,22 +74,30 @@ export default function Login() {
                 resultObj.user?.id ||
                 "";
 
-           
+            const role =
+                resultObj.role ||
+                resultObj.data?.role ||
+                resultObj.data?.admin?.role ||
+                resultObj.data?.user?.role ||
+                resultObj.admin?.role ||
+                resultObj.user?.role ||
+                "";
+
+const isCoach = typeof role === 'string' && role.trim().toLowerCase() === 'coach';
+            console.log('isCoach',isCoach)
 
             toast.success(resultObj.message || "Logged in successfully!");
 
-            login(token, userId);
+            login(token, userId, role);
             if (!isProfileCompleted) {
                 router.replace("/fill-profile");
-            } else if (!isOnboardingCompleted) {
+            } else if (isCoach && !isOnboardingCompleted) {
                 router.replace("/onboarding");
             } else {
                 router.replace("/(tabs)");
             }
         } else {
-            console.log("❌ Login Failed");
-            console.log("📄 Error Response:", resultObj);
-
+           
             toast.error(
                 resultObj.message ||
                     "Login failed. Please check your credentials."
@@ -101,7 +107,6 @@ export default function Login() {
         console.error("💥 Fetch Error:", error);
         toast.error("An error occurred during login.");
     } finally {
-        console.log("🏁 Loading finished");
         setIsLoading(false);
     }
 };

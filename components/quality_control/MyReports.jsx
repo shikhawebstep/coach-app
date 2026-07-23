@@ -61,7 +61,7 @@ const formatDate = (isoString) => {
     }
 };
 
-export default function MyReports({ onBack, title = "My reports" }) {
+export default function MyReports({ onBack, title = "Observe & Develop" }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [reportsData, setReportsData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -246,7 +246,7 @@ export default function MyReports({ onBack, title = "My reports" }) {
                             <View style={styles.colScore}>
                                 <View style={[styles.scoreBadge, { backgroundColor: getScoreColor(item?.score) }]}>
                                     <Text style={styles.scoreText}>
-                                        {item?.score ? String(item.score) : '0%'}
+                                        {item?.gradePercentage ? String(item.gradePercentage) : '0%'}
                                     </Text>
                                 </View>
                                 <Ionicons name="chevron-forward" size={16} color={colors.chevron} style={styles.chevron} />

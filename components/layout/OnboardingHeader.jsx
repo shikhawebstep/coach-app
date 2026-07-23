@@ -2,9 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import ProfileModal from './ProfileModal';
+import { useAuth } from '@/context/AuthContext';
 
 export default function OnboardingHeader({ title, showBack = false, onMenuPress, onNotificationPress, isOnboarding = true }) {
+    const { coachProfile } = useAuth();
     const [isProfileVisible, setIsProfileVisible] = useState(false);
+    const profileSource = coachProfile?.profile ? { uri: coachProfile.profile } : require('@/assets/images/Ellipse.png');
 
     return (
         <>
@@ -34,7 +37,7 @@ export default function OnboardingHeader({ title, showBack = false, onMenuPress,
                             <TouchableOpacity style={styles.profileButton} onPress={() => setIsProfileVisible(true)}>
 
                                 <Image
-                                    source={require('@/assets/images/Ellipse.png')}
+                                    source={profileSource}
                                     style={styles.profileImage}
                                 />
                             </TouchableOpacity>
@@ -123,5 +126,6 @@ const styles = StyleSheet.create({
     profileImage: {
         width: 36,
         height: 36,
+        borderRadius: 18,
     },
 });

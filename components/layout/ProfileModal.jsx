@@ -1,8 +1,11 @@
+import CustomLoader from '@/components/common/CustomLoader';
 import { ToastProvider, useToast } from '@/components/common/Toast';
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import * as WebBrowser from 'expo-web-browser';
+
 import { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -159,7 +162,7 @@ function PdfPreview({ pdfUrl, isDark }) {
 }
 
 function ProfileModalContent({ visible, onClose }) {
-    const { token, userId } = useAuth();
+    const { token, userId, setCoachProfile, fetchCoachProfile } = useAuth();
     const [view, setView] = useState('profile');
     const [profileData, setProfileData] = useState(null);
     const colorScheme = useColorScheme();
@@ -193,6 +196,30 @@ function ProfileModalContent({ visible, onClose }) {
     const [signedPdfUrl, setSignedPdfUrl] = useState(null);
     const viewShotRef = useRef(null);
 
+    const [pickedImage, setPickedImage] = useState(null);
+    const [profileImageFile, setProfileImageFile] = useState(null); // actual file to upload
+    const [photoUploading, setPhotoUploading] = useState(false);
+
+    const handlePickPhoto = async () => {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permission.granted) {
+            toast.error('Photo library permission is required.');
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+        });
+
+        if (result.canceled) return;
+
+        const asset = result.assets[0];
+        setPickedImage(asset.uri);
+        setProfileImageFile(asset); // store for upload on Save
+    };
     // Splits "Shikha Thakur" -> { firstName: "Shikha", lastName: "Thakur" }
     // "Shikha" (no space) -> { firstName: "Shikha", lastName: "" }
     // "Shikha Kumari Thakur" -> { firstName: "Shikha", lastName: "Kumari Thakur" }
@@ -236,6 +263,7 @@ function ProfileModalContent({ visible, onClose }) {
                 if (result.status && result.data) {
                     const d = result.data;
                     setProfileData(d);
+                    setCoachProfile(d);
                     // seed form fields
                     setFirstName(d.firstName || '');
                     setLastName(d.lastName || '');
@@ -311,6 +339,14 @@ function ProfileModalContent({ visible, onClose }) {
             if (city) formdata.append('city', city);
             if (postalCode) formdata.append('postalCode', postalCode);
 
+            if (profileImageFile) {
+                formdata.append('profile', {
+                    uri: profileImageFile.uri,
+                    name: profileImageFile.fileName || `profile_${Date.now()}.jpg`,
+                    type: profileImageFile.mimeType || 'image/jpeg',
+                });
+            }
+
             const response = await fetch(
                 `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachPro/account-profile/update/profile/${userId}`,
                 {
@@ -319,7 +355,12 @@ function ProfileModalContent({ visible, onClose }) {
             );
             const result = await response.json();
             if (result.status) {
-                setProfileData(prev => ({ ...prev, firstName, lastName, email, phoneNumber, city, postalCode }));
+                setProfileData(prev => {
+                    const updated = { ...prev, firstName, lastName, email, phoneNumber, city, postalCode, profile: result.data?.profile || prev?.profile };
+                    setCoachProfile(updated);
+                    return updated;
+                });
+                setProfileImageFile(null);
                 toast.success('Profile updated successfully.');
             } else {
                 toast.error(result.message || 'Failed to update profile.');
@@ -331,7 +372,6 @@ function ProfileModalContent({ visible, onClose }) {
             setProfileSaving(false);
         }
     };
-
     // ── API: Refer a Coach ───────────────────────────────────────────────────
     const handleReferSubmit = async () => {
         const { firstName: referFirstName, lastName: referLastName } = splitName(referName);
@@ -383,21 +423,23 @@ function ProfileModalContent({ visible, onClose }) {
 
             <View style={styles.profileImageContainer}>
                 <View style={styles.profileImageWrapper}>
-                    <Image
-                        source={
-                            profileData?.profile
-                                ? { uri: profileData.profile }
-                                : require('../../assets/images/Ellipse.png')
-                        }
-                        style={[styles.profileImage, { borderRadius: 35 }]}
-                    />
+                    {profileSaving ? (
+                        <CustomLoader size={80} color={'#3B82F6'} />
+                    ) : (
+                        <Image
+                            source={
+                                pickedImage
+                                    ? { uri: pickedImage }
+                                    : profileData?.profile
+                                        ? { uri: profileData.profile }
+                                        : require('../../assets/images/Ellipse.png')
+                            }
+                            style={[styles.profileImage, { borderRadius: 35 }]}
+                        />
+                    )}
                 </View>
-                <TouchableOpacity style={styles.editIconBadge}>
-                    <Image
-                        source={require('../../assets/images/pencil.png')
-                        }
-                        style={[styles.editIconBadgeImage]}
-                    />
+                <TouchableOpacity style={styles.editIconBadge} onPress={handlePickPhoto}>
+                    <Image source={require('../../assets/images/pencil.png')} style={[styles.editIconBadgeImage]} />
                 </TouchableOpacity>
             </View>
 
@@ -509,8 +551,8 @@ function ProfileModalContent({ visible, onClose }) {
                         <Text style={styles.contractTopBtnText}>Previous</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.contractTopButton} onPress={() => setView('referCoach')}>
-    <Text style={styles.contractTopBtnText}>Next</Text>
-</TouchableOpacity>
+                        <Text style={styles.contractTopBtnText}>Next</Text>
+                    </TouchableOpacity>
                     {activePdfUrl && (
                         <TouchableOpacity style={styles.contractTopButton} onPress={() => Linking.openURL(activePdfUrl)}>
                             <Text style={styles.contractTopBtnText}>Download</Text>

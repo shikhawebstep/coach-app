@@ -25,7 +25,7 @@ export const unstable_settings = {
 
 function RootLayoutNav() {
     const colorScheme = useColorScheme();
-    const { isLoggedIn, isAuthLoading, isProfileCompleted, isOnboardingCompleted } = useAuth();
+    const { isLoggedIn, isAuthLoading, isProfileCompleted, isOnboardingCompleted, userRole } = useAuth();
     const segments = useSegments();
     const router = useRouter();
 
@@ -34,6 +34,8 @@ function RootLayoutNav() {
     useEffect(() => {
         if (isAuthLoading) return;
 
+        const isCoach = typeof userRole === 'string' && userRole.trim().toLowerCase() === 'coach';
+
         if (!isLoggedIn && inAuthGroup) {
             router.replace('/login');
         } else if (isLoggedIn) {
@@ -41,7 +43,7 @@ function RootLayoutNav() {
                 if (segments[0] !== 'fill-profile') {
                     router.replace('/fill-profile');
                 }
-            } else if (!isOnboardingCompleted) {
+            } else if (isCoach && !isOnboardingCompleted) {
                 if (segments[0] !== 'onboarding') {
                     router.replace('/onboarding');
                 }
@@ -52,7 +54,7 @@ function RootLayoutNav() {
                 }
             }
         }
-    }, [isLoggedIn, isAuthLoading, segments, inAuthGroup, isProfileCompleted, isOnboardingCompleted]);
+    }, [isLoggedIn, isAuthLoading, segments, inAuthGroup, isProfileCompleted, isOnboardingCompleted, userRole]);
 
     if (isAuthLoading || (!isLoggedIn && inAuthGroup)) {
         return (

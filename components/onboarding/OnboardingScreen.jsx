@@ -25,7 +25,8 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
   const scheme = useColorScheme(); // triggers re-render on theme change
   const COLORS = scheme === 'light' ? LIGHT_COLORS : DARK_COLORS;
   const styles = createStyles(COLORS);
-  const { token, userId, completeOnboarding } = useAuth();
+  const { token, userId, completeOnboarding, coachProfile } = useAuth();
+  const name = coachProfile?.firstName || coachName || "Coach";
 
   const [currentStep, setCurrentStep] = useState(0);
   const [showTaskPanel, setShowTaskPanel] = useState(false);
@@ -36,98 +37,83 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
   const [profileError, setProfileError] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
 
-useEffect(() => {
-  console.log("🔍 [OnboardingScreen] useEffect triggered");
-  console.log("🔍 token:", token ? `${token.substring(0, 20)}...` : "NULL / UNDEFINED");
-  console.log("🔍 userId:", userId);
+  useEffect(() => {
+ 
 
-  if (!token || !userId) {
-    console.warn("⚠️ [OnboardingScreen] Missing token or userId — skipping profile fetch");
-    setProfileLoading(false);
-    return;
-  }
-
-  const controller = new AbortController();
-  const baseUrl = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://api.grabbite.com/").replace(/\/$/, "");
-  const url = `${baseUrl}/api/coachpro/account-profile/${userId}`;
-
-  console.log("🌐 [OnboardingScreen] Fetching profile URL:", url);
-  console.log("🔑 [OnboardingScreen] Auth header:", `Bearer ${token.substring(0, 20)}...`);
-
-  setProfileError(false);
-
-  const fetchProfile = async () => {
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-        signal: controller.signal,
-      });
-
-      console.log("📡 [OnboardingScreen] Response status:", response.status, response.statusText);
-
-      const rawText = await response.text();
-      console.log("📦 [OnboardingScreen] Raw response text:", rawText);
-
-      let result;
-      try {
-        result = JSON.parse(rawText);
-      } catch (parseErr) {
-        console.error("❌ [OnboardingScreen] Failed to parse JSON:", parseErr.message);
-        setProfileError(true);
-        return;
-      }
-
-      console.log("✅ [OnboardingScreen] Parsed result:", JSON.stringify(result, null, 2));
-
-      if (!result.status || !result.data) {
-        console.warn("⚠️ [OnboardingScreen] Invalid profile response — status:", result.status, "data:", result.data);
-        return;
-      }
-
-      const d = result.data;
-      console.log("📋 [OnboardingScreen] Profile data keys:", Object.keys(d));
-      console.log("📋 contract:", d.contract);
-      console.log("📋 qualifications:", d.qualifications);
-      console.log("📋 uniformPurchaseStatus:", d.uniformPurchaseStatus);
-      console.log("📋 onboardingCourseResult:", d.onboardingCourseResult);
-
-      const contractDone = d.contract?.status === "signed" || !!d.contract?.signedAt;
-      const qualificationsDone = !!d.qualifications && Object.keys(d.qualifications).length > 0;
-      const uniformDone = d.uniformPurchaseStatus === "completed";
-      const trainingDone = d.onboardingCourseResult?.status === "pass";
-
-      console.log("🏁 Task states — contract:", contractDone, "| qualifications:", qualificationsDone, "| uniform:", uniformDone, "| training:", trainingDone);
-
-      if (contractDone && qualificationsDone && uniformDone && trainingDone) {
-        console.log("🎉 [OnboardingScreen] All tasks complete — redirecting");
-        setRedirecting(true);
-        handleComplete();
-        return;
-      }
-
-      setCompletedTasks((prev) => ({
-        "1": contractDone || prev["1"],
-        "2": qualificationsDone || prev["2"],
-        "3": uniformDone || prev["3"],
-        "4": trainingDone || prev["4"],
-      }));
-    } catch (err) {
-      if (err.name !== "AbortError") {
-        console.error("❌ [OnboardingScreen] Profile fetch error:", err.name, err.message);
-        setProfileError(true);
-      }
-    } finally {
+    if (!token || !userId) {
+      console.warn("⚠️ [OnboardingScreen] Missing token or userId — skipping profile fetch");
       setProfileLoading(false);
+      return;
     }
-  };
 
-  fetchProfile();
+    const controller = new AbortController();
+    const baseUrl = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://api.grabbite.com/").replace(/\/$/, "");
+    const url = `${baseUrl}/api/coachpro/account-profile/${userId}`;
 
-  return () => controller.abort();
-}, [token, userId]);
+   
+    setProfileError(false);
 
-console.log('profileError',profileError)
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch(url, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        });
+
+
+        const rawText = await response.text();
+
+        let result;
+        try {
+          result = JSON.parse(rawText);
+        } catch (parseErr) {
+          console.error("❌ [OnboardingScreen] Failed to parse JSON:", parseErr.message);
+          setProfileError(true);
+          return;
+        }
+
+
+        if (!result.status || !result.data) {
+          console.warn("⚠️ [OnboardingScreen] Invalid profile response — status:", result.status, "data:", result.data);
+          return;
+        }
+
+        const d = result.data;
+
+        const contractDone = d.contract?.status === "signed" || !!d.contract?.signedAt;
+        const qualificationsDone = !!d.qualifications && Object.keys(d.qualifications).length > 0;
+        const uniformDone = d.uniformPurchaseStatus === "completed";
+        const trainingDone = d.onboardingCourseResult?.status === "pass" ||d.onboardingCourseResult?.status === "completed"  ;
+
+
+        if (contractDone && qualificationsDone && uniformDone && trainingDone) {
+          setRedirecting(true);
+          handleComplete();
+          return;
+        }
+
+        setCompletedTasks((prev) => ({
+          "1": contractDone || prev["1"],
+          "2": qualificationsDone || prev["2"],
+          "3": uniformDone || prev["3"],
+          "4": trainingDone || prev["4"],
+        }));
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("❌ [OnboardingScreen] Profile fetch error:", err.name, err.message);
+          setProfileError(true);
+        }
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    fetchProfile();
+
+    return () => controller.abort();
+  }, [token, userId]);
+
 
   const sharedProps = { styles, COLORS };
 
@@ -209,11 +195,11 @@ console.log('profileError',profileError)
       )}
 
       <View style={{ flex: 1 }}>
-        {currentStep === 0 && <WelcomeStep coachName={coachName} onStart={() => setCurrentStep(1)} {...sharedProps} />}
+        {currentStep === 0 && <WelcomeStep coachName={name} onStart={() => setCurrentStep(1)} {...sharedProps} />}
 
         {currentStep === 1 && (
           <TaskDashboardStep
-            coachName={coachName}
+            coachName={name}
             completedTasks={completedTasks}
             onSelectTask={handleSelectTask}
             onStart={() => {

@@ -12,6 +12,13 @@ const TaskDashboardStep = ({ coachName = "Ethan", completedTasks = {}, onSelectT
   const completedCount = Object.values(completedTasks).filter(Boolean).length;
   const progressPercent = Math.round((completedCount / 4) * 100);
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Morning';
+    if (hour < 17) return 'Afternoon';
+    return 'Evening';
+  };
+
   return (
     <ImageBackground source={require('@/assets/images/Login.png')} resizeMode="cover" style={{ flex: 1 }}>
       <OnboardingHeader />
@@ -19,7 +26,7 @@ const TaskDashboardStep = ({ coachName = "Ethan", completedTasks = {}, onSelectT
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
           <View style={{ paddingHorizontal: 18, paddingBottom: 17 }}>
             <Text style={{ color: '#fff', fontSize: 32, fontFamily: 'Urbanist_700Bold' }}>
-              Morning, {coachName} 👋
+              {getGreeting()}, {coachName} 👋
             </Text>
           </View>
 

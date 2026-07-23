@@ -5,12 +5,16 @@ import { Image, ImageBackground, Modal, StyleSheet, TouchableOpacity, View } fro
 import NotificationDetails from '../notifications/NotificationDetails';
 import NotificationsList from '../notifications/NotificationsList';
 import ProfileModal from './ProfileModal';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Header({ title, showBack = false, onMenuPress, isOnboarding = false }) {
     const router = useRouter();
+    const { coachProfile } = useAuth();
     const [isProfileVisible, setIsProfileVisible] = useState(false);
     const [isNotificationsVisible, setIsNotificationsVisible] = useState(false);
     const [notificationsView, setNotificationsView] = useState('list'); // 'list' or 'details'
+
+    const profileSource = coachProfile?.profile ? { uri: coachProfile.profile } : require('@/assets/images/Ellipse.png');
 
     const handleNotificationPress = () => {
         setNotificationsView('list');
@@ -69,7 +73,7 @@ export default function Header({ title, showBack = false, onMenuPress, isOnboard
                                 </TouchableOpacity>
                                 <TouchableOpacity style={styles.profileButton} onPress={() => setIsProfileVisible(true)}>
                                     <Image
-                                        source={require('@/assets/images/Ellipse.png')}
+                                        source={profileSource}
                                         style={styles.profileImage}
                                     />
                                 </TouchableOpacity>
@@ -121,7 +125,7 @@ export default function Header({ title, showBack = false, onMenuPress, isOnboard
                                 </TouchableOpacity>
                                 <TouchableOpacity style={styles.profileButton} onPress={() => { setIsNotificationsVisible(false); setIsProfileVisible(true); }}>
                                     <Image
-                                        source={require('@/assets/images/Ellipse.png')}
+                                        source={profileSource}
                                         style={styles.profileImage}
                                     />
                                 </TouchableOpacity>
@@ -214,6 +218,7 @@ const styles = StyleSheet.create({
     profileImage: {
         width: 36,
         height: 36,
+        borderRadius: 18,
     },
     modalContainer: {
         flex: 1,

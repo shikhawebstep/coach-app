@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
+    Alert,
     Image,
     ScrollView,
     StyleSheet,
@@ -16,9 +17,6 @@ import {
 } from 'react-native';
 
 // ─── Palette ────────────────────────────────────────────────────────────────
-// A "scoreboard" identity: cobalt→violet gradient banner for the hero, warm
-// paper background for content, and a consistent color-coded accent per
-// section type (details / positives / improvements / scores).
 const LIGHT = {
     background: '#F5F4F0',
     headerTitle: '#12141C',
@@ -37,6 +35,7 @@ const LIGHT = {
     successTint: '#E7F8EC',
     warning: '#DB8A00',
     warningTint: '#FEF3E0',
+    gold: '#DB8A00',
     divider: '#EFEDE7',
     shadowColor: '#161821',
     shadowOpacity: 0.06,
@@ -66,6 +65,7 @@ const DARK = {
     successTint: 'rgba(61,220,132,0.15)',
     warning: '#FFC24B',
     warningTint: 'rgba(255,194,75,0.15)',
+    gold: '#FFC24B',
     divider: '#25262C',
     shadowColor: '#000000',
     shadowOpacity: 0.4,
@@ -77,17 +77,24 @@ const DARK = {
     onGradientChipBg: 'rgba(255,255,255,0.14)',
 };
 
-const SCORE_LABELS = {
-    personalQualitiesScore: 'Personal Qualities',
-    deliveryQualitiesScore: 'Delivery Qualities',
-    coachingStandardsScore: 'Coaching Standards',
-    educationalQualityScore: 'Educational Quality',
-    sessionStructureScore: 'Session Structure',
-};
+// SAMBA criteria — reference only now, the venue manager doesn't score each
+// one individually anymore, just gives one overall grade out of 10. Kept in
+// sync with the create-report screen's CRITERIA list.
+const CRITERIA = [
+    { L: 'S', name: 'Structure', sub: 'Intro, main body, conclusion' },
+    { L: 'E', name: 'Educational Impact', sub: 'Did the kids actually learn?' },
+    { L: 'E', name: 'Engagement', sub: 'Active, enjoying · body language, command, confidence' },
+    { L: 'D', name: 'Discipline & Group Mgmt', sub: 'Control & organisation' },
+    { L: 'A', name: 'Age-Specific Communication', sub: 'Pitched to their stage of development' },
+    { L: 'S', name: 'Safety & Set-up', sub: 'Safe & intentional setup' },
+    { L: '✓', name: 'Adherence to Session Plan', sub: 'Delivered the plan as set', extra: true },
+    { L: '★', name: 'Road to Rio Integration', sub: 'Journey, players & badges woven in', extra: true },
+];
 
 const getStatusMeta = (status, colors) => {
     switch ((status || '').toLowerCase()) {
         case 'completed':
+        case 'reviewed':
             return { color: colors.success, tint: colors.successTint, icon: 'checkmark-circle' };
         case 'pending':
         case 'in_progress':
@@ -97,10 +104,12 @@ const getStatusMeta = (status, colors) => {
     }
 };
 
-const getScorePercentColor = (percentStr, colors) => {
-    const numeric = parseFloat(String(percentStr).replace('%', '')) || 0;
-    if (numeric >= 70) return colors.success;
-    if (numeric >= 40) return colors.warning;
+// ⚠️ Grade colour now keyed off /10, matches the create-report screen's gradeColour().
+const getGradeColor = (grade, colors) => {
+    const v = Number(grade) || 0;
+    if (v >= 9) return colors.success;
+    if (v >= 7) return colors.success;
+    if (v >= 5) return colors.warning;
     return colors.error;
 };
 
@@ -116,9 +125,11 @@ const formatDateTime = (isoString) => {
     }
 };
 
-// areasForImprovement comes back as a JSON-stringified array e.g. "[\"a\",\"b\"]"
-const parseImprovements = (raw) => {
+// positives/areasForImprovement now both come back as JSON-stringified arrays
+// (the report screen sends { positives: [...], areasForImprovement: [...] })
+const parseList = (raw) => {
     if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
     try {
         const parsed = JSON.parse(raw);
         return Array.isArray(parsed) ? parsed : [String(parsed)];
@@ -204,6 +215,50 @@ export default function ObservationDetail({ observationId, onBack }) {
         }
     };
 
+    const [isReviewing, setIsReviewing] = useState(false);
+    const [isReviewed, setIsReviewed] = useState(false);
+
+    const handleMarkReviewed = async () => {
+        if (!observationId) return;
+        try {
+            setIsReviewing(true);
+            const myHeaders = new Headers();
+            if (token) {
+                myHeaders.append("Authorization", `Bearer ${token}`);
+            }
+
+            const requestOptions = {
+                method: "PATCH",
+                headers: myHeaders,
+                body: "",
+                redirect: "follow"
+            };
+
+            const response = await fetch(
+                `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/observation/${observationId}/mark-reviewed`,
+                requestOptions
+            );
+
+            const resultText = await response.text();
+
+            let json = {};
+            try { json = JSON.parse(resultText); } catch (_) { }
+
+            if (response.ok) {
+                setObservation(prev => prev ? { ...prev, status: 'reviewed' } : prev);
+                setIsReviewed(true);
+                Alert.alert("Success", "Report marked as reviewed.");
+            } else {
+                Alert.alert("Error", json?.message || "Failed to mark report as reviewed.");
+            }
+        } catch (err) {
+            console.error("Error marking report as reviewed:", err);
+            Alert.alert("Error", "Something went wrong while updating status.");
+        } finally {
+            setIsReviewing(false);
+        }
+    };
+
     const togglePlayback = async () => {
         const voiceNoteUrl = observation?.voiceNoteUrl;
         if (!voiceNoteUrl) return;
@@ -256,7 +311,7 @@ export default function ObservationDetail({ observationId, onBack }) {
                     <Ionicons name="arrow-back" size={20} color={colors.backIcon} />
                 </TouchableOpacity>
             )}
-            <Text style={styles.plainHeaderTitle}>Observation Report</Text>
+            <Text style={styles.plainHeaderTitle}>Observe & Develop</Text>
         </View>
     );
 
@@ -287,9 +342,11 @@ export default function ObservationDetail({ observationId, onBack }) {
     }
 
     const statusMeta = getStatusMeta(observation.status, colors);
-    const scoreColor = getScorePercentColor(observation.overallScorePercentage, colors);
-    const improvements = parseImprovements(observation.areasForImprovement);
-    const scoreEntries = Object.entries(observation.scores || {});
+    // ⚠️ ADJUST: field name — matches `overallGrade` sent by the report screen's submitReport().
+    const grade = observation.overallGrade ?? observation.grade ?? null;
+    const gradeColor = getGradeColor(grade, colors);
+    const positives = parseList(observation.positives);
+    const improvements = parseList(observation.areasForImprovement);
     const coachName = observation.coach?.name || 'Unknown';
     const coachInitial = coachName.charAt(0).toUpperCase() || '?';
     const playbackFraction = playbackDuration ? Math.min(playbackPosition / playbackDuration, 1) : 0;
@@ -334,17 +391,15 @@ export default function ObservationDetail({ observationId, onBack }) {
                         </View>
                     </View>
 
-                    <View style={styles.heroScoreRow}>
+                    {/* Single overall grade /10 — replaces the old score%/avg-out-of-5 pair */}
+                    <View style={styles.heroGradeRow}>
                         <View>
-                            <Text style={styles.heroScoreLabel}>OVERALL SCORE</Text>
-                            <Text style={styles.heroScoreValue}>{observation.overallScorePercentage || '-'}</Text>
-                            <View style={[styles.heroScoreBar, { backgroundColor: scoreColor }]} />
+                            <Text style={styles.heroScoreLabel}>ASSESSOR</Text>
+                            <Text style={styles.heroAssessorValue}>{observation.assessor?.name || 'You'}</Text>
+                            <Text style={styles.heroScoreCaption}>{formatDateTime(observation.createdAt)}</Text>
                         </View>
-                        <View style={styles.heroScoreDivider} />
-                        <View>
-                            <Text style={styles.heroScoreLabel}>AVG / 5.0</Text>
-                            <Text style={styles.heroScoreValueSmall}>{observation.overallScore ?? '-'}</Text>
-                            <Text style={styles.heroScoreCaption}>across all criteria</Text>
+                        <View style={[styles.heroGradeChip, { backgroundColor: gradeColor }]}>
+                            <Text style={styles.heroGradeValue}>{grade ?? '–'}<Text style={styles.heroGradeUnit}>/10</Text></Text>
                         </View>
                     </View>
                 </LinearGradient>
@@ -424,18 +479,27 @@ export default function ObservationDetail({ observationId, onBack }) {
                         </View>
                     )}
 
-                    {/* Positives */}
+                    {/* Positives — now a list (max 2), matches the AI-drafted line items */}
                     <View style={[styles.card, styles.accentSuccess]}>
                         <View style={styles.sectionHeaderRow}>
-                            <Text style={[styles.sectionLabel, { marginBottom: 0 }]}>Positives</Text>
+                            <Text style={[styles.sectionLabel, { marginBottom: 0 }]}>What's Working</Text>
                         </View>
-                        <Text style={styles.descriptionText}>{observation.positives || 'No notes provided.'}</Text>
+                        {positives.length > 0 ? (
+                            positives.map((point, idx) => (
+                                <View key={idx} style={styles.bulletRow}>
+                                    <View style={[styles.bulletDot, { backgroundColor: colors.success }]} />
+                                    <Text style={styles.bulletText}>{point}</Text>
+                                </View>
+                            ))
+                        ) : (
+                            <Text style={styles.descriptionText}>No notes provided.</Text>
+                        )}
                     </View>
 
                     {/* Areas for Improvement */}
                     <View style={[styles.card, styles.accentWarning]}>
                         <View style={styles.sectionHeaderRow}>
-                            <Text style={[styles.sectionLabel, { marginBottom: 0 }]}>Areas for Improvement</Text>
+                            <Text style={[styles.sectionLabel, { marginBottom: 0 }]}>Improvements</Text>
                         </View>
                         {improvements.length > 0 ? (
                             improvements.map((point, idx) => (
@@ -462,26 +526,56 @@ export default function ObservationDetail({ observationId, onBack }) {
                         </View>
                     )}
 
-                    {/* Scoring breakdown */}
+                    {/* Grade — replaces the old per-criteria "Scoring Breakdown" bars.
+                        SAMBA criteria are shown as reference only (what the grade was weighed against),
+                        not individually scored. */}
                     <View style={styles.card}>
-                        <Text style={styles.sectionLabel}>Scoring Breakdown</Text>
-                        {scoreEntries.map(([key, value], idx) => {
-                            const barColor = value >= 4 ? colors.success : value >= 2 ? colors.warning : colors.error;
+                        <Text style={styles.sectionLabel}>Grade</Text>
+                        {CRITERIA.map((crit, i) => {
+                            const isFirstExtra = crit.extra && !CRITERIA[i - 1]?.extra;
                             return (
-                                <View key={key} style={{ marginBottom: idx === scoreEntries.length - 1 ? 0 : 16 }}>
-                                    <View style={styles.scoreLabelRow}>
-                                        <Text style={styles.rowValue}>{SCORE_LABELS[key] || key}</Text>
-                                        <Text style={[styles.scoreValueText, { color: barColor }]}>{value} / 5</Text>
-                                    </View>
-                                    <View style={styles.progressBg}>
-                                        <View style={[styles.progressFill, { width: `${(value / 5) * 100}%`, backgroundColor: barColor }]} />
+                                <View key={crit.name}>
+                                    {isFirstExtra && <Text style={styles.critDivider}>＋ SAMBA CRITERIA</Text>}
+                                    <View style={styles.critRow}>
+                                        <View style={[styles.critLetter, { backgroundColor: crit.extra ? colors.gold : colors.primary }]}>
+                                            <Text style={styles.critLetterText}>{crit.L}</Text>
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={styles.rowValue}>{crit.name}</Text>
+                                            <Text style={styles.rowSubValue}>{crit.sub}</Text>
+                                        </View>
                                     </View>
                                 </View>
                             );
                         })}
+                        <View style={[styles.divider, { marginVertical: 14 }]} />
+                        <View style={styles.gradeTotalRow}>
+                            <Text style={styles.gradeTotalLabel}>Graded against these areas</Text>
+                            <View style={[styles.heroGradeChip, { backgroundColor: gradeColor }]}>
+                                <Text style={styles.heroGradeValue}>{grade ?? '–'}<Text style={styles.heroGradeUnit}>/10</Text></Text>
+                            </View>
+                        </View>
                     </View>
 
-                
+                    <View style={{ alignItems: 'center', marginTop: 16, marginBottom: 20 }}>
+                        <TouchableOpacity
+                            style={[
+                                styles.markReviewedBtn,
+                                observation.reviewedAt && styles.markReviewedBtnDone,
+                            ]}
+                            disabled={isReviewing || observation.reviewedAt}
+                            onPress={handleMarkReviewed}
+                        >
+                            {isReviewing ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <Text style={styles.markReviewedBtnText}>
+                                    {observation.reviewedAt ? '✓ Reviewed' : 'Mark as reviewed'}
+                                </Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+
                     <View style={{ height: 40 }} />
                 </View>
             </ScrollView>
@@ -614,15 +708,10 @@ const createStyles = (colors) => StyleSheet.create({
         color: colors.onGradientSubtext,
         marginTop: 2,
     },
-    heroScoreRow: {
+    heroGradeRow: {
         flexDirection: 'row',
-        alignItems: 'flex-start',
-    },
-    heroScoreDivider: {
-        width: 1,
-        alignSelf: 'stretch',
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        marginHorizontal: 24,
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
     heroScoreLabel: {
         fontSize: 11,
@@ -631,20 +720,8 @@ const createStyles = (colors) => StyleSheet.create({
         letterSpacing: 0.8,
         marginBottom: 6,
     },
-    heroScoreValue: {
-        fontSize: 34,
-        fontFamily: 'Urbanist_700Bold',
-        color: colors.onGradientText,
-        lineHeight: 38,
-    },
-    heroScoreBar: {
-        width: 36,
-        height: 4,
-        borderRadius: 2,
-        marginTop: 8,
-    },
-    heroScoreValueSmall: {
-        fontSize: 22,
+    heroAssessorValue: {
+        fontSize: 16,
         fontFamily: 'Urbanist_700Bold',
         color: colors.onGradientText,
     },
@@ -653,6 +730,21 @@ const createStyles = (colors) => StyleSheet.create({
         fontFamily: 'Urbanist_400Regular',
         color: colors.onGradientSubtext,
         marginTop: 4,
+    },
+    heroGradeChip: {
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 14,
+    },
+    heroGradeValue: {
+        fontSize: 22,
+        fontFamily: 'Urbanist_700Bold',
+        color: '#fff',
+    },
+    heroGradeUnit: {
+        fontSize: 12,
+        fontFamily: 'Urbanist_400Regular',
+        color: 'rgba(255,255,255,0.85)',
     },
 
     // ─── Content sheet ───────────────────────────────────────────────────────
@@ -723,14 +815,23 @@ const createStyles = (colors) => StyleSheet.create({
         color: colors.labelText,
         marginTop: 2,
     },
-    labelText: {
-        fontSize: 14,
-        fontFamily: 'Urbanist_400Regular',
-        color: colors.labelText,
-    },
     divider: {
         height: 1,
         backgroundColor: colors.divider,
+    },
+
+    // Positives list (bulleted, unranked — max 2)
+    bulletRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginBottom: 10,
+    },
+    bulletDot: {
+        width: 7,
+        height: 7,
+        borderRadius: 4,
+        marginRight: 12,
+        marginTop: 8,
     },
 
     // Improvement list (numbered — order reflects priority)
@@ -760,25 +861,46 @@ const createStyles = (colors) => StyleSheet.create({
         lineHeight: 22,
     },
 
-    scoreLabelRow: {
+    // Grade / SAMBA criteria reference list
+    critRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 8,
+        gap: 12,
+        paddingVertical: 8,
     },
-    scoreValueText: {
-        fontSize: 13,
+    critLetter: {
+        width: 26,
+        height: 26,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    critLetterText: {
+        color: '#fff',
         fontFamily: 'Urbanist_700Bold',
+        fontSize: 12,
     },
-    progressBg: {
-        height: 6,
-        borderRadius: 3,
-        backgroundColor: colors.trackBg,
-        overflow: 'hidden',
+    critDivider: {
+        fontSize: 10,
+        fontFamily: 'Urbanist_700Bold',
+        color: colors.gold,
+        letterSpacing: 1,
+        borderTopWidth: 1,
+        borderTopColor: colors.divider,
+        paddingTop: 10,
+        marginTop: 6,
     },
-    progressFill: {
-        height: '100%',
-        borderRadius: 3,
+    gradeTotalRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    gradeTotalLabel: {
+        fontSize: 15,
+        fontFamily: 'Urbanist_700Bold',
+        color: colors.valueText,
+        flex: 1,
+        marginRight: 12,
     },
 
     // ─── Voice player (waveform) ─────────────────────────────────────────────
@@ -815,30 +937,21 @@ const createStyles = (colors) => StyleSheet.create({
         fontFamily: 'Urbanist_500Medium',
         color: colors.labelText,
     },
-
-    // ─── Timeline ────────────────────────────────────────────────────────────
-    timelineItem: {
-        flexDirection: 'row',
-    },
-    timelineTrack: {
-        width: 20,
+    markReviewedBtn: {
+        backgroundColor: colors.primary,
+        paddingVertical: 14,
+        paddingHorizontal: 32,
+        borderRadius: 24,
+        minWidth: 200,
         alignItems: 'center',
+        justifyContent: 'center',
     },
-    timelineDot: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-        marginTop: 4,
+    markReviewedBtnDone: {
+        backgroundColor: colors.success,
     },
-    timelineLine: {
-        width: 2,
-        flex: 1,
-        backgroundColor: colors.divider,
-        marginTop: 4,
-    },
-    timelineContent: {
-        flex: 1,
-        paddingBottom: 16,
-        paddingLeft: 10,
+    markReviewedBtnText: {
+        color: '#fff',
+        fontFamily: 'Urbanist_700Bold',
+        fontSize: 15,
     },
 });

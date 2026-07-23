@@ -48,10 +48,6 @@ export default function StudentInformation({ onBack, student }) {
     const studentAge  = getValid(raw.age) || 'N/A';
     const medicalInfo = getValid(raw.medicalInfo) || getValid(raw.medical) || getValid(raw.medicalNotes) || 'N/A';
 
-    // Parent / guardian info lives on the booking or the student's user object
-
-    console.log('booking - studnets ',booking);
-    console.log('student - studnets ',student);
     const parentUser  = raw?.parents[0]  || {};
     const parentFirstName = getValid(parentUser.parentFirstName) || '';
     const parentLastName  =  getValid(parentUser.parentLastName)  || '';

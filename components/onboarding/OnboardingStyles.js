@@ -162,7 +162,11 @@ const createStyles = (C) =>
     resultTitle: { color: '#1BAC4B', fontSize: 24, fontFamily: 'Urbanist_700Bold', marginBottom: 10, textAlign: "center" },
     resultTitleFail: { color: '#FF5252' },
     resultSub: { color: C.resultSubText, fontSize: 16, fontFamily: 'Urbanist_400Regular', lineHeight: 21, textAlign: "center" },
-    avatar: { width: 160, height: 160 },
+    avatar: { width: 160, height: 160 },watchedBadge: {
+  position: 'absolute', top: 8, right: 8,
+  backgroundColor: 'rgba(34,197,94,0.9)',
+  paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6,
+},
   });
 
 export default createStyles;

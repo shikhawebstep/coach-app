@@ -3,6 +3,8 @@ import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
+  Alert,
+  BackHandler,
   Image,
   ScrollView,
   StyleSheet,
@@ -22,10 +24,11 @@ export default function WeeklySessionTrainingDetails({
   onSessionClick,
   sessionDate,
 }) {
-  const { token } = useAuth();
+  const { token, coachProfile } = useAuth();
   const [activeTab, setActiveTab] = useState("Members");
   const [members, setMembers] = useState([]);
   const [trials, setTrials] = useState([]);
+  const [coaches, setCoaches] = useState([]);
   const [sessionName, setSessionName] = useState("");
   const [sessionData, setSessionData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -48,8 +51,14 @@ export default function WeeklySessionTrainingDetails({
 
   const flattenBookingGroup = (bookingGroup = []) => {
     const flattened = [];
+
+    if (!Array.isArray(bookingGroup)) return flattened;
+
     bookingGroup.forEach((booking) => {
-      booking.students.forEach((student) => {
+      const students = booking?.students;
+      if (!Array.isArray(students)) return;
+
+      students.forEach((student) => {
         flattened.push({
           bookingId: booking.id,
           studentId: student.id,
@@ -62,6 +71,21 @@ export default function WeeklySessionTrainingDetails({
       });
     });
     return flattened;
+  };
+
+  // Coaches come back in a flat shape — { coachId, coach, attendance } —
+  // not wrapped in bookings with a `students` array like members/trials.
+  const flattenCoaches = (coachGroup = []) => {
+    if (!Array.isArray(coachGroup)) return [];
+
+    return coachGroup.map((entry) => ({
+      studentId: entry?.coachId ?? entry?.coach?.id,
+      name: `${entry?.coach?.firstName || ""} ${entry?.coach?.lastName || ""}`.trim(),
+      age: entry?.rate ? `£${entry.rate}/hr` : "",
+      status: entry?.attendance?.attendanceStatus || "pending",
+      rawCoach: entry?.coach,
+      rate: entry?.rate,
+    }));
   };
 
   const fetchSessionDetails = async () => {
@@ -80,9 +104,10 @@ export default function WeeklySessionTrainingDetails({
 
         const bookingsMembers = result?.data?.bookings?.members || [];
         const bookingsTrials = result?.data?.bookings?.trials || [];
-
+        const bookingsCoaches = result?.data?.bookings?.coaches || [];
         setMembers(flattenBookingGroup(bookingsMembers));
         setTrials(flattenBookingGroup(bookingsTrials));
+        setCoaches(flattenCoaches(bookingsCoaches));
         setSessionName(result.data?.sessionPlan?.groupName);
       } else {
         console.error("Failed to fetch session details:", result);
@@ -109,31 +134,66 @@ export default function WeeklySessionTrainingDetails({
     return `${day}${suffix} ${month} ${year}`;
   };
 
-  // listType tells us which local state ("members" or "trials") to
-  // optimistically update, since both tabs share this handler.
+  // listType tells us which local state ("members", "trials", or "coaches")
+  // to optimistically update, since all three tabs share this handler.
+  // Attendance can only be set ONCE, while it's still "pending" — once
+  // marked attended/not attended it's locked (buttons are disabled in the UI,
+  // and this is a belt-and-braces guard against stray calls).
   const handleAttendance = async (studentId, status, listType = "members") => {
-    const setter = listType === "trials" ? setTrials : setMembers;
-    const previousList = listType === "trials" ? trials : members;
+    const setter =
+      listType === "trials"
+        ? setTrials
+        : listType === "coaches"
+          ? setCoaches
+          : setMembers;
+    const previousList =
+      listType === "trials" ? trials : listType === "coaches" ? coaches : members;
+
+    const target = previousList.find((p) => p.studentId === studentId);
+    if (target && target.status !== "pending") {
+      return; // already marked — locked, no further changes allowed
+    }
 
     setter((prev) =>
       prev.map((m) => (m.studentId === studentId ? { ...m, status } : m)),
     );
 
     try {
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/classes/weekly-classes/session/${sessionId}/attendance/${studentId}`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ attendance: status }),
-        },
-      );
+      let response;
 
-      if (response.ok) {
+      if (listType === "coaches") {
+        // Coaches use a dedicated endpoint keyed by classScheduleId + date,
+        // not the per-student session attendance route.
+        response = await fetch(
+          `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/classes/coach/attendance`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              classScheduleId: sessionData?.classSchedule?.id,
+              sessionDate: (sessionData?.sessionDate || "").slice(0, 10),
+              attendance: status,
+            }),
+          },
+        );
       } else {
+        response = await fetch(
+          `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/classes/weekly-classes/session/${sessionId}/attendance/${studentId}`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ attendance: status }),
+          },
+        );
+      }
+
+      if (!response.ok) {
         const errorText = await response.text();
         console.error(
           `❌ Failed to update attendance (${response.status}):`,
@@ -146,6 +206,42 @@ export default function WeeklySessionTrainingDetails({
       setter(previousList);
     }
   };
+
+  // True once every member, trial, and coach has a non-"pending" status.
+  const isAllAttendanceMarked = () => {
+    const everyone = [...members, ...trials, ...coaches];
+    if (everyone.length === 0) return true;
+    return everyone.every((p) => p.status && p.status !== "pending");
+  };
+
+  const handleBackPress = () => {
+    if (!isAllAttendanceMarked()) {
+      Alert.alert(
+        "Attendance required",
+        "Please mark attendance for everyone before leaving this session.",
+      );
+      return;
+    }
+    onBack && onBack();
+  };
+
+  // Also guard the Android hardware back button the same way.
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        if (!isAllAttendanceMarked()) {
+          Alert.alert(
+            "Attendance required",
+            "Please mark attendance for everyone before leaving this session.",
+          );
+          return true; // block default back behavior
+        }
+        return false; // let default back behavior proceed
+      },
+    );
+    return () => subscription.remove();
+  }, [members, trials, coaches]);
 
 
   // Utility: formats "10:30 AM" + "11:30 AM" => "10:30-11:30am"
@@ -217,8 +313,8 @@ export default function WeeklySessionTrainingDetails({
     );
   }
 
-  // Shared row renderer used by both the Members tab and the Trials tab
-  // so attendance buttons behave identically in both places.
+  // Shared row renderer used by the Members, Trials, and Coaches tabs
+  // so attendance buttons behave identically everywhere.
   const renderPersonRow = (person, index, listType) => (
     <TouchableOpacity
       key={person.studentId}
@@ -241,6 +337,7 @@ export default function WeeklySessionTrainingDetails({
       </Text>
       <View style={styles.attendanceButtons}>
         <TouchableOpacity
+          disabled={person.status !== "pending"}
           style={[
             styles.attendanceBtn,
             person.status === "attended"
@@ -248,6 +345,7 @@ export default function WeeklySessionTrainingDetails({
               : isDark
                 ? styles.btnAttendedInactiveDark
                 : styles.btnAttendedInactive,
+            person.status !== "pending" && person.status !== "attended" && styles.btnDisabled,
           ]}
           onPress={() => handleAttendance(person.studentId, "attended", listType)}
         >
@@ -278,6 +376,7 @@ export default function WeeklySessionTrainingDetails({
         </TouchableOpacity>
 
         <TouchableOpacity
+          disabled={person.status !== "pending"}
           style={[
             styles.attendanceBtn,
             person.status === "not attended"
@@ -285,6 +384,7 @@ export default function WeeklySessionTrainingDetails({
               : isDark
                 ? styles.btnNotAttendedInactiveDark
                 : styles.btnNotAttendedInactive,
+            person.status !== "pending" && person.status !== "not attended" && styles.btnDisabled,
           ]}
           onPress={() => handleAttendance(person.studentId, "not attended", listType)}
         >
@@ -322,7 +422,7 @@ export default function WeeklySessionTrainingDetails({
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
             <Ionicons
               name="arrow-back"
               size={24}
@@ -365,7 +465,7 @@ export default function WeeklySessionTrainingDetails({
               </Text>
               <Text style={[styles.infoValue, isDark && styles.infoValueDark]}>
                 {formatDate(sessionData?.sessionDate)}{","}
-                {formatTimeRange(sessionData?.classSchedule?.startTime,sessionData?.classSchedule?.endTime)}
+                {formatTimeRange(sessionData?.classSchedule?.startTime, sessionData?.classSchedule?.endTime)}
               </Text>
             </View>
             <View style={styles.infoItemSmall}>
@@ -455,6 +555,17 @@ export default function WeeklySessionTrainingDetails({
             )}
           </View>
         )}
+        {activeTab === "Coaches" && (
+          <View style={styles.membersList}>
+            {coaches.length === 0 ? (
+              <Text style={styles.emptyText}>No coaches found.</Text>
+            ) : (
+              coaches.map((member, index) =>
+                renderPersonRow(member, index, "coaches"),
+              )
+            )}
+          </View>
+        )}
 
         {/* Trials Tab */}
         {activeTab === "Trials" && (
@@ -496,11 +607,6 @@ export default function WeeklySessionTrainingDetails({
               <Text style={styles.confirmButtonText}>Confirm</Text>
             </TouchableOpacity>
           </>
-        )}
-
-        {/* Coaches Tab — placeholder */}
-        {activeTab === "Coaches" && (
-          <Text style={styles.emptyText}>No coaches assigned.</Text>
         )}
       </ScrollView>
     </View>
@@ -755,6 +861,9 @@ const styles = StyleSheet.create({
   btnNotAttendedInactiveDark: {
     backgroundColor: "#1E1E1E",
     borderColor: "#E53E3E",
+  },
+  btnDisabled: {
+    opacity: 0.35,
   },
   btnIcon: {
     marginRight: 4,
