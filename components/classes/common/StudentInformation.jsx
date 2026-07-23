@@ -48,11 +48,11 @@ export default function StudentInformation({ onBack, student }) {
     const studentAge  = getValid(raw.age) || 'N/A';
     const medicalInfo = getValid(raw.medicalInfo) || getValid(raw.medical) || getValid(raw.medicalNotes) || 'N/A';
 
-    const parentUser  = raw?.parents[0]  || {};
-    const parentFirstName = getValid(parentUser.parentFirstName) || '';
-    const parentLastName  =  getValid(parentUser.parentLastName)  || '';
+    const parentUser  = raw?.parents?.[0] || {};
+    const parentFirstName = getValid(parentUser.parentFirstName) || getValid(parentUser.firstName) || '';
+    const parentLastName  = getValid(parentUser.parentLastName) || getValid(parentUser.lastName) || '';
     const parentName  = `${parentFirstName} ${parentLastName}`.trim() || 'N/A';
-    const parentPhone = getValid(booking.parentPhoneNumber) || getValid(booking.parentPhoneNumber) || getValid(parentUser.phoneNumber) || getValid(parentUser.parentPhoneNumber) || 'N/A';
+    const parentPhone = getValid(booking.parentPhoneNumber) || getValid(parentUser.parentPhoneNumber) || getValid(parentUser.phoneNumber) || 'N/A';
 
     return (
         <View style={styles.container}>

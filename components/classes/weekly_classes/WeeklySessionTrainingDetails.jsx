@@ -6,6 +6,7 @@ import {
   Alert,
   BackHandler,
   Image,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -33,6 +34,8 @@ export default function WeeklySessionTrainingDetails({
   const [sessionData, setSessionData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAddTrialist, setShowAddTrialist] = useState(false);
+  const [abilityModalVisible, setAbilityModalVisible] = useState(false);
+  const [selectedStudentForAbility, setSelectedStudentForAbility] = useState(null);
 
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -61,10 +64,12 @@ export default function WeeklySessionTrainingDetails({
       students.forEach((student) => {
         flattened.push({
           bookingId: booking.id,
-          studentId: student.id,
+          studentId: student?.id,
+          sessionId: student?.session?.id,
           name: `${student.studentFirstName || ""} ${student.studentLastName || ""}`.trim(),
           age: `${student.age} Years`,
           status: resolveAttendance(student),
+          ability: student?.abilityLevel?.toLowerCase() || student?.session?.ability?.toLowerCase() || 'beginner',
           rawStudent: student,
           booking: booking,
         });
@@ -91,12 +96,16 @@ export default function WeeklySessionTrainingDetails({
   const fetchSessionDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/classes/weekly-classes/session/${sessionId}`,
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        },
+
+      let url = `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/classes/weekly-classes/session/${sessionId}`;
+      if (sessionDate) {
+        url += `?sessionDate=${sessionDate}`;
+      }
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      },
       );
       const result = await response.json();
       if (response.ok) {
@@ -134,12 +143,53 @@ export default function WeeklySessionTrainingDetails({
     return `${day}${suffix} ${month} ${year}`;
   };
 
+  const handleAbilityChange = async (abilityValue) => {
+    if (!selectedStudentForAbility) return;
+    const { studentId, sessionId, listType, status } = selectedStudentForAbility;
+    const setter = listType === "trials" ? setTrials : setMembers;
+
+    // Capitalize the first letter for the payload
+    const capitalizedAbility = abilityValue.charAt(0).toUpperCase() + abilityValue.slice(1);
+
+    // Optimistic UI update
+    setter((prev) =>
+      prev.map((m) =>
+        m.studentId === studentId ? { ...m, ability: abilityValue } : m
+      )
+    );
+    setAbilityModalVisible(false);
+
+    try {
+      // Use the attendance endpoint as requested
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_BASE_URL}api/coachpro/classes/weekly-classes/session/${sessionId}/attendance/${studentId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            attendance: status !== "pending" ? status : "attended", // fallback to attended if pending based on example
+            abilityLevel: capitalizedAbility
+          }),
+        }
+      );
+      if (!response.ok) {
+        console.warn("Failed to update ability on server");
+      }
+      fetchSessionDetails();
+    } catch (e) {
+      console.error("Network error updating ability:", e);
+    }
+  };
+
   // listType tells us which local state ("members", "trials", or "coaches")
   // to optimistically update, since all three tabs share this handler.
   // Attendance can only be set ONCE, while it's still "pending" — once
   // marked attended/not attended it's locked (buttons are disabled in the UI,
   // and this is a belt-and-braces guard against stray calls).
-  const handleAttendance = async (studentId, status, listType = "members") => {
+  const handleAttendance = async (studentId, sessionId, status, listType = "members") => {
     const setter =
       listType === "trials"
         ? setTrials
@@ -192,7 +242,7 @@ export default function WeeklySessionTrainingDetails({
           },
         );
       }
-
+      fetchSessionDetails();
       if (!response.ok) {
         const errorText = await response.text();
         console.error(
@@ -217,8 +267,16 @@ export default function WeeklySessionTrainingDetails({
   const handleBackPress = () => {
     if (!isAllAttendanceMarked()) {
       Alert.alert(
-        "Attendance required",
-        "Please mark attendance for everyone before leaving this session.",
+        "Pending Attendance",
+        "You haven't marked attendance for everyone. Are you sure you want to leave?",
+        [
+          { text: "Stay", style: "cancel" },
+          {
+            text: "Leave",
+            style: "destructive",
+            onPress: () => onBack && onBack(),
+          },
+        ]
       );
       return;
     }
@@ -232,16 +290,24 @@ export default function WeeklySessionTrainingDetails({
       () => {
         if (!isAllAttendanceMarked()) {
           Alert.alert(
-            "Attendance required",
-            "Please mark attendance for everyone before leaving this session.",
+            "Pending Attendance",
+            "You haven't marked attendance for everyone. Are you sure you want to leave?",
+            [
+              { text: "Stay", style: "cancel" },
+              {
+                text: "Leave",
+                style: "destructive",
+                onPress: () => onBack && onBack(),
+              },
+            ]
           );
-          return true; // block default back behavior
+          return true; // block default back behavior and let Alert handle it
         }
         return false; // let default back behavior proceed
       },
     );
     return () => subscription.remove();
-  }, [members, trials, coaches]);
+  }, [members, trials, coaches, onBack]);
 
 
   // Utility: formats "10:30 AM" + "11:30 AM" => "10:30-11:30am"
@@ -319,6 +385,7 @@ export default function WeeklySessionTrainingDetails({
     <TouchableOpacity
       key={person.studentId}
       style={[styles.memberCard, isDark && styles.memberCardDark]}
+      disabled={listType === "coaches"}
       onPress={() => onStudentSelect && onStudentSelect(person)}
     >
       <Text style={[styles.memberIndex, isDark && styles.memberIndexDark]}>
@@ -331,6 +398,20 @@ export default function WeeklySessionTrainingDetails({
         >
           {person.name}
         </Text>
+        {listType !== "coaches" && (
+          <TouchableOpacity
+            style={[styles.abilityBadge, isDark && styles.abilityBadgeDark]}
+            onPress={() => {
+              setSelectedStudentForAbility({ ...person, listType });
+              setAbilityModalVisible(true);
+            }}
+          >
+            <Text style={styles.abilityBadgeText}>
+              {(person.ability || "beginner").charAt(0).toUpperCase() + (person.ability || "beginner").slice(1)}
+            </Text>
+            <Ionicons name="chevron-down" size={10} color="#fff" style={{ marginLeft: 4 }} />
+          </TouchableOpacity>
+        )}
       </View>
       <Text style={[styles.memberAge, isDark && styles.memberAgeDark]}>
         {person.age}
@@ -347,7 +428,7 @@ export default function WeeklySessionTrainingDetails({
                 : styles.btnAttendedInactive,
             person.status !== "pending" && person.status !== "attended" && styles.btnDisabled,
           ]}
-          onPress={() => handleAttendance(person.studentId, "attended", listType)}
+          onPress={() => handleAttendance(person.studentId, person.sessionId, "attended", listType)}
         >
           <Ionicons
             name="checkmark"
@@ -386,7 +467,7 @@ export default function WeeklySessionTrainingDetails({
                 : styles.btnNotAttendedInactive,
             person.status !== "pending" && person.status !== "not attended" && styles.btnDisabled,
           ]}
-          onPress={() => handleAttendance(person.studentId, "not attended", listType)}
+          onPress={() => handleAttendance(person.studentId, person.sessionId, "not attended", listType)}
         >
           <Ionicons
             name="close"
@@ -443,7 +524,15 @@ export default function WeeklySessionTrainingDetails({
         </View>
         <TouchableOpacity
           style={styles.sessionPlanButton}
-          onPress={() => onSessionPlanClick(sessionData)}
+          onPress={() => {
+            console.log("👉 Button Clicked: Session Plan");
+            if (!sessionData) {
+              console.log("⚠️ sessionData is empty or null!");
+            } else {
+              console.log("✅ sessionData exists. Calling onSessionPlanClick.");
+            }
+            onSessionPlanClick(sessionData);
+          }}
         >
           <Text style={styles.sessionPlanText}>Session Plan</Text>
         </TouchableOpacity>
@@ -575,7 +664,7 @@ export default function WeeklySessionTrainingDetails({
                 <Text style={styles.emptyText}>No trialists found.</Text>
               ) : (
                 trials.map((trial, index) =>
-                  renderPersonRow(trial, index, "trials"),
+                  renderPersonRow(trial, index, "Trials"),
                 )
               )}
             </View>
@@ -609,6 +698,31 @@ export default function WeeklySessionTrainingDetails({
           </>
         )}
       </ScrollView>
+
+      {/* Ability Modal */}
+      <Modal visible={abilityModalVisible} transparent animationType="fade">
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setAbilityModalVisible(false)}
+        >
+          <View style={[styles.modalContent, isDark && styles.modalContentDark]}>
+            <Text style={[styles.modalTitle, isDark && styles.modalTitleDark]}>Select Ability</Text>
+            {["beginner", "intermediate", "advanced", "pro"].map((ability) => (
+              <TouchableOpacity
+                key={ability}
+                style={[styles.modalOption, isDark && styles.modalOptionDark]}
+                onPress={() => handleAbilityChange(ability)}
+              >
+                <Text style={[styles.modalOptionText, isDark && styles.modalOptionTextDark]}>
+                  {ability.charAt(0).toUpperCase() + ability.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
     </View>
   );
 }
@@ -863,7 +977,67 @@ const styles = StyleSheet.create({
     borderColor: "#E53E3E",
   },
   btnDisabled: {
-    opacity: 0.35,
+    opacity: 0.5,
+  },
+  abilityBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#3B82F6",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    alignSelf: "flex-start",
+    marginTop: 4,
+  },
+  abilityBadgeDark: {
+    backgroundColor: "#2563EB",
+  },
+  abilityBadgeText: {
+    color: "#fff",
+    fontSize: 10,
+    fontFamily: "Urbanist_700Bold",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+  },
+  modalContentDark: {
+    backgroundColor: "#1E1E1E",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontFamily: "Urbanist_700Bold",
+    marginBottom: 16,
+    color: "#1a1a1a",
+    textAlign: "center",
+  },
+  modalTitleDark: {
+    color: "#fff",
+  },
+  modalOption: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  modalOptionDark: {
+    borderBottomColor: "#2A2A2A",
+  },
+  modalOptionText: {
+    fontSize: 16,
+    fontFamily: "Urbanist_500Medium",
+    color: "#1a1a1a",
+    textAlign: "center",
+  },
+  modalOptionTextDark: {
+    color: "#fff",
   },
   btnIcon: {
     marginRight: 4,

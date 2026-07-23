@@ -157,7 +157,12 @@ export default function ReportIssueList({ onNewReport, onReportSelect, onBack })
                             onPress={() => onReportSelect && onReportSelect(report.id)}
                         >
                             <View style={styles.col1}>
-                                <Text style={styles.venue}>{report.venue?.area || 'Unknown'}</Text>
+                                <Text style={styles.venue} numberOfLines={1}>
+                                    {report.title || report.category}
+                                </Text>
+                                <Text style={[styles.dateTime, { fontSize: 11, marginTop: 4 }]} numberOfLines={1}>
+                                    {report.venue?.area || 'Unknown'}
+                                </Text>
                             </View>
 
                             <View style={styles.col2}>

@@ -31,11 +31,29 @@ export default function WeeklySyllabusDayDetails({
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
 
-  const availableLevels = LEVEL_KEYS.filter((key) => levels[key]?.length > 0);
+  console.log("=== DEBUG WeeklySyllabusDayDetails ===");
+  console.log(sessionPlan);
+  console.log("sessionPlan.levels keys:", Object.keys(levels));
+
+  const availableLevels = LEVEL_KEYS.filter((key) => {
+    const lvl = levels[key];
+    if (!lvl) return false;
+    if (Array.isArray(lvl)) return lvl.length > 0;
+    return Object.keys(lvl).length > 0;
+  });
+
+  console.log("availableLevels:", availableLevels);
+
   const [activeTab, setActiveTab] = useState(availableLevels[0] || "beginner");
 
-  const activeLevelData = levels[activeTab]?.[0];
+  const levelRaw = levels[activeTab];
+  console.log(`levelRaw for ${activeTab}:`, JSON.stringify(levelRaw, null, 2));
+
+  const activeLevelData = Array.isArray(levelRaw) ? levelRaw[0] : levelRaw;
   const exercises = activeLevelData?.sessionExercises || [];
+  
+  console.log("activeLevelData sessionExercises count:", exercises.length);
+  console.log("======================================");
 
   const bannerKey = `${activeTab}_banner`;
   const videoKey = `${activeTab}_video`;

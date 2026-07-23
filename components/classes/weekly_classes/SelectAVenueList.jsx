@@ -43,26 +43,45 @@ export default function SelectAVenueList({ venueId, onBack, onSessionSelect }) {
 
         const map = {};
         const termGroups = result?.data?.termGroups || [];
-        termGroups.forEach((tg) => {
-          tg.terms?.forEach((term) => {
-            const termSessions = term.sessionsMap || [];
-            termSessions.forEach((session) => {
-              const csId = session.sessionPlan?.classScheduleId;
-              if (!csId) return;
-              if (!map[csId]) map[csId] = [];
-              let bucket = map[csId].find((b) => b.termId === term.id);
-              if (!bucket) {
-                bucket = {
-                  termId: term.id,
-                  termName: term.termName,
-                  sessions: [],
-                };
-                map[csId].push(bucket);
-              }
-              bucket.sessions.push(session);
+        
+        classSchedules.forEach((cls) => {
+          map[cls.id] = [];
+          
+          let tIds = cls.termIds;
+          if (typeof tIds === 'string') {
+            try { tIds = JSON.parse(tIds); } catch(e) { tIds = []; }
+          }
+          if (!Array.isArray(tIds)) tIds = [];
+          
+          tIds.forEach((termId) => {
+            let matchedTerm = null;
+            termGroups.forEach(tg => {
+              const t = tg.terms?.find(x => x.id === termId);
+              if (t) matchedTerm = t;
             });
+            
+            if (matchedTerm) {
+              const sessionsMap = matchedTerm.sessionsMap;
+              let termSessions = [];
+              if (Array.isArray(sessionsMap)) {
+                termSessions = sessionsMap;
+              } else if (sessionsMap && typeof sessionsMap === "object") {
+                Object.values(sessionsMap).forEach(sessionsArray => {
+                  if (Array.isArray(sessionsArray)) {
+                    termSessions = termSessions.concat(sessionsArray);
+                  }
+                });
+              }
+              
+              map[cls.id].push({
+                termId: matchedTerm.id,
+                termName: matchedTerm.termName,
+                sessions: termSessions,
+              });
+            }
           });
         });
+        
         setTermsByClass(map);
 
         if (classSchedules.length > 0) {
@@ -103,6 +122,8 @@ export default function SelectAVenueList({ venueId, onBack, onSessionSelect }) {
     const sessions = activeTerm?.sessions || [];
 
     const activeClass = classes.find((c) => c.id === activeClassTab);
+
+    console.log('activeClass',activeClass)
     const timeLabel = activeClass
       ? formatTimeRange(activeClass.startTime, activeClass.endTime)
       : "";
@@ -113,7 +134,7 @@ export default function SelectAVenueList({ venueId, onBack, onSessionSelect }) {
         s.sessionPlan?.groupName
           ?.toLowerCase()
           .includes(searchQuery.toLowerCase()),
-    );
+    ).sort((a, b) => new Date(a.sessionDate) - new Date(b.sessionDate));
 
     if (displaySessions.length === 0) {
       return (
@@ -154,7 +175,7 @@ export default function SelectAVenueList({ venueId, onBack, onSessionSelect }) {
             <TouchableOpacity
               key={item.sessionPlan?.mapId ?? index}
               style={[styles.card, isDark && styles.cardDark]}
-              onPress={() => onSessionSelect(item.sessionPlan?.mapId)}
+              onPress={() => onSessionSelect(activeClass?.id, item.sessionDate)}
             >
               <View style={styles.colSession}>
                 <Text

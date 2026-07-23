@@ -1,5 +1,6 @@
 import CustomLoader from '@/components/common/CustomLoader';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/components/common/Toast';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from 'react-native';
@@ -56,6 +57,7 @@ const COLORS = {
 
 export default function ReportIssueForm({ onBack }) {
     const { token } = useAuth();
+    const toast = useToast();
     const colorScheme = useColorScheme();
     const theme = colorScheme === 'dark' ? COLORS.dark : COLORS.light;
     const styles = getStyles(theme);
@@ -121,16 +123,20 @@ export default function ReportIssueForm({ onBack }) {
 
     const handleSubmit = async () => {
         if (!selectedVenue) {
-            alert('Please select a venue.');
+            toast.error('Please select a venue.');
             return;
         }
         if (!selectedCategory) {
-            alert('Please select a category.');
+            toast.error('Please select a category.');
             return;
         }
       
+        if (!title.trim()) {
+            toast.error('Please enter a title.');
+            return;
+        }
         if (!reportText.trim()) {
-            alert('Please enter the issue details.');
+            toast.error('Please enter the issue details.');
             return;
         }
 
@@ -147,6 +153,7 @@ export default function ReportIssueForm({ onBack }) {
                     body: JSON.stringify({
                         venueId: selectedVenue.id,
                         category: selectedCategory,
+                        title: title.trim(),
                         reportIssue: reportText.trim()
                     })
                 }
@@ -154,14 +161,14 @@ export default function ReportIssueForm({ onBack }) {
 
             const result = await response.json();
             if (response.ok) {
-                alert('Issue reported successfully!');
+                toast.success('Issue reported successfully!');
                 onBack();
             } else {
-                alert(result.message || 'Failed to submit report.');
+                toast.error(result.message || 'Failed to submit report.');
             }
         } catch (error) {
             console.error('Submit report error:', error);
-            alert('An error occurred. Please try again.');
+            toast.error('An error occurred. Please try again.');
         } finally {
             setSubmitting(false);
         }
@@ -170,7 +177,7 @@ export default function ReportIssueForm({ onBack }) {
     return (
     <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
         {/* Header */}
         <View style={styles.header}>
@@ -228,12 +235,25 @@ export default function ReportIssueForm({ onBack }) {
                 ))}
             </View>
 
+            {/* Title Input */}
+            <Text style={styles.label}>Title</Text>
+            <View style={styles.titleInputContainer}>
+                <TextInput
+                    style={styles.titleInput}
+                    value={title}
+                    onChangeText={setTitle}
+                    placeholder="Enter issue title"
+                    placeholderTextColor={theme.searchPlaceholder}
+                />
+            </View>
+
             {/* Report Issue Textarea */}
             <Text style={styles.label}>Report issue</Text>
             <View style={styles.textAreaContainer}>
                 <TextInput
                     style={styles.textArea}
                     multiline={true}
+                    scrollEnabled={false}
                     value={reportText}
                     onChangeText={setReportText}
                     textAlignVertical="top"
@@ -401,11 +421,9 @@ const getStyles = (theme) => StyleSheet.create({
         marginBottom: 20,
         paddingHorizontal: 16,
         paddingVertical: 14,
-        height: 180,
+        minHeight: 180,
     },
     textArea: {
-        paddingHorizontal: 16,
-        paddingTop: 14,
         fontSize: 16,
         fontFamily: 'Urbanist_400Regular',
         color: theme.textAreaText,

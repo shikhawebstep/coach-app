@@ -356,6 +356,8 @@ export default function Classes() {
             onSessionClick={(view) => setCurrentView(view)}
             onSessionPlanClick={(sessionData) => {
                 setSelectedSessionData(sessionData);
+
+                console.log('sessionData',sessionData)
                 setCurrentView('syllabusDayDetails');
             }}
             sessionTitle="Session"

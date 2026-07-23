@@ -148,37 +148,37 @@ export default function IssueReport({ reportId, onBack }) {
                             <Image
                                 source={require('@/assets/images/Calendar.png')}
                                 resizeMode="contain"
-                                style={{height:13,width:13,marginRight:5}} />
+                                style={{ height: 13, width: 13, marginRight: 5 }} />
                             <Text style={styles.cardLabel}>Date</Text>
                         </View>
                         <Text style={styles.cardValue}>{formatDate(report.createdAt)}</Text>
                     </View>
                     <View style={styles.cardItem}>
                         <View style={styles.cardIconRow}>
-                         <Image
+                            <Image
                                 source={require('@/assets/images/TimeCircle.png')}
                                 resizeMode="contain"
-                                style={{height:13,width:13,marginRight:5}} />
+                                style={{ height: 13, width: 13, marginRight: 5 }} />
                             <Text style={styles.cardLabel}>Time</Text>
                         </View>
                         <Text style={styles.cardValue}>{formatTime(report.createdAt)}</Text>
                     </View>
                     <View style={styles.cardItem}>
                         <View style={styles.cardIconRow}>
-                          <Image
+                            <Image
                                 source={require('@/assets/images/Document.png')}
                                 resizeMode="contain"
-                                style={{height:13,width:13,marginRight:5}} />
+                                style={{ height: 13, width: 13, marginRight: 5 }} />
                             <Text style={styles.cardLabel}>Category</Text>
                         </View>
                         <Text style={styles.cardValue}>{report.category}</Text>
                     </View>
                     <View style={styles.cardItem}>
                         <View style={styles.cardIconRow}>
-                          <Image
+                            <Image
                                 source={require('@/assets/images/Location.png')}
                                 resizeMode="contain"
-                                style={{height:13,width:13,marginRight:5}} />
+                                style={{ height: 13, width: 13, marginRight: 5 }} />
                             <Text style={styles.cardLabel}>Venue</Text>
                         </View>
                         <Text style={styles.cardValue}>{report.venue?.area || 'Unknown'}</Text>
@@ -187,7 +187,7 @@ export default function IssueReport({ reportId, onBack }) {
 
                 {/* Report Content */}
                 {/* <Text style={styles.reportTitle}>{report.title || 'Report issue'}</Text> */}
-                <Text style={styles.reportTitle}>Report issue</Text>
+                <Text style={styles.reportTitle}>{report.title || 'Report issue'}</Text>
                 <Text style={styles.reportDescription}>
                     {report.reportIssue}
                 </Text>

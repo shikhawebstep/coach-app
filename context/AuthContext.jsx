@@ -57,6 +57,16 @@ export function AuthProvider({ children }) {
                     }
                 }
 
+                const profileDone = !!(d.firstName && d.lastName);
+                console.log("🔍 [AuthContext] Profile Done?:", profileDone);
+                if (profileDone) {
+                    setIsProfileCompleted(true);
+                    await AsyncStorage.setItem('isProfileCompleted', 'true');
+                } else {
+                    setIsProfileCompleted(false);
+                    await AsyncStorage.removeItem('isProfileCompleted');
+                }
+
                 const contractDone = d.contract?.status === "signed" || !!d.contract?.signedAt;
                 const qualValues = d.qualifications && typeof d.qualifications === 'object' ? Object.values(d.qualifications) : [];
                 const isValueFilled = (val) => {

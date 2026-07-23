@@ -1,42 +1,45 @@
 import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
-import { Animated, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Dimensions, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
-const TOAST_TYPES = {
-    success: {
-        bg: '#0F2C1A',
-        border: '#22C55E',
-        icon: 'checkmark-circle',
-        iconColor: '#22C55E',
-        titleColor: '#22C55E',
-        msgColor: '#A7F3D0',
-    },
-    error: {
-        bg: '#2C0F0F',
-        border: '#EF4444',
-        icon: 'close-circle',
-        iconColor: '#EF4444',
-        titleColor: '#EF4444',
-        msgColor: '#FCA5A5',
-    },
-    warning: {
-        bg: '#2C1F0F',
-        border: '#F59E0B',
-        icon: 'warning',
-        iconColor: '#F59E0B',
-        titleColor: '#F59E0B',
-        msgColor: '#FDE68A',
-    },
-    info: {
-        bg: '#0F1E2C',
-        border: '#3B82F6',
-        icon: 'information-circle',
-        iconColor: '#3B82F6',
-        titleColor: '#3B82F6',
-        msgColor: '#BFDBFE',
-    },
+const getToastStyles = (colorScheme) => {
+    const isDark = colorScheme === 'dark';
+    return {
+        success: {
+            bg: isDark ? '#0F2C1A' : '#F0FDF4',
+            border: isDark ? '#22C55E' : '#86EFAC',
+            icon: 'checkmark-circle',
+            iconColor: isDark ? '#22C55E' : '#16A34A',
+            titleColor: isDark ? '#22C55E' : '#166534',
+            msgColor: isDark ? '#A7F3D0' : '#14532D',
+        },
+        error: {
+            bg: isDark ? '#2C0F0F' : '#FEF2F2',
+            border: isDark ? '#EF4444' : '#FECACA',
+            icon: 'close-circle',
+            iconColor: isDark ? '#EF4444' : '#DC2626',
+            titleColor: isDark ? '#EF4444' : '#991B1B',
+            msgColor: isDark ? '#FCA5A5' : '#7F1D1D',
+        },
+        warning: {
+            bg: isDark ? '#2C1F0F' : '#FFFBEB',
+            border: isDark ? '#F59E0B' : '#FDE68A',
+            icon: 'warning',
+            iconColor: isDark ? '#F59E0B' : '#D97706',
+            titleColor: isDark ? '#F59E0B' : '#92400E',
+            msgColor: isDark ? '#FDE68A' : '#78350F',
+        },
+        info: {
+            bg: isDark ? '#0F1E2C' : '#EFF6FF',
+            border: isDark ? '#3B82F6' : '#BFDBFE',
+            icon: 'information-circle',
+            iconColor: isDark ? '#3B82F6' : '#2563EB',
+            titleColor: isDark ? '#3B82F6' : '#1E40AF',
+            msgColor: isDark ? '#BFDBFE' : '#1E3A8A',
+        },
+    };
 };
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -50,6 +53,8 @@ export function useToast() {
 
 // ─── Single Toast Item ────────────────────────────────────────────────────────
 function ToastItem({ toast, onDismiss }) {
+    const colorScheme = useColorScheme();
+    const TOAST_TYPES = getToastStyles(colorScheme);
     const style = TOAST_TYPES[toast.type] || TOAST_TYPES.info;
     const translateY = useRef(new Animated.Value(-120)).current;
     const opacity = useRef(new Animated.Value(0)).current;

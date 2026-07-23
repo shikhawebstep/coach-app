@@ -90,16 +90,10 @@ export default function Login() {
 
             toast.success(resultObj.message || "Logged in successfully!");
 
-            login(token, userId, role);
+            // Await login to ensure fetchCoachProfile completes and updates state
+            // RootLayoutNav will automatically handle navigation once state updates
+            await login(token, userId, role);
 
-            console.log('isProfileCompleted',isProfileCompleted)
-            if (!isProfileCompleted) {
-                router.replace("/fill-profile");
-            } else if (isCoach && !isOnboardingCompleted) {
-                router.replace("/onboarding");
-            } else {
-                router.replace("/(tabs)");
-            }
         } else {
            
             toast.error(

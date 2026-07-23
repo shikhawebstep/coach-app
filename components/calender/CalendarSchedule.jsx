@@ -636,7 +636,7 @@ const getStyles = (theme) => StyleSheet.create({
         backgroundColor: theme.tabInactiveBg,
     },
     topTabText: {
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 14,
     },
     topTabTextActive: {
@@ -661,7 +661,7 @@ const getStyles = (theme) => StyleSheet.create({
     searchInput: {
         flex: 1,
         fontSize: 14,
-        fontWeight: '600',
+        fontFamily: 'Urbanist_600SemiBold',
         color: theme.searchText,
     },
     filtersWrapper: {
@@ -692,12 +692,12 @@ const getStyles = (theme) => StyleSheet.create({
     },
     filterTextActive: {
         color: theme.filterTextActive,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 14,
     },
     filterTextInactive: {
         color: theme.filterTextInactive,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 14,
     },
     monthHeader: {
@@ -709,7 +709,7 @@ const getStyles = (theme) => StyleSheet.create({
     },
     monthText: {
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: theme.monthText,
     },
     daysWrapper: {
@@ -739,11 +739,11 @@ const getStyles = (theme) => StyleSheet.create({
         fontSize: 12,
         color: theme.dayName,
         marginBottom: 4,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
     dayNumber: {
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: theme.dayNumber,
     },
     dayTextActive: {
@@ -776,12 +776,13 @@ const getStyles = (theme) => StyleSheet.create({
     },
     eventTitle: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         fontSize: 18,
         marginBottom: 4,
         textTransform: 'capitalize',
     },
     eventTime: {
+        fontFamily: 'Urbanist_400Regular',
         color: 'rgba(255, 255, 255, 0.8)',
         fontSize: 14,
     },
@@ -796,6 +797,7 @@ const getStyles = (theme) => StyleSheet.create({
         paddingVertical: 50,
     },
     emptyText: {
+        fontFamily: 'Urbanist_400Regular',
         color: theme.emptyText,
         marginTop: 10,
         fontSize: 16,
@@ -805,7 +807,7 @@ const getStyles = (theme) => StyleSheet.create({
     },
     weekDayTitle: {
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: theme.weekDayTitleText,
         marginBottom: 12,
         backgroundColor: theme.weekDayTitleBg,
@@ -829,15 +831,17 @@ const getStyles = (theme) => StyleSheet.create({
     },
     weekEventTitle: {
         fontSize: 15,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: theme.weekEventTitle,
     },
     weekEventTime: {
+        fontFamily: 'Urbanist_400Regular',
         fontSize: 12,
         color: theme.weekEventTime,
         marginTop: 4,
     },
     noEventsText: {
+        fontFamily: 'Urbanist_400Regular',
         fontSize: 14,
         color: theme.noEventsText,
         fontStyle: 'italic',
@@ -855,7 +859,7 @@ const getStyles = (theme) => StyleSheet.create({
         width: 40,
         textAlign: 'center',
         fontSize: 12,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
         color: theme.monthGridHeaderText,
     },
     monthGridBody: {
@@ -875,16 +879,17 @@ const getStyles = (theme) => StyleSheet.create({
         backgroundColor: theme.monthCellSelectedBg,
     },
     monthCellText: {
+        fontFamily: 'Urbanist_500Medium',
         fontSize: 16,
         color: theme.monthCellText,
     },
     monthCellTextToday: {
         color: theme.monthCellTextToday,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
     monthCellTextSelected: {
         color: theme.monthCellTextSelected,
-        fontWeight: 'bold',
+        fontFamily: 'Urbanist_700Bold',
     },
     monthEventDot: {
         width: 4,
