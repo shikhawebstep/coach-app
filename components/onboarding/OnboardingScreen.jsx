@@ -1,6 +1,6 @@
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, SafeAreaView, StatusBar, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import Header from '../../components/layout/Header';
 
@@ -15,6 +15,20 @@ import TaskList from "./OnboardingTaskList";
 import TrainingStep from "./OnboardingTrainingStep";
 import UniformStep from "./OnboardingUniformStep";
 import WelcomeStep from "./OnboardingWelcomeStep";
+
+// ─────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────
+
+// Correctly determines whether a qualification field actually has data.
+// Handles primitives, arrays, and nested objects (previously an empty
+// nested object like {} was incorrectly treated as "filled").
+const isValueFilled = (val) => {
+  if (val === null || val === undefined || val === '') return false;
+  if (Array.isArray(val)) return val.length > 0;
+  if (typeof val === 'object') return Object.keys(val).length > 0;
+  return true;
+};
 
 // ─────────────────────────────────────────────
 // MAIN SCREEN
@@ -37,9 +51,13 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
   const [profileError, setProfileError] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
 
-  useEffect(() => {
- 
+  const handleComplete = useCallback(() => {
+    completeOnboarding();
+    if (navigation) navigation.navigate("Home");
+    else router.replace('/');
+  }, [completeOnboarding, navigation, router]);
 
+  useEffect(() => {
     if (!token || !userId) {
       console.warn("⚠️ [OnboardingScreen] Missing token or userId — skipping profile fetch");
       setProfileLoading(false);
@@ -50,7 +68,6 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
     const baseUrl = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://api.grabbite.com/").replace(/\/$/, "");
     const url = `${baseUrl}/api/coachpro/account-profile/${userId}`;
 
-   
     setProfileError(false);
 
     const fetchProfile = async () => {
@@ -60,7 +77,6 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
           headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
         });
-
 
         const rawText = await response.text();
 
@@ -73,7 +89,6 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
           return;
         }
 
-
         if (!result.status || !result.data) {
           console.warn("⚠️ [OnboardingScreen] Invalid profile response — status:", result.status, "data:", result.data);
           return;
@@ -82,10 +97,14 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
         const d = result.data;
 
         const contractDone = d.contract?.status === "signed" || !!d.contract?.signedAt;
-        const qualificationsDone = !!d.qualifications && Object.keys(d.qualifications).length > 0;
-        const uniformDone = d.uniformPurchaseStatus === "completed";
-        const trainingDone = d.onboardingCourseResult?.status === "pass" ||d.onboardingCourseResult?.status === "completed"  ;
 
+        const qualValues = d.qualifications && typeof d.qualifications === 'object'
+          ? Object.values(d.qualifications)
+          : [];
+        const qualificationsDone = qualValues.some(isValueFilled);
+
+        const uniformDone = d.uniformPurchaseStatus === "completed";
+        const trainingDone = d.onboardingCourseResult?.status === "pass" || d.onboardingCourseResult?.status === "completed";
 
         if (contractDone && qualificationsDone && uniformDone && trainingDone) {
           setRedirecting(true);
@@ -112,8 +131,7 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
     fetchProfile();
 
     return () => controller.abort();
-  }, [token, userId]);
-
+  }, [token, userId, handleComplete]);
 
   const sharedProps = { styles, COLORS };
 
@@ -122,11 +140,6 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
   const handleCompleteTask = (taskId) => {
     setCompletedTasks((prev) => ({ ...prev, [taskId]: true }));
     setCurrentStep(1);
-  };
-  const handleComplete = () => {
-    completeOnboarding();
-    if (navigation) navigation.navigate("Home");
-    else router.replace('/');
   };
 
   if (profileLoading || redirecting) {
@@ -156,9 +169,6 @@ export default function OnboardingScreen({ navigation, coachName = "Ethan" }) {
         backgroundColor={COLORS.headerBg}
       />
 
-      {/* FIX: Header now gets a handler to actually open the task panel.
-          Previously showTaskPanel was only ever set to false, so this
-          overlay could never be opened. */}
       {currentStep > 1 && (
         <Header
           isOnboarding={true}

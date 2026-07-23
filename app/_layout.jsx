@@ -32,24 +32,41 @@ function RootLayoutNav() {
     const inAuthGroup = segments[0] === '(tabs)' || !segments[0] || segments[0] === 'index' || segments[0] === 'onboarding' || segments[0] === 'fill-profile' || segments[0] === 'success';
 
     useEffect(() => {
-        if (isAuthLoading) return;
+        if (isAuthLoading) {
+            console.log("⏳ [RootLayout] Auth is loading...");
+            return;
+        }
 
         const isCoach = typeof userRole === 'string' && userRole.trim().toLowerCase() === 'coach';
 
+        console.log("🚦 [RootLayout] Navigation Guard state:", {
+            isLoggedIn,
+            userRole,
+            isCoach,
+            isProfileCompleted,
+            isOnboardingCompleted,
+            currentSegment: segments[0],
+            inAuthGroup
+        });
+
         if (!isLoggedIn && inAuthGroup) {
+            console.log("➡️ [RootLayout] Redirecting to /login (user not logged in)");
             router.replace('/login');
         } else if (isLoggedIn) {
             if (!isProfileCompleted) {
                 if (segments[0] !== 'fill-profile') {
+                    console.log("➡️ [RootLayout] Redirecting to /fill-profile (profile incomplete)");
                     router.replace('/fill-profile');
                 }
             } else if (isCoach && !isOnboardingCompleted) {
                 if (segments[0] !== 'onboarding') {
+                    console.log("➡️ [RootLayout] Redirecting to /onboarding (Coach role & onboarding incomplete)");
                     router.replace('/onboarding');
                 }
             } else {
                 const entryScreens = ['login', 'forgot-password', 'success', 'create-new-password', 'index', 'onboarding', 'fill-profile'];
                 if (entryScreens.includes(segments[0]) || !segments[0]) {
+                    console.log("➡️ [RootLayout] Redirecting to /(tabs) (All requirements met or non-coach)");
                     router.replace('/(tabs)');
                 }
             }

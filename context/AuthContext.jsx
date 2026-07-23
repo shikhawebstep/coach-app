@@ -3,6 +3,19 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 const AuthContext = createContext();
 
+// Safely converts a role value to a usable string.
+// Never allows an object to be stringified into "[object Object]".
+const safeRoleString = (value) => {
+    if (typeof value === 'string') {
+        if (value === '[object Object]') return '';
+        return value;
+    }
+    if (value && typeof value === 'object') {
+        return value.role || value.name || '';
+    }
+    return '';
+};
+
 export function AuthProvider({ children }) {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [token, setToken] = useState(null);
@@ -15,8 +28,12 @@ export function AuthProvider({ children }) {
     const [coachProfile, setCoachProfile] = useState(null);
 
     const fetchCoachProfile = async (currentToken = token, currentUserId = userId) => {
-        if (!currentToken || !currentUserId) return;
+        if (!currentToken || !currentUserId) {
+            console.log("🔍 [AuthContext] fetchCoachProfile skipped — missing token or userId");
+            return;
+        }
         try {
+            console.log("🔍 [AuthContext] Fetching coach profile for userId:", currentUserId);
             const myHeaders = new Headers();
             myHeaders.append('Authorization', `Bearer ${currentToken}`);
             const baseUrl = (process.env.EXPO_PUBLIC_API_BASE_URL || 'https://api.grabbite.com/').replace(/\/$/, '');
@@ -25,31 +42,85 @@ export function AuthProvider({ children }) {
                 headers: myHeaders,
             });
             const result = await response.json();
+            console.log("🔍 [AuthContext] Profile API response status:", result?.status);
             if (result.status && result.data) {
-                setCoachProfile(result.data);
-                if (result.data.role) {
-                    const roleStr = typeof result.data.role === 'string' ? result.data.role : String(result.data.role);
-                    setUserRole(roleStr);
-                    await AsyncStorage.setItem('userRole', roleStr);
+                const d = result.data;
+                setCoachProfile(d);
+
+                const roleVal = d.role || d.admin?.role || d.user?.role || d.coach?.role;
+                console.log("🔍 [AuthContext] Role found in profile API:", roleVal);
+                if (roleVal) {
+                    const roleStr = safeRoleString(roleVal);
+                    if (roleStr) {
+                        setUserRole(roleStr);
+                        await AsyncStorage.setItem('userRole', roleStr);
+                    }
                 }
+
+                const contractDone = d.contract?.status === "signed" || !!d.contract?.signedAt;
+                const qualValues = d.qualifications && typeof d.qualifications === 'object' ? Object.values(d.qualifications) : [];
+                const isValueFilled = (val) => {
+                    if (val === null || val === undefined || val === '') return false;
+                    if (Array.isArray(val)) return val.length > 0;
+                    if (typeof val === 'object') return Object.keys(val).length > 0;
+                    return true;
+                };
+                const qualificationsDone = qualValues.some(isValueFilled);
+                const uniformDone = d.uniformPurchaseStatus === "completed";
+                const trainingDone = d.onboardingCourseResult?.status === "pass" || d.onboardingCourseResult?.status === "completed";
+
+                console.log("🔍 [AuthContext] Onboarding Task Status Breakdown:", {
+                    contractDone,
+                    qualificationsDone,
+                    uniformDone,
+                    trainingDone,
+                });
+
+                const allDone = contractDone && qualificationsDone && uniformDone && trainingDone;
+                console.log("🔍 [AuthContext] All Onboarding Tasks Done?:", allDone);
+
+                if (allDone) {
+                    setIsOnboardingCompleted(true);
+                    await AsyncStorage.setItem('isOnboardingCompleted', 'true');
+                } else {
+                    setIsOnboardingCompleted(false);
+                    await AsyncStorage.removeItem('isOnboardingCompleted');
+                }
+            } else {
+                console.warn("⚠️ [AuthContext] Profile API response status false or no data:", result);
             }
         } catch (err) {
-            console.error("fetchCoachProfile error:", err);
+            console.error("💥 [AuthContext] fetchCoachProfile error:", err);
         }
     };
 
     useEffect(() => {
         const verifySession = async () => {
+            console.log("🚀 [AuthContext] verifySession started");
             try {
                 const storedToken = await AsyncStorage.getItem('userToken');
                 const storedUserId = await AsyncStorage.getItem('userId');
-                const storedUserRole = await AsyncStorage.getItem('userRole');
+                let storedUserRole = await AsyncStorage.getItem('userRole');
                 const storedProfileCompleted = await AsyncStorage.getItem('isProfileCompleted');
                 const storedOnboardingCompleted = await AsyncStorage.getItem('isOnboardingCompleted');
                 const storedFirstTime = await AsyncStorage.getItem('isFirstTime');
 
-                // isFirstTime is read regardless of login state — it should
-                // only ever be true until the user has seen onboarding once.
+                console.log("🔍 [AuthContext] Stored Session Values:", {
+                    storedToken: storedToken ? `${storedToken.substring(0, 10)}...` : null,
+                    storedUserId,
+                    storedUserRole,
+                    storedProfileCompleted,
+                    storedOnboardingCompleted,
+                    storedFirstTime
+                });
+
+                // Purge previously-corrupted role value if present
+                if (storedUserRole === '[object Object]') {
+                    console.warn("⚠️ [AuthContext] Corrupted stored userRole detected — purging");
+                    await AsyncStorage.removeItem('userRole');
+                    storedUserRole = null;
+                }
+
                 if (storedFirstTime === 'false') {
                     setIsFirstTime(false);
                 }
@@ -62,6 +133,7 @@ export function AuthProvider({ children }) {
                     setToken(storedToken);
                     setUserId(storedUserId);
                 } else {
+                    console.log("ℹ️ [AuthContext] No stored session found — user is logged out");
                     setIsLoggedIn(false);
                     setIsAuthLoading(false);
                     return;
@@ -101,28 +173,26 @@ export function AuthProvider({ children }) {
                     resultObj = JSON.parse(resultText);
                 } catch (e) { }
 
+                console.log("🔍 [AuthContext] Verify token response ok:", response.ok, resultObj);
+
                 if (response.ok && resultObj.success !== false && resultObj.status !== false) {
                     setIsLoggedIn(true);
-                    fetchCoachProfile(storedToken, storedUserId);
+                    await fetchCoachProfile(storedToken, storedUserId);
                 } else {
-                    // Token was actively rejected by the server (expired/invalid) —
-                    // clear it so we don't keep re-verifying a dead token on every
-                    // app open.
+                    console.warn("⚠️ [AuthContext] Token rejected by server — logging out");
                     setIsLoggedIn(false);
                     setToken(null);
                     setUserId(null);
                     setUserRole(null);
                     setCoachProfile(null);
-                    await AsyncStorage.multiRemove(['userToken', 'userId', 'userRole']);
+                    await AsyncStorage.multiRemove(['userToken', 'userId', 'userRole', 'isOnboardingCompleted']);
                 }
             } catch (error) {
-                // Network/timeout error — we don't know if the token is actually
-                // invalid, so don't clear it. Just treat this session as logged
-                // out for now; verifySession will retry on next app open.
-                console.error("Verify API Error:", error);
+                console.error("💥 [AuthContext] Verify API Error:", error);
                 setIsLoggedIn(false);
             } finally {
                 setIsAuthLoading(false);
+                console.log("✅ [AuthContext] verifySession finished");
             }
         };
 
@@ -130,6 +200,7 @@ export function AuthProvider({ children }) {
     }, []);
 
     const login = async (newToken, newUserId, newRole = null) => {
+        console.log("🔑 [AuthContext] login() called with:", { newUserId, newRole });
         if (newToken) {
             setToken(newToken);
             await AsyncStorage.setItem('userToken', newToken);
@@ -138,17 +209,22 @@ export function AuthProvider({ children }) {
             setUserId(newUserId);
             await AsyncStorage.setItem('userId', String(newUserId));
         } else {
-            console.warn('AuthContext.login called without a userId — userId state may be stale.');
+            console.warn('⚠️ [AuthContext] login called without a userId');
         }
         if (newRole !== null && newRole !== undefined) {
-            const roleStr = typeof newRole === 'string' ? newRole : String(newRole);
-            setUserRole(roleStr);
-            await AsyncStorage.setItem('userRole', roleStr);
+            const roleStr = safeRoleString(newRole);
+            if (roleStr) {
+                setUserRole(roleStr);
+                await AsyncStorage.setItem('userRole', roleStr);
+            } else {
+                console.warn('⚠️ [AuthContext] login received an unusable role value:', newRole);
+            }
+        }
+        if (newToken && newUserId) {
+            await fetchCoachProfile(newToken, newUserId);
         }
         setIsLoggedIn(true);
-        if (newToken && newUserId) {
-            fetchCoachProfile(newToken, newUserId);
-        }
+        console.log("✅ [AuthContext] login() completed state update");
     };
 
     const logout = async () => {
@@ -181,9 +257,6 @@ export function AuthProvider({ children }) {
         await AsyncStorage.setItem('isOnboardingCompleted', 'true');
     };
 
-    // Full reset — logs the user out AND clears the stored session token, so
-    // a subsequent app restart doesn't silently re-authenticate the old
-    // session. Also resets first-time / onboarding / profile flags.
     const resetAll = async () => {
         await AsyncStorage.multiRemove([
             'userToken',

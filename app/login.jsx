@@ -79,16 +79,20 @@ export default function Login() {
                 resultObj.data?.role ||
                 resultObj.data?.admin?.role ||
                 resultObj.data?.user?.role ||
+                resultObj.data?.coach?.role ||
                 resultObj.admin?.role ||
                 resultObj.user?.role ||
+                resultObj.coach?.role ||
                 "";
 
-const isCoach = typeof role === 'string' && role.trim().toLowerCase() === 'coach';
+            const isCoach = typeof role === 'string' && role.trim().toLowerCase() === 'coach';
             console.log('isCoach',isCoach)
 
             toast.success(resultObj.message || "Logged in successfully!");
 
             login(token, userId, role);
+
+            console.log('isProfileCompleted',isProfileCompleted)
             if (!isProfileCompleted) {
                 router.replace("/fill-profile");
             } else if (isCoach && !isOnboardingCompleted) {
